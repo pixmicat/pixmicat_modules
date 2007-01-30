@@ -21,7 +21,7 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Archiver Module v070126';
+		return 'Pixmicat! Archiver Module v070130';
 	}
 
 	function ModulePage(){
@@ -93,8 +93,8 @@ class mod_archiver{
 		if(!is_dir($nfolder)){ mkdir($nfolder); chmod($nfolder, 0777); } // 建立存放資料夾
 		for($n = 0; $n < $post_count; $n++){
 			if($aryIMAGE[$n]){
-				if(is_file(IMG_DIR.$aryIMAGE[$n][3].$aryIMAGE[$n][2])) copy(IMG_DIR.$aryIMAGE[$n][3].$aryIMAGE[$n][2], $nfolder.$aryIMAGE[$n][3].$aryIMAGE[$n][2]); // 原圖
-				if(is_file(THUMB_DIR.$aryIMAGE[$n][3].'s.jpg')) copy(THUMB_DIR.$aryIMAGE[$n][3].'s.jpg', $nfolder.$aryIMAGE[$n][3].'s.jpg'); // 縮圖
+				if($FileIO->imageExists($aryIMAGE[$n][3].$aryIMAGE[$n][2])) copy($FileIO->getImageURL($aryIMAGE[$n][3].$aryIMAGE[$n][2], true), $nfolder.$aryIMAGE[$n][3].$aryIMAGE[$n][2]); // 原圖
+				if($FileIO->imageExists($aryIMAGE[$n][3].'s.jpg')) copy($FileIO->getImageURL($aryIMAGE[$n][3].'s.jpg', true), $nfolder.$aryIMAGE[$n][3].'s.jpg'); // 縮圖
 			}
 		}
 	}

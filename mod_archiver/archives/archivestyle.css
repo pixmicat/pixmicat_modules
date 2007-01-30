@@ -1,0 +1,37 @@
+@media all{ /* 通用設定 */
+	html { background: #FFE; color: #800000; } /* 基本網頁背景樣式 */
+	a:link { color: #00E; } /* 正常連結樣式 */
+	a:hover { color: #D00; } /* hover時連結樣式 */
+	a:visited { color: #00E; } /* 已拜訪連結樣式 */
+	a.qlink { text-decoration: none; } /* 引用用連結樣式 */
+	small { font-size: 0.8em; } /* 小字樣式(eg.[以預覽圖顯示]) */
+	hr { clear: left; } /* 分隔線樣式 */
+	img { border: 0; } /* 圖片顯示樣式 */
+
+	.threadpost {  } /* 討論串首篇樣式 */
+	.reply { display: table; margin: 0.5ex 1em 0 1em; background: #F0E0D6; } /* 討論串回應樣式 */
+	.name { color: #117743; font-weight: bold; } /* 文章張貼者名稱樣式 */
+	.admin_cap { color: #0000FF; } /* 管理員キャップ樣式設定 */
+	.img { float: left; margin: 1ex 2ex; } /* 討論串圖片顯示樣式 */
+	.title { color: #CC1105; font-size: 1.125em; font-weight: bold; } /* 討論串標題樣式 */
+	.nor { font-weight: normal; } /* Trip取消粗體用 */
+	.quote { margin: 1em 2em; } /* 討論串內文縮排樣式 */
+
+	#footer { text-align: center; clear: both; } /* 頁尾樣式 */
+}
+
+@media screen{ /* 標準顯示(一般顯示器)模式附加規則 */
+	
+}
+
+@media handheld{ /* 手持設備(手機,PDA等)附加規則 */
+	html { max-width: 320px; margin: auto; font-size: 9px; } /* 320px為多數PDA的顯示寬度 */
+
+	.img { margin: 0.5ex 0.5ex; max-width: 125px; } /* 討論串圖片顯示樣式 */
+	.reply { clear: left; margin: 0.5ex 0 0 0; } /* 討論串回應樣式 */
+	.quote { margin: 1ex 1ex; } /* 討論串內文縮排樣式 */
+}
+
+@media print{ /* 列印,預覽列印附加規則 */
+	html { background: #FFF; color: #000; } /* 網頁改成白底黑字,節省彩色列印成本 */
+}
