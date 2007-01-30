@@ -21,7 +21,7 @@ class mod_catalog{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Catalog Module v070126';
+		return 'Pixmicat! Catalog Module v070130';
 	}
 
 	/* 自動掛載：樣式表 */
@@ -34,14 +34,14 @@ div.list { float: left; margin: 5px; width: 125px; height: 125px; } /* (相簿�
 
 	/* 自動掛載：頂部連結列 */
 	function autoHookToplink(&$linkbar){
-		$linkbar .= '[<a href="'.PHP_SELF.'?mode=module&amp;load=mod_catalog">相簿模式</a>]'."\n";
+		$linkbar .= '[<a href="'.PMS::getModulePageURL('mod_catalog').'">相簿模式</a>]'."\n";
 	}
 
 	/* 模組獨立頁面 */
 	function ModulePage(){
 		global $PIO, $FileIO;
 
-		$thisPage = PHP_SELF.'?mode=module&amp;load=mod_catalog'; // 基底位置
+		$thisPage = PMS::getModulePageURL('mod_catalog'); // 基底位置
 		$dat = ''; // HTML Buffer
 		$listMax = $PIO->postCount(); // 文章總筆數
 		$pageMax = ceil($listMax / $this->CATALOG_NUMBER) - 1; // 分頁最大編號

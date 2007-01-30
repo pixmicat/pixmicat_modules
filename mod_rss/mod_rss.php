@@ -25,12 +25,12 @@ class mod_rss{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! RSS Feed Module v070126';
+		return 'Pixmicat! RSS Feed Module v070130';
 	}
 
 	/* Auto hook to "Head" hookpoint */
 	function autoHookHead(&$txt){
-		$txt .= '<link rel="alternate" type="application/rss+xml" title="RSS 2.0 Feed" href="'.PHP_SELF.'?mode=module&amp;load=mod_rss" />'."\n";
+		$txt .= '<link rel="alternate" type="application/rss+xml" title="RSS 2.0 Feed" href="'.PMS::getModulePageURL('mod_rss').'" />'."\n";
 	}
 
 	/* 模組獨立頁面 */
