@@ -23,7 +23,7 @@ class mod_mobile{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Mobile Module v070221';
+		return 'Pixmicat! Mobile Module v070224';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -45,8 +45,7 @@ class mod_mobile{
 				case 'l': $ls = ' selected="selected"'; break;
 			}
 			$this->mobileHead($err, TITLE.' - 設定');
-			$err .= '<div>[<a href="'.$_SERVER['HTTP_REFERER'].'">回上頁</a>]<br/><form action="'.$this->thisPage.'" method="post">顯示模式:<br/><select name="dm"><option value="s"'.$ss.'>精簡 (無圖,裁字)</option><option value="m"'.$ms.'>一般 (無圖,全字)</option><option value="l"'.$ls.'>完整 (有圖,全字)</option></select><br/><input type="submit" value="儲存"/></form></div>';
-			$this->mobileFoot($err);
+			$err .= '<div>[<a href="'.$this->thisPage.'">回首頁</a>]<br/><form action="'.$this->thisPage.'" method="post">顯示模式:<br/><select name="dm"><option value="s"'.$ss.'>精簡 (無圖,裁字)</option><option value="m"'.$ms.'>一般 (無圖,全字)</option><option value="l"'.$ls.'>完整 (有圖,全字)</option></select><br/><input type="submit" value="儲存"/></form></div><div id="f">-Pixmicat!m-</div></body></html>';
 		}else{
 			if(isset($_POST['dm'])){ setCookie('dm', ($this->displayMode = $_POST['dm']), time()+604800); }
 			if($res !== 0){
@@ -85,7 +84,7 @@ class mod_mobile{
 		global $PIO, $FileIO;
 		$post_count = count($post);
 		$dat .= '<div id="c">';
-		if($res !== 0){ $dat .= '[<a href="'.$_SERVER['HTTP_REFERER'].'">回上頁</a>]<br/>'; }
+		if($res !== 0){ $dat .= '[<a href="'.(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->thisPage).'">回上頁</a>]<br/>'; }
 		// 逐步取資料
 		for($i = 0; $i < $post_count; $i++){
 			list($no, $sub, $name, $com, $tim, $ext) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['com'], $post[$i]['tim'], $post[$i]['ext']);
@@ -100,19 +99,19 @@ class mod_mobile{
 		$dat .= '</div>';
 		if($page !== null){ // 分頁欄
 			$dat .= '<div id="p">';
-			if($page) $dat .= '<a href="'.$this->thisPage.'&amp;p='.($page - 1).'" accesskey="*">|&lt;</a> ';
+			if($page) $dat .= '<a href="'.$this->thisPage.'&amp;p='.($page - 1).'">|&lt;</a> ';
 			for($i = 0; $i <= $pageMax; $i++){
 				if($i==$page) $dat .= '[<b>'.$i.'</b>] ';
-				else $dat .= '[<a href="'.$this->thisPage.'&amp;p='.$i.'" accesskey="'.$i.'">'.$i.'</a>] ';
+				else $dat .= '[<a href="'.$this->thisPage.'&amp;p='.$i.'">'.$i.'</a>] ';
 			}
-			if($page < $pageMax) $dat .= '<a href="'.$this->thisPage.'&amp;p='.($page + 1).'" accesskey="#">&gt;|</a>';
+			if($page < $pageMax) $dat .= '<a href="'.$this->thisPage.'&amp;p='.($page + 1).'">&gt;|</a>';
 			$dat .= '</div>';
 		}
 	}
 
 	/* 行動版頁尾 */
 	function mobileFoot(&$dat){
-		$dat .= '<div id="f">-Pixmicat!m-<br><a href="#c">Top</a><br/><a href="'.$this->thisPage.'&amp;dm=set">顯示模式</a></div></body></html>';
+		$dat .= '<div id="f">-Pixmicat!m-<br/><a href="'.$this->thisPage.'&amp;dm=set">顯示模式</a></div></body></html>';
 	}
 }
 ?>
