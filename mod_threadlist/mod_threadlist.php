@@ -26,14 +26,15 @@ class mod_threadlist{
 
 	/* 自動掛載：頂部連結列 */
 	function autoHookToplink(&$linkbar){
-		$linkbar .= '[<a href="'.PMS::getModulePageURL('mod_threadlist').'">主題列表</a>]'."\n";
+		global $PMS;
+		$linkbar .= '[<a href="'.$PMS->getModulePageURL('mod_threadlist').'">主題列表</a>]'."\n";
 	}
 
 	/* 模組獨立頁面 */
 	function ModulePage(){
-		global $PIO, $FileIO;
+		global $PMS, $PIO, $FileIO;
 
-		$thisPage = PMS::getModulePageURL('mod_threadlist'); // 基底位置
+		$thisPage = $PMS->getModulePageURL('mod_threadlist'); // 基底位置
 		$dat = ''; // HTML Buffer
 		$listMax = $PIO->threadCount(); // 討論串總筆數
 		$pageMax = ceil($listMax / $this->THREADLIST_NUMBER) - 1; // 分頁最大編號

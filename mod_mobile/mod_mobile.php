@@ -12,7 +12,7 @@ class mod_mobile{
 		$PMS->hookModuleMethod('ModulePage', 'mod_mobile'); // 向系統登記模組專屬獨立頁面
 
 		$this->THREADLIST_NUMBER = 10; // 一頁顯示列表個數
-		$this->thisPage = PMS::getModulePageURL('mod_mobile'); // 基底位置
+		$this->thisPage = $PMS->getModulePageURL('mod_mobile'); // 基底位置
 		$this->displayMode = isset($_COOKIE['dm']) ? $_COOKIE['dm'] : 's'; // 顯示模式 (s/m/l)
 	}
 
