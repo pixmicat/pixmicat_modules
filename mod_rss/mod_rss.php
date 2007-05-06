@@ -25,7 +25,7 @@ class mod_rss{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! RSS Feed Module v070130';
+		return 'Pixmicat! RSS Feed Module v070506';
 	}
 
 	/* Auto hook to "Head" hookpoint */
@@ -46,7 +46,6 @@ class mod_rss{
 	/* 檢查資料有沒有更新 */
 	function IsDATAUpdated(){
 		global $PIO;
-		return true;
 		if(isset($_GET['force'])) return true; // 強迫更新RSS Feed
 
 		$tmp_fsize = $PIO->getLastPostNo('afterCommit');
