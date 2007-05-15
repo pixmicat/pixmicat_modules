@@ -1,0 +1,16 @@
+﻿License:
+
+jQuery is licensed under MIT License. Copyright (c) 2007 John Resig, http://jquery.com/
+mod_showhide is not a part of Pixmicat! package. So it's not licensed under the Clarified Artistic License. It's in the public domain.
+
+中文安裝指引:
+
+1. 下載 jquery-latest.pack.js (jQuery: http://jquery.com/) 儲存
+2. 將 mod_showhide.php, mod_showhide.pack.js, jquery-latest.pack.js 放到 module/ 目錄
+3. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_showhide';
+
+English Instruction:
+
+1. Download the "jquery-latest.pack.js" from the jQuery website (http://jquery.com/).
+2. Put the following files into the module/ directory: "mod_showhide.php", "mod_showhide.pack.js" and "jquery-latest.pack.js."
+3. Use your favorite editor to open the "config.php" and add one line ($ModuleList[] = 'mod_showhide';) into the "Modules to be loaded" block.
