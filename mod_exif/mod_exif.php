@@ -38,7 +38,7 @@ class mod_exif{
 		global $PMS, $FileIO;
 		$file=isset($_GET['file'])?$_GET['file']:'';
 		if($file && $FileIO->imageExists($file)){
-			$pfile=$FileIO->getImageURL($file);
+			$pfile=IMG_DIR.'/'.$file;
 			if(function_exists("exif_read_data")) {
 				echo "DEBUG: Using exif_read_data<br/>";
 				$exif_data = exif_read_data($pfile,0,true);
@@ -53,7 +53,7 @@ class mod_exif{
 			} else {
 				echo "DEBUG: Using exif.php library<br/>";
 				include('exif.php');
-				exif($FileIO->getImageURL($file));
+				exif($pfile);
 				echo !count($exif_data) ? "No EXIF data found.<br />" : "Image contains EXIF data:<br />";
 				foreach($exif_data as $key=>$val)
 				       echo "$key: $val<br />";
