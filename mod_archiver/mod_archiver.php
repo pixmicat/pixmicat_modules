@@ -21,7 +21,7 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Archiver Module v070130';
+		return 'Pixmicat! Archiver Module v070425';
 	}
 
 	function ModulePage(){
@@ -33,6 +33,12 @@ class mod_archiver{
 			$this->GenerateArchive($res); // 生成靜態庫存頁面
 			echo 'FINISH.';
 		}
+	}
+
+	function autoHookAdminList(&$modFunc, $post, $isres){
+		global $PMS;
+		extract($post);
+		if(!$isres) $modFunc .= '[<a href="'.$PMS->getModulePageURL('mod_archiver').'&amp;res='.$no.'">存</a>]';
 	}
 
 	/* 取出討論串結構並製成XML結構 */
