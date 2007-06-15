@@ -108,6 +108,32 @@ class exif{
 		return ord(fgetc($fp));
 	}
 
+	function gcd($a, $b) {
+		if ($a < $b) {
+			$gcd = $this->gcd($b, $a);
+		}else{
+			assert($a > 0);
+			assert($b >= 0);
+			while ($b != 0) {
+				$t = $a % $b;
+				$a = $b;
+				$b = $t;
+			}
+			$gcd = $a;
+		}
+		return $gcd;
+	}
+
+	function fractionSimply($n,$d) {
+		$g=$this->gcd($n, $d);
+		return array($n/$g,$d/$g);
+	}
+
+	function fractionToMixed($n,$d) {
+		$m = $n % $d;
+		return array(($n-$m)/$d,$m,$d);
+	}
+
 	// takes $data and pads it from the left so strlen($data) == $shouldbe
 	function pad($data, $shouldbe, $put) {
 		if (strlen($data) == $shouldbe) {
@@ -159,7 +185,8 @@ class exif{
 			return 0;
 		}
 		if ($d != 0) {
-			return ($n / $d).' ('.$n."/".$d.')';
+			$ra=$this->fractionSimply($n,$d);
+			return ($n / $d).($ra[1]!=1&&$ra[1]!=$d?' ('.$ra[0]."/".$ra[1].')':'').($d!=1?' ['.$n."/".$d.']':'');
 		} else {
 			return $n."/".$d;
 		}
