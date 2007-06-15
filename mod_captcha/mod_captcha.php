@@ -31,7 +31,6 @@ http://jmhoule314.blogspot.com/2006/05/easy-php-captcha-tutorial-today-im.html
 TODO:
 - Script 每次讀取就製作圖檔，即使在不必要時候 (ex: 搜尋、後端、系統資訊)，應修正
 - 回應時無法插入 <tr>，因為 XHTML 模式沒有 tbody (忠實呈現原始碼內容，但一般模式則會自動增加)
-- jQuery 用的不漂亮，看是否不用了還是怎樣
 */
 
 class mod_captcha{
@@ -62,7 +61,7 @@ class mod_captcha{
 	}
 
 	function getModuleVersionInfo(){
-		return 'CAPTCHA 驗證圖像機制 v070527';
+		return 'CAPTCHA 驗證圖像機制 v070608';
 	}
 
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
@@ -122,7 +121,7 @@ class mod_captcha{
 		ImageDestroy($captcha);
 
 		// 輸出Script
-		echo 'jQuery(function(){ jQuery(jQuery("table#postform_tbl > tbody > tr")[5]).after("<tr><td class=\"Form_bg\"><b>'.$this->LANG_CAPTCHA.'</b></td><td><input type=\"hidden\" name=\"pmd5\" value=\"'.$DCode.'\" /><img src=\"'.$this->SELF.'&amp;f='.$DCode.'.png\" alt=\"'.$this->LANG_CAPTCHA_ALT.'\" /><br /><input type=\"text\" name=\"'.$DCode.'\" />'.$this->LANG_ENTERWORD.'</td></tr>") });';
+		echo 'jQuery(function($){ $("td.Form_bg:last").parent().after("<tr><td class=\"Form_bg\"><b>'.$this->LANG_CAPTCHA.'</b></td><td><input type=\"hidden\" name=\"pmd5\" value=\"'.$DCode.'\" /><img src=\"'.$this->SELF.'&amp;f='.$DCode.'.png\" alt=\"'.$this->LANG_CAPTCHA_ALT.'\" /><br /><input type=\"text\" name=\"'.$DCode.'\" />'.$this->LANG_ENTERWORD.'</td></tr>") });';
 	}
 
 	/* 應要求取出圖檔印出，同時刪除暫存圖檔 */

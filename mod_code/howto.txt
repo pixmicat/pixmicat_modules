@@ -1,0 +1,16 @@
+﻿License:
+
+dp.SyntaxHighlighter is licensed under GNU Lesser Public License. Copyright ©2004-2007 Alex Gorbatchev, http://code.google.com/p/syntaxhighlighter/
+mod_code is not a part of Pixmicat! package. So it's not licensed under the Clarified Artistic License. It's in the public domain.
+
+中文安裝指引:
+
+1. 下載 SyntaxHighlighter (http://code.google.com/p/syntaxhighlighter/) 儲存
+2. 將 mod_code.php, 1. 解壓後的 dp.SyntaxHighlighter/Scripts 目錄檔案放到 module/ 目錄
+3. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_code';
+
+English Instruction:
+
+1. Download the SyntaxHighlighter from the SyntaxHighlighter project page (http://code.google.com/p/syntaxhighlighter/).
+2. Put the following files into the module/ directory: "mod_code.php", "shCore.js", "SyntaxHighlighter.css" and "shBrushXxx.js." (Choose what you want)
+3. Use your favorite editor to open the "config.php" and add one line ($ModuleList[] = 'mod_code';) into the "Modules to be loaded" block.
