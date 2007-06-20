@@ -68,7 +68,7 @@ class mod_pm{
 
 		foreach($this->trips as $t => $v) { //d=last update date, c=count
 			if($v['d']<time()-864000) break; // out of range (10 days)
-			$htm.='<tr><td>'.date('Y-m-d H:i:s',$v['d']).'</td><td class="name">'._T('trip_pre').substr($t,0,5)."...</td><td align='center'>$v[c] "._T('info_basic_threads')."</td></tr>";
+			$htm.='<tr><td>'.date('Y-m-d H:i:s',$v['d']).($v['d']>time()-86400?' <span style="font-size:0.8em;color:#f44;">(new!)</span>':'').'</td><td class="name">'._T('trip_pre').substr($t,0,5)."...</td><td align='center'>$v[c] "._T('info_basic_threads')."</td></tr>";
 		}
 		return $htm.'</table></div></td></tr></table>';
 	}
@@ -131,6 +131,9 @@ class mod_pm{
 	function _postPM($from,$to,$topic,$mesg) {
 		if(!preg_match('/^[0-9a-zA-Z\.\/]{10}$/',$to)) error("Trip有誤");
 		$from=CleanStr($from); $to=CleanStr($to); $topic=CleanStr($topic); $mesg=CleanStr($mesg);
+		if(!$from) if(ALLOW_NONAME) $from = DEFAULT_NONAME;
+		if(!$topic)  $topic = DEFAULT_NOTITLE;
+		if(!$mesg) error("請填入內文");
 		if(preg_match('/(.*?)[#＃](.*)/u', $from, $regs)){ // トリップ(Trip)機能
 			$from = $nameOri = $regs[1]; $cap = strtr($regs[2], array('&amp;'=>'&'));
 			$from = $from.'<span class="nor">'._T('trip_pre').$this->_tripping($cap)."</span>";
@@ -142,7 +145,7 @@ class mod_pm{
 
 		$this->_loadCache();
 
-		$logs=(++$this->lastno).",$to,".time().",$from,$topic,$mesg,\n".@file_get_contents($this->MESG_LOG);
+		$logs=(++$this->lastno).",$to,".time().",$from,$topic,$mesg,$_SERVER[REMOTE_ADDR],\n".@file_get_contents($this->MESG_LOG);
 		$this->_write($this->MESG_LOG,$logs);
 
 		$this->_rebuildCache();
@@ -154,12 +157,12 @@ class mod_pm{
 		$trip=substr($trip,1);
 		$tripped=$this->_tripping($trip);
 		
-		if($logs=@file($this->MESG_LOG)) { // mesgno,trip,date,from,topic,mesg = each $logs, order desc
+		if($logs=@file($this->MESG_LOG)) { // mesgno,trip,date,from,topic,mesg,ip = each $logs, order desc
 			foreach($logs as $log) {
-				list($mno,$totrip,$pdate,$from,$topic,$mesg)=explode(',',$log);
+				list($mno,$totrip,$pdate,$from,$topic,$mesg,$ip)=explode(',',$log);
 				if($totrip==$tripped) {
 					if(!$dat) $dat=$PTE->BlockValue('SEPARATE').'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
-					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'));
+					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate)." IP:".preg_replace('/\d+$/','*',$ip), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'));
 					$PMS->useModuleMethods('ThreadPost', array(&$arrLabels, array(), 0)); // "ThreadPost" Hook Point
 					$dat .= $PTE->ParseBlock('THREAD',$arrLabels);
 					$dat .= $PTE->ParseBlock('SEPARATE',array());
@@ -196,11 +199,14 @@ class mod_pm{
 
 	function ModulePage(){
 		global $PMS, $PIO, $FileIO;
-		$dat='';
 		$trip=isset($_REQUEST['t'])?$_REQUEST['t']:'';
 		$action=isset($_REQUEST['action'])?$_REQUEST['action']:'';
-		head($dat);
-		echo $dat.'[<a href="'.PHP_SELF2.'?'.time().'">'._T('return').'</a>]';
+		$dat='';
+
+		if($action != 'postverify') {
+			head($dat);
+			echo $dat.'[<a href="'.PHP_SELF2.'?'.time().'">'._T('return').'</a>]';
+		}
 		if($action == 'write') {
 			echo '<div class="bar_reply">發送私人信息</div>
 <div style="text-align: center;">
@@ -236,10 +242,12 @@ $g("pmform").from.value=getCookie("namec");
 </div>';
 		} elseif($action == 'postverify') {
 			$this->_postPM($_POST['from'],$_POST['t'],$_POST['topic'],$_POST['content']);
-		if(preg_match('/(.*?)[#＃](.*)/u', $_POST['from'], $regs)){ // トリップ(Trip)機能
-			$_POST['from'] = $nameOri = $regs[1]; $cap = strtr($regs[2], array('&amp;'=>'&'));
-			$_POST['from'] = $_POST['from'].'<span class="nor">'._T('trip_pre').$this->_tripping($cap)."</span>";
-		}
+			if(preg_match('/(.*?)[#＃](.*)/u', $_POST['from'], $regs)){ // トリップ(Trip)機能
+				$_POST['from'] = $nameOri = $regs[1]; $cap = strtr($regs[2], array('&amp;'=>'&'));
+				$_POST['from'] = $_POST['from'].'<span class="nor">'._T('trip_pre').$this->_tripping($cap)."</span>";
+			}
+			head($dat);
+			echo $dat.'[<a href="'.PHP_SELF2.'?'.time().'">'._T('return').'</a>]';
 			echo '<div class="bar_reply">已送出私人信息</div>
 <table cellpadding="1" cellspacing="1" id="postform_tbl" style="margin-left:1.5em">
 <tr><td colspan="2">已送出。</td></tr>
@@ -250,7 +258,6 @@ $g("pmform").from.value=getCookie("namec");
 </table>';
 		} else {
 			echo '<div class="bar_reply">收件箱</div>';
-	$delflag = isset($_POST['delete']); // 是否有「刪除」勾選
 			if($action == 'delete' && isset($_POST['trip'])) {
 				$delno=array();
 				while($item = each($_POST)) if($item[1]=='delete') array_push($delno, $item[0]);
