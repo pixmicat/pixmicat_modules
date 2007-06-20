@@ -162,7 +162,7 @@ class mod_pm{
 					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'));
 					$PMS->useModuleMethods('ThreadPost', array(&$arrLabels, array(), 0)); // "ThreadPost" Hook Point
 					$dat .= $PTE->ParseBlock('THREAD',$arrLabels);
-					$dat .= $PTE->BlockValue('SEPARATE');
+					$dat .= $PTE->ParseBlock('SEPARATE',array());
 				}
 			}
 		}
