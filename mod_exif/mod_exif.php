@@ -125,7 +125,7 @@ class exif{
 	}
 
 	function fractionSimply($n,$d) {
-		$g=$this->gcd($n, $d);
+		$g=($n>-1 && $n > -1)?$this->gcd($n, $d):1;
 		return array($n/$g,$d/$g);
 	}
 
