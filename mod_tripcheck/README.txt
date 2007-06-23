@@ -1,0 +1,1 @@
+tripadmin.php should place in same directory as config.php
