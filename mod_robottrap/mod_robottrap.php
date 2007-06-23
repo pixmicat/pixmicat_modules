@@ -25,12 +25,12 @@ class mod_robottrap{
 	}
 
 	/* 自動掛載陷阱點 */
-	function autoHookThreadFront(&$dat){
+	function autoHookThreadFront(&$dat, $isReply){
 		$dat .= '<a href="imglist.htm"></a><a href="thumb/1126628412168.jpg"></a>'."\n";
 	}
 
 	/* 自動掛載陷阱點 */
-	function autoHookThreadRear(&$dat){
+	function autoHookThreadRear(&$dat, $isReply){
 		$dat .= '<a href="allimage.htm"></a><a href="thumb/1131459150542.jpg"></a>'."\n";
 	}
 

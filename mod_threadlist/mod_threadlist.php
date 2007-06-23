@@ -27,7 +27,7 @@ class mod_threadlist{
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar){
+	function autoHookToplink(&$linkbar, $isReply){
 		global $PMS;
 		$linkbar .= '[<a href="'.$PMS->getModulePageURL('mod_threadlist').'">主題列表</a>]'."\n";
 	}

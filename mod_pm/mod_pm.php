@@ -26,7 +26,7 @@ class mod_pm{
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar){
+	function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->myPage.'">收件箱</a>] [<a href="'.$this->myPage.'&amp;action=write">發PM</a>]'."\n";
 	}
 

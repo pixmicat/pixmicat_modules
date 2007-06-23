@@ -29,7 +29,7 @@ class mod_rss{
 	}
 
 	/* Auto hook to "Head" hookpoint */
-	function autoHookHead(&$txt){
+	function autoHookHead(&$txt, $isReply){
 		global $PMS;
 		$txt .= '<link rel="alternate" type="application/rss+xml" title="RSS 2.0 Feed" href="'.$PMS->getModulePageURL('mod_rss').'" />'."\n";
 	}

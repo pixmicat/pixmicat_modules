@@ -8,7 +8,7 @@ class mod_showhide{
 		return 'mod_showhide : 自由隱藏顯示討論串 v070506';
 	}
 
-	function autoHookHead(&$txt){
+	function autoHookHead(&$txt, $isReply){
 		$txt .= '<script type="text/javascript" src="module/jquery-latest.pack.js"></script>
 <script type="text/javascript" src="module/mod_showhide.pack.js"></script>'."\n";
 	}

@@ -9,8 +9,8 @@ class mod_exif{
 	function mod_exif(){
 		global $PMS, $PIO, $FileIO;
 
-		$PMS->hookModuleMethod('ModulePage', 'mod_exif'); // ¶V®t≤Œµn∞Oº“≤’±Mƒ›øW•ﬂ≠∂≠±
-		$this->myPage = $PMS->getModulePageURL('mod_exif'); // ∞Ú©≥¶Ï∏m
+		$PMS->hookModuleMethod('ModulePage', 'mod_exif'); // ÂêëÁ≥ªÁµ±ÁôªË®òÊ®°ÁµÑÂ∞àÂ±¨Áç®Á´ãÈ†ÅÈù¢
+		$this->myPage = $PMS->getModulePageURL('mod_exif'); // Âü∫Â∫ï‰ΩçÁΩÆ
 	}
 
 	function getModuleName(){

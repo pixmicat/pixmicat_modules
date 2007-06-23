@@ -25,7 +25,7 @@ class mod_catalog{
 	}
 
 	/* 自動掛載：樣式表 */
-	function autoHookHead(&$style){
+	function autoHookHead(&$style, $isReply){
 		$style .= '<style type="text/css">
 div.list { float: left; margin: 5px; width: 125px; height: 125px; } /* (相簿模式) div 框格設定 */
 </style>
@@ -33,7 +33,7 @@ div.list { float: left; margin: 5px; width: 125px; height: 125px; } /* (相簿�
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar){
+	function autoHookToplink(&$linkbar, $isReply){
 		global $PMS;
 		$linkbar .= '[<a href="'.$PMS->getModulePageURL('mod_catalog').'">相簿模式</a>]'."\n";
 	}

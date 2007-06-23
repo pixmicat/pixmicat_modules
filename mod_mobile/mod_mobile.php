@@ -27,7 +27,7 @@ class mod_mobile{
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar){
+	function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->thisPage.'">行動版</a>]'."\n";
 	}
 
