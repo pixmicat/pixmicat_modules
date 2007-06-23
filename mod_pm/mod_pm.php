@@ -161,11 +161,11 @@ class mod_pm{
 			foreach($logs as $log) {
 				list($mno,$totrip,$pdate,$from,$topic,$mesg,$ip)=explode(',',$log);
 				if($totrip==$tripped) {
-					if(!$dat) $dat=$PTE->BlockValue('SEPARATE').'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
+					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE').'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
 					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate)." IP:".preg_replace('/\d+$/','*',$ip), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'));
 					$PMS->useModuleMethods('ThreadPost', array(&$arrLabels, array(), 0)); // "ThreadPost" Hook Point
 					$dat .= $PTE->ParseBlock('THREAD',$arrLabels);
-					$dat .= $PTE->ParseBlock('SEPARATE',array());
+					$dat .= $PTE->ParseBlock('REALSEPARATE',array());
 				}
 			}
 		}
