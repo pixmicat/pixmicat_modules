@@ -2,7 +2,9 @@
 class mod_vipquality{
 	
 	function mod_vipquality(){
-	}
+	    list($usec, $sec) = explode(" ", microtime());
+	    mt_srand(intval($usec*1000 + $sec));
+    }
 
 	function getModuleName(){
 		return 'mod_vipquality';
@@ -17,7 +19,7 @@ class mod_vipquality{
 		if(strpos($name,"!omikuji")!==false) $this->_omikuji($name);
 		if(strpos($name,"!uptime")!==false) $this->_uptime($name);
 		if(strpos($name,"!power")!==false) $this->_power($name);
-		if(strpos($name,"fusianasan")!==false) $name=str_replace("fusianasan","<span class='nor'>".$host."</span>",$name);
+		if(strpos($name,"fusianasan")!==false) $name=str_replace("fusianasan","<span class='nor'>".gethostbyaddr($_SERVER['REMOTE_ADDR'])."</span>",$name);
 		if(strpos($name,"mokorikomo")!==false) $name=str_replace("mokorikomo","<span class='nor'>".$_SERVER['REMOTE_ADDR']."</span>",$name);
 	}
 
