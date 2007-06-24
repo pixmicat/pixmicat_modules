@@ -31,9 +31,8 @@ class mod_pm{
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		if(preg_match('/(<a.*>)?(.*)<span class\="nor">(.*?)<\/span>(<\/a>)?/', $arrLabels['{$NAME}'], $matches)) {
+		if(preg_match('/(<a.*">)?(.*)<span class\="nor">'._T('trip_pre').'(.*?)<\/span>(<\/a>)?/', $arrLabels['{$NAME}'], $matches)) {
 			if($matches[3]) { // Trip found
-				$matches[3]=str_replace(_T('trip_pre'),'',$matches[3]);
 				if($matches[2]) { // has name
 					$arrLabels['{$NAME}']=$matches[1].$matches[2].($matches[1]?'</a>':'').'<span class="nor"><a href="'.$this->myPage.'&amp;action=write&amp;t='.$matches[3].'" style="text-decoration: overline underline" title="PM">'._T('trip_pre').'</a>'.$matches[1].$matches[3].($matches[1]?'</a>':'')."</span>";
 				} else {
