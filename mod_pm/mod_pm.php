@@ -140,6 +140,7 @@ class mod_pm{
 		$from = str_replace(_T('admin'), '"'._T('admin').'"', $from);
 		$from = str_replace(_T('deletor'), '"'._T('deletor').'"', $from);
 		$from = str_replace('&'._T('trip_pre'), '&amp;'._T('trip_pre'), $from); // 避免 &#xxxx; 後面被視為 Trip 留下 & 造成解析錯誤
+		$mesg = str_replace(',','&#44;',$mesg); // 轉換","
 		$mesg = nl2br($mesg);
 
 		$this->_loadCache();
