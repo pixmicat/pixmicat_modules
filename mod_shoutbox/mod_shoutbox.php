@@ -4,7 +4,7 @@ mod_shoutbox.php
  */
 class mod_shoutbox{
 	var $MESG_LOG,$MESG_CACHE,$JSON_CACHE,$LOG_MAX,$MES_PER_PAGE,$MESSAGE_MAX,$EMOTIONS;
-	var $myPage,$lastno,$lastupdate;
+	var $myPage,$lastno,$logcount;
 	
 	function mod_shoutbox(){
 		global $PMS, $PIO, $FileIO;
@@ -30,14 +30,15 @@ class mod_shoutbox{
 		return 'mod_shoutbox : Shout box (Pre-Alpha)';
 	}
 
-	function autoHookHead(&$dat){
+	function autoHookHead(&$dat,$isRes){
 		$mypage='http://'.$_SERVER['HTTP_HOST'].preg_replace('/'.basename($_SERVER['PHP_SELF']).'$/', '', $_SERVER['PHP_SELF']).str_replace('&amp;','&',$this->myPage);
-		$ifheight=($this->MES_PER_PAGE+10)."em";
+		$ifheight=($this->MES_PER_PAGE+11)."em";
 		$dat .= <<< _EOF_
 <style type="text/css"><!--/*--><![CDATA[/*><!--*/
 #shoutboxform form {display:inline;}
-#shoutbox.show {display:block;position:absolute;top:2.6em;left:0; border: 2px #F0E0D6 solid; width: 65%;height: $ifheight; overflow:auto; margin:0; padding:0;}
+#shoutbox.show {display:block;position:absolute;top:3em;left:0; border: 2px #F0E0D6 solid; width: 65%;height: $ifheight; overflow:auto; margin:0; padding:0;}
 #shoutbox.hide {display:none;}
+#shoutbox_main {margin:0 0 0 0.4em;padding:0}
 .shout {font-size:9pt}
 .shout .e {font-weight:bold}
 .shout .d {color:gray}
@@ -112,7 +113,7 @@ getLatestMessage();
 setInterval("getLatestMessage()",30000);
 //--><!]]></script>
 
-<iframe id="shoutbox" class="hide" name="shoutbox"></iframe>
+<iframe id="shoutbox" class="hide" name="shoutbox" frameborder="0"></iframe>
 <form action="'.$this->myPage.'" method="POST" id="realshoutboxform" style="display:none" target="shoutbox"><input type="hidden" name="action" value="shout"/><input type="hidden" name="emotion" id="real_shout_emo" value=""/><input type="hidden" name="message" id="real_shout_mesg" value=""/></form>
 <span id="shoutboxform">[<form action="'.$this->myPage.'" method="POST" id="shoutboxform" target="shoutbox" onsubmit="return realsubmit();"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18"/><input type="submit" name="submit" value="喊!"/></form>]</span> '.
 		$linkbar.'[<a href="javascript:ToggleShoutBox();">Shoutbox</a>]'."\n";
@@ -142,7 +143,7 @@ setInterval("getLatestMessage()",30000);
 		if(!$this->lastno) {
 			if($logs=@file($this->MESG_CACHE)) { // 有快取
 				$this->lastno=trim($logs[0]);
-				$this->lastupdate=trim($logs[1]);
+				$this->logcount=trim($logs[1]);
 				return true;
 			} else { // 無快取
 				return $this->_rebuildCache();
@@ -158,11 +159,8 @@ setInterval("getLatestMessage()",30000);
 
 	function _rebuildCache() {
 		if($logs=@file($this->MESG_LOG)) { // mesgno,date,emo,mesg,ip = each $logs, order desc
-			if(!$this->lastno) if(isset($logs[0])) {
-				list($mno,$date,)=explode(',',$logs[0]);
-				$this->lastno = intval($mno); // last no
-				$this->lastupdate = intval($date); // last update
-			}
+			if(!$this->lastno) if(isset($logs[0])) $this->lastno = intval(substr($logs[0],strpos($logs[0],',')));
+			$this->logcount = count($logs);
 			$this->_writeCache();
 			return true;
 		} else {
@@ -172,7 +170,7 @@ setInterval("getLatestMessage()",30000);
 	}
 
 	function _writeCache() {
-		$this->_write($this->MESG_CACHE,$this->lastno."\n".$this->lastupdate."\n");
+		$this->_write($this->MESG_CACHE,intval($this->lastno)."\n".intval($this->logcount)."\n");
 	}
 
 	function _write($file,$data) {
@@ -189,15 +187,20 @@ setInterval("getLatestMessage()",30000);
 		$mesg=isset($_POST['message'])?$_POST['message']:'';
 		$mesg=CleanStr($mesg);
 		if(!$mesg) error("請填入內文");
+		if(strlen($mesg)>$this->MESSAGE_MAX) error(_T('regist_commenttoolong'));
 		$mesg = str_replace("\n"," ",$mesg); // 消除換行
 		$mesg = str_replace(',','&#44;',$mesg); // 轉換","
 
 		$this->_loadCache();
 
-		$logs=(++$this->lastno).",".($this->lastupdate=time()).",".$this->EMOTIONS[$emo].",$mesg,$_SERVER[REMOTE_ADDR],\n".@file_get_contents($this->MESG_LOG);
+		$logs=@file($this->MESG_LOG);
+		if($logs===false) $logs=array();
+		if(($this->logcount+1) > $this->LOG_MAX) @array_splice($logs,$this->LOG_MAX-2); // chop by index
+
+		$logs=(++$this->lastno).",".($now=time()).",".$this->EMOTIONS[$emo].",$mesg,$_SERVER[REMOTE_ADDR],\n".implode('',$logs);
 		$this->_write($this->MESG_LOG,$logs);
 
-		$this->_rebuildJSON($this->lastupdate,$this->EMOTIONS[$emo],$mesg);
+		$this->_rebuildJSON($now,$this->EMOTIONS[$emo],$mesg);
 		$this->_rebuildCache();
 	}
 
@@ -219,7 +222,7 @@ setInterval("getLatestMessage()",30000);
 			// 換頁列
 			$pages=intval(($mcnt-1)/$this->MES_PER_PAGE);
 			$thispage=$from/$this->MES_PER_PAGE;
-			$pagebar='<div style="float:left">[ ';
+			$pagebar='<div style="float:left;clear:right;">[ ';
 			for($i=0;$i<=$pages;$i++) {
 				if($i==$thispage) $pagebar.="<strong>$i</strong> ";
 				else $pagebar.='<a href="'.$this->myPage.'&page='.$i.'">'.$i.'</a> ';
@@ -268,8 +271,8 @@ setInterval("getLatestMessage()",30000);
 		}
 		$pte_vals = array('{$TITLE}'=>TITLE,'{$RESTO}'=>'');
 		$dat .= $PTE->ParseBlock('HEADER',$pte_vals);
-		$this->autoHookHead(&$dat); // add my headers
-		$dat .= "</head><body>";
+		$this->autoHookHead(&$dat,0); // add my headers
+		$dat .= "</head><body id='shoutbox_main'>";
 		$dat.='Shoutbox<br/><form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18"/><input type="submit" name="submit" value="喊!"/></form>';
 		$dat.=$this->_showMessages($page * $this->MES_PER_PAGE,($page+1) * $this->MES_PER_PAGE);
 		echo $dat."</body></html>";
