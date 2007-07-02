@@ -11,7 +11,7 @@ class mod_catalog{
 		global $PMS;
 		$PMS->hookModuleMethod('ModulePage', 'mod_catalog'); // 向系統登記模組專屬獨立頁面
 
-		$this->CATALOG_NUMBER = 50; // 相簿模式一頁最多顯示個數 (視文章是否有貼圖而有實際變動)
+		$this->CATALOG_NUMBER = 20; // 相簿模式一頁最多顯示個數 (視文章是否有貼圖而有實際變動)
 	}
 
 	/* Get the name of module */
@@ -21,13 +21,13 @@ class mod_catalog{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Catalog Module v070130';
+		return 'Pixmicat! Catalog Module v070702';
 	}
 
 	/* 自動掛載：樣式表 */
 	function autoHookHead(&$style, $isReply){
 		$style .= '<style type="text/css">
-div.list { float: left; margin: 5px; width: 125px; height: 125px; } /* (相簿模式) div 框格設定 */
+div.list { float: left; margin: 5px; width: '.MAX_RW.'px; height: '.MAX_RH.'px; } /* (相簿模式) div 框格設定 */
 </style>
 ';
 	}
