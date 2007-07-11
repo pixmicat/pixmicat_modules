@@ -13,7 +13,7 @@ class mod_threadlist{
 
 		$this->THREADLIST_NUMBER = 50; // 一頁顯示列表個數
 		$this->THREADLIST_NUMBER_IN_MAIN = 20; // 在主頁面顯示列表個數
-		$this->SHOW_IN_MAIN = false; // 在主頁面顯示
+		$this->SHOW_IN_MAIN = true; // 在主頁面顯示
 	}
 
 	/* Get the name of module */
@@ -40,7 +40,7 @@ class mod_threadlist{
 			$post = $PIO->fetchPosts($plist); // 取出資料
 			$post_count = count($post);
 		    $dat .= "<div id='topiclist' style='clear:both'><table cellpadding='0' cellspacing='0' border='0' width='100%' align='center'>".
-		            "<tr><th class='ListRow1_bg'>題名一覧</th></tr></table>\n".
+		            "<tr><th class='reply_hl'>題名一覧</th></tr></table>\n".
 		            "<table width='100%' cellpadding='0' cellspacing='0' align='center' valign='top' class='navi' style='margin-bottom:1em;font-size:0.8em;'><tr><td><table width='100%'>";
 			for($i = 0; $i < $post_count; $i++){
 				list($no, $sub, $name, $now) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['now']);
