@@ -1,6 +1,7 @@
 <?php
 /* mod_paint : PaintBBS & Shi-Painter Bridge
  * $Id$
+ * $Date$
  */
 class mod_paint{
 	var $THISPAGE, $TMPFolder, $PaintComponent, $PMAX_W, $PMAX_H, $SECURITY;
@@ -30,13 +31,13 @@ class mod_paint{
 	}
 
 	/* Hook to ThreadFront */
-	function autoHookThreadFront(&$txt){
+	function autoHookThreadFront(&$txt, $isReply){
 		$txt .= '<form action="'.$this->THISPAGE.'&amp;action=paint" method="post">
 <div style="text-align: center;">
 程式<select name="Papplet"><option value="0">PaintBBS</option><option value="1">しぃペインター</option><option value="2">しぃペインターPro</option></select>
 寬<input type="text" name="PimgW" value="200" size="3" />x高<input type="text" name="PimgH" value="200" size="3" />
 <input type="submit" value="作畫" />
-<input type="checkbox" value="true" name="Panime" checked="checked" />作畫記錄
+<input type="checkbox" value="true" name="Panime" id="Panime" checked="checked" /><label for="Panime">作畫記錄</label>'.($isReply ? '<input type="hidden" name="resto" value="'.$isReply.'" />' : '').'
 </div>
 </form>'."\n";
 	}
@@ -68,10 +69,12 @@ class mod_paint{
 
 	/* 印出繪圖頁面 */
 	function Action_Paint(){
+		$resto = isset($_POST['resto']) ? intval($_POST['resto']) : 0; // 回應編號
+		$resto = ($resto != 0) ? '&amp;resto='.$resto : ''; // 回應傳遞參數
 		$Papplet = isset($_POST['Papplet']) ? $_POST['Papplet'] : '0';
 		$Panime = isset($_POST['Panime']) ? $_POST['Panime'] : false;
-		$PimgW = isset($_POST['PimgW']) ? $_POST['PimgW'] : 200; if($PimgW < 100){ $PimgW = 100; } if($PimgW > $this->PMAX_W){ $PimgW = $this->PMAX_W; }
-		$PimgH = isset($_POST['PimgH']) ? $_POST['PimgH'] : 200; if($PimgH < 100){ $PimgH = 100; } if($PimgH > $this->PMAX_H){ $PimgH = $this->PMAX_H; }
+		$PimgW = isset($_POST['PimgW']) ? intval($_POST['PimgW']) : 200; if($PimgW < 100){ $PimgW = 100; } if($PimgW > $this->PMAX_W){ $PimgW = $this->PMAX_W; }
+		$PimgH = isset($_POST['PimgH']) ? intval($_POST['PimgH']) : 200; if($PimgH < 100){ $PimgH = 100; } if($PimgH > $this->PMAX_H){ $PimgH = $this->PMAX_H; }
 		$AppletW = $PimgW + 150; if($AppletW < 400){ $AppletW = 400; } // Applet Width
 		$AppletH = $PimgH + 170; if($AppletH < 420){ $AppletH = 420; } // Applet Height
 		switch($Papplet){
@@ -119,7 +122,7 @@ class mod_paint{
 <param name="thumbnail_width" value="100%" />
 <param name="thumbnail_height" value="100%" />
 <param name="url_save" value="'.$this->THISPAGE.'&amp;action=save" />
-<param name="url_exit" value="'.$this->THISPAGE.'&amp;action=post" />';
+<param name="url_exit" value="'.$this->THISPAGE.'&amp;action=post'.$resto.'" />';
 	if($Panime) $dat .= '
 <param name="thumbnail_type" value="animation" />';
 	$dat .= '
@@ -174,13 +177,14 @@ class mod_paint{
 
 	/* 發文頁面 */
 	function Action_Post(){
+		$resto = isset($_GET['resto']) ? intval($_GET['resto']) : 0; // 回應編號
 		/*
-		TODO: 使文章跟圖檔連結在一起，發出含有特殊資訊的文章(回應)，回應編號記得要傳遞
+		TODO: 使文章跟圖檔連結在一起，發出含有特殊資訊的文章(回應)
 		*/
 		$dat = '';
 		head($dat);
-		form($dat, 0);
-		$dat .= 'TODO: PostForm Here';
+		form($dat, $resto);
+		$dat .= 'TODO: PostForm Here (Resto transfer OK)';
 
 		foot($dat);
 		echo $dat;
