@@ -1,7 +1,7 @@
 <?php
 class mod_bbcode{
 	var $ImgTagTagMode, $URLTagMode, $MaxURLCount, $URLTrapLog;
-	var $myPage;
+	var $myPage,$urlcount;
 
 	function mod_bbcode(){
 		global $PMS;
@@ -32,57 +32,33 @@ class mod_bbcode{
 	}
 
 	function _bb2html($string,$dest) {
-		$urlcount=0;
-		$string = preg_replace("/\[b\](.*?)\[\/b\]/si", "<b>\\1</b>", $string);
-		$string = preg_replace("/\[i\](.*?)\[\/i\]/si", "<i>\\1</i>", $string);
-		$string = preg_replace("/\[u\](.*?)\[\/u\]/si", "<u>\\1</u>", $string);
-		$string = preg_replace("/\[p\](.*?)\[\/p\]/si", "<p>\\1</p>", $string);
+		$this->urlcount=0; // Reset counter
+		$string = preg_replace("#\[b\](.*?)\[/b\]#si", "<b>\\1</b>", $string);
+		$string = preg_replace("#\[i\](.*?)\[/i\]#si", "<i>\\1</i>", $string);
+		$string = preg_replace("#\[u\](.*?)\[/u\]#si", "<u>\\1</u>", $string);
+		$string = preg_replace("#\[p\](.*?)\[/p\]#si", "<p>\\1</p>", $string);
 
-		$string = preg_replace("/\[color=(\S+?)\](.*?)\[\/color\]/si",
+		$string = preg_replace("#\[color=(\S+?)\](.*?)\[/color\]#si",
 			"<font color=\"\\1\">\\2</font>", $string);
 
-		$string = preg_replace("/\[s([1-7])\](.*?)\[\/s([1-7])\]/si",
+		$string = preg_replace("#\[s([1-7])\](.*?)\[/s([1-7])\]#si",
 			"<font size=\"\\1\">\\2</font>", $string);
 
-		$string = preg_replace("/\[pre\](.*?)\[\/pre\]/si", "<pre>\\1</pre>", $string);
-		$string = preg_replace("/\[quote\](.*?)\[\/quote\]/si", "<blockquote>\\1</blockquote>", $string);
+		$string = preg_replace("#\[pre\](.*?)\[/pre\]#si", "<pre>\\1</pre>", $string);
+		$string = preg_replace("#\[quote\](.*?)\[/quote\]#si", "<blockquote>\\1</blockquote>", $string);
 
 		if($this->URLTagMode) {
-			
-			if(preg_match_all("/\[url\](http|https|ftp)(:\/\/\S+?)\[\/url\]/si", $string, $matches, PREG_SET_ORDER)){
-				$urlcount+=count($matches);
-				foreach($matches as $submatches){
-					$string = @str_replace($submatches[0], "<a href=\"$submatches[1]$submatches[2]\" rel=\"_blank\">$submatches[1]$submatches[2]</a>", $string);
-				}
-			}
-
-			if(preg_match_all("/\[url\](\S+?)\[\/url\]/si", $string, $matches, PREG_SET_ORDER)){
-				$urlcount+=count($matches);
-				foreach($matches as $submatches){
-					$string = @str_replace($submatches[0], "<a href=\"http://$submatches[1]\" rel=\"_blank\">$submatches[1]</a>", $string);
-				}
-			}
-
-			if(preg_match_all("/\[url=(http|https|ftp)(:\/\/\S+?)\](.*?)\[\/url\]/si", $string, $matches, PREG_SET_ORDER)){
-				$urlcount+=count($matches);
-				foreach($matches as $submatches){
-					$string = @str_replace($submatches[0], "<a href=\"$submatches[1]$submatches[2]\" rel=\"_blank\">$submatches[3]</a>", $string);
-				}
-			}
-
-			if(preg_match_all("/\[url=(\S+?)\](.*?)\[\/url\]/si", $string, $matches, PREG_SET_ORDER)){
-				$urlcount+=count($matches);
-				foreach($matches as $submatches){
-					$string = @str_replace($submatches[0], "<a href=\"http://$submatches[1]\" rel=\"_blank\">$submatches[2]</a>", $string);
-				}
-			}
-			$this->_URLExcced($urlcount);
+			$string=preg_replace_callback("#\[url\](http|https|ftp)(://\S+?)\[/url\]#si",array(&$this,'_URLConv1'),$string);
+			$string=preg_replace_callback("#\[url\](\S+?)\[/url\]#si",array(&$this,'_URLConv2'),$string);
+			$string=preg_replace_callback("#\[url=(http|https|ftp)(://\S+?)\](.*?)\[/url\]#si",array(&$this,'_URLConv3'),$string);
+			$string=preg_replace_callback("#\[url=(\S+?)\](.*?)\[/url\]#si",array(&$this,'_URLConv4'),$string);
+			$this->_URLExcced();
 		}
 
-		$string = preg_replace("/\[email\](\S+?@\S+?\\.\S+?)\[\/email\]/si",
+		$string = preg_replace("#\[email\](\S+?@\S+?\\.\S+?)\[/email\]#si",
 			"<a href=\"mailto:\\1\">\\1</a>", $string);
 
-		$string = preg_replace("/\[email=(\S+?@\S+?\\.\S+?)\](.*?)\[\/email\]/si",
+		$string = preg_replace("#\[email=(\S+?@\S+?\\.\S+?)\](.*?)\[/email\]#si",
 			"<a href=\"mailto:\\1\">\\2</a>", $string);
 		if (($this->ImgTagTagMode == 2) || ($this->ImgTagTagMode && !$dest)) {
 			$string = preg_replace("#\[img\](([a-z]+?)://([^ \n\r]+?))\[\/img\]#si",
@@ -91,9 +67,29 @@ class mod_bbcode{
 
 		return $string;
 	}
-	
-	function _URLExcced($cnt) {
-		if($cnt > $this->MaxURLCount) {
+
+	function _URLConv1($m) {
+		++$this->urlcount;
+		return "<a href=\"$m[1]$m[2]\" rel=\"_blank\">$m[1]$m[2]</a>";
+	}
+
+	function _URLConv2($m) {
+		++$this->urlcount;
+		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[1]</a>";
+	}
+
+	function _URLConv3($m) {
+		++$this->urlcount;
+		return "<a href=\"$m[1]$m[2]\" rel=\"_blank\">$m[3]</a>";
+	}
+
+	function _URLConv4($m) {
+		++$this->urlcount;
+		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[2]</a>";
+	}
+
+	function _URLExcced() {
+		if($this->urlcount > $this->MaxURLCount) {
 		  	  $fh=fopen($this->URLTrapLog,'a+b');
 		  	  fwrite($fh,time()."\t$_SERVER[REMOTE_ADDR]\t$cnt\n");
 		  	  fclose($fh);
