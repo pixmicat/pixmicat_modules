@@ -3,21 +3,39 @@
  * $Id$
  * $Date$
  */
+
+// PHP4 file_put_contents Define
+// Source: http://www.php.net/manual/en/function.file-put-contents.php#68329
+if(!function_exists('file_put_contents') && !defined('FILE_APPEND')){
+	define('FILE_APPEND', 1);
+	function file_put_contents($n, $d, $flag = false){
+		$mode = ($flag == FILE_APPEND || strtoupper($flag) == 'FILE_APPEND') ? 'a' : 'w';
+		$f = @fopen($n, $mode);
+		if($f === false) return false;
+		if(is_array($d)) $d = implode($d);
+		$bytes_written = fwrite($f, $d);
+		fclose($f);
+		return $bytes_written;
+	}
+}
+
 class mod_paint{
-	var $THISPAGE, $TMPFolder, $PaintComponent, $PMAX_W, $PMAX_H, $SECURITY;
+	var $THISPAGE, $TMPFolder, $PMAX_W, $PMAX_H, $SECURITY, $PAINT_RESTRICT, $PaintComponent;
 	function mod_paint(){
 		global $PMS;
 		$PMS->hookModuleMethod('ModulePage', 'mod_paint');
 		$this->THISPAGE = $PMS->getModulePageURL('mod_paint');
+		// 可設定項目
 		$this->TMPFolder = './tmp/'; // 圖檔暫存目錄
 		$this->PMAX_W = 500; $this->PMAX_H = 500; // 繪圖最大長寬尺寸
-		$this->PaintComponent = array(
+		$this->SECURITY = array('CLICK'=> 1, 'TIMER'=> 1, 'URL' => PHP_SELF2); // 安全設定
+		$this->PAINT_RESTRICT = array('POST'=>true, 'REPLY'=>true); // 繪圖模式是否可使用 (POST:發文, REPLY:回應)
+		$this->PaintComponent = array( // 各組件所在位置
 			'Base'=>'./paint/', // 其他資源檔基底目錄
 			'PaintBBS'=>'./paint/PaintBBS.jar',
 			'ShiPainter'=>'./paint/spainter.jar',
 			'PCHViewer'=>'./paint/PCHViewer.jar'
-		); // 各組件所在位置
-		$this->SECURITY = array('CLICK'=> 100, 'TIMER'=> 180, 'URL' => PHP_SELF2); // 安全設定
+		);
 
 		$this->Action_deleteOldTemp(); // 清除舊暫存
 	}
@@ -38,6 +56,7 @@ class mod_paint{
 寬<input type="text" name="PimgW" value="200" size="3" />x高<input type="text" name="PimgH" value="200" size="3" />
 <input type="submit" value="作畫" />
 <input type="checkbox" value="true" name="Panime" id="Panime" checked="checked" /><label for="Panime">作畫記錄</label>'.($isReply ? '<input type="hidden" name="resto" value="'.$isReply.'" />' : '').'
+<br /><a href="'.$this->THISPAGE.'&amp;action=post'.($isReply ? '&amp;resto='.$isReply : '').'">使用先前繪圖</a>
 </div>
 </form>'."\n";
 	}
@@ -48,6 +67,24 @@ class mod_paint{
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		// TODO: 判斷文章圖檔是否為繪圖，如果有動畫就作連結
+	}
+
+	/* 將繪圖與文章暗中連結起來 */
+	function autoHookPostForm(&$form){
+		if(strpos($_SERVER['REQUEST_URI'], str_replace('&amp;', '&', $this->THISPAGE).'&action=post')!==false){ // 符合插入頁面條件
+			$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
+			$imgItem = '<select name="paintImg">';
+			foreach(glob($this->TMPFolder.'*_'.$userCode.'.*') as $item){
+				if(preg_match('/\.(jpg|png)$/', $item)) $imgItem .= '<option>'.basename($item).'</option>';
+			}
+			$imgItem .= '</select>';
+			$form .= '<tr><td class="Form_bg"><b>附加繪圖</b></td><td>'.$imgItem.'<input type="hidden" name="Paint" value="XXXXXXX" /></td></tr>';
+		}
+	}
+
+	/* 處理繪圖跟文章的連結 */
+	function autoHookRegistBegin(){
+	
 	}
 
 	/* 中控頁面: 根據 Action 執行指定動作 */
@@ -69,14 +106,23 @@ class mod_paint{
 
 	/* 印出繪圖頁面 */
 	function Action_Paint(){
+		$nowTime = time();
 		$resto = isset($_POST['resto']) ? intval($_POST['resto']) : 0; // 回應編號
-		$resto = ($resto != 0) ? '&amp;resto='.$resto : ''; // 回應傳遞參數
+		if($resto != 0){ // 回應
+			if(!$this->PAINT_RESTRICT['REPLY']) error('Replying with a painting is Not allowed.');
+			$resto = '&amp;resto='.$resto;
+		}else{
+			if(!$this->PAINT_RESTRICT['POST']) error('Posting with a painting is Not allowed.');
+			$resto = '';
+		}
 		$Papplet = isset($_POST['Papplet']) ? $_POST['Papplet'] : '0';
 		$Panime = isset($_POST['Panime']) ? $_POST['Panime'] : false;
 		$PimgW = isset($_POST['PimgW']) ? intval($_POST['PimgW']) : 200; if($PimgW < 100){ $PimgW = 100; } if($PimgW > $this->PMAX_W){ $PimgW = $this->PMAX_W; }
 		$PimgH = isset($_POST['PimgH']) ? intval($_POST['PimgH']) : 200; if($PimgH < 100){ $PimgH = 100; } if($PimgH > $this->PMAX_H){ $PimgH = $this->PMAX_H; }
 		$AppletW = $PimgW + 150; if($AppletW < 400){ $AppletW = 400; } // Applet Width
 		$AppletH = $PimgH + 170; if($AppletH < 420){ $AppletH = 420; } // Applet Height
+		$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
+		$AppletHeader = "user={$userCode},time=".$nowTime; // Applet send_header
 		switch($Papplet){
 			case '2': // ShiPainterPro
 			case '1': // ShiPainter
@@ -96,7 +142,6 @@ class mod_paint{
 				$PappletJar = $this->PaintComponent['PaintBBS'];
 				$PappletCode = 'pbbs.PaintBBS.class';
 				$PappletParams = '';
-				break;
 		}
 
 		$dat = '';
@@ -126,7 +171,7 @@ class mod_paint{
 	if($Panime) $dat .= '
 <param name="thumbnail_type" value="animation" />';
 	$dat .= '
-<param name="send_header" value="usercode=dr0RABR1RXGA" />
+<param name="send_header" value="'.$AppletHeader.'" />
 <param name="security_click" value="'.$this->SECURITY['CLICK'].'" />
 <param name="security_timer" value="'.$this->SECURITY['TIMER'].'" />
 <param name="security_url" value="'.$this->SECURITY['URL'].'" />
@@ -154,37 +199,51 @@ class mod_paint{
 
 	/* 處理 Applet 送來的 Raw Data 並分析儲存 */
 	function Action_Save(){
+		$nowTime = time(); // 現在時間
 		$RAWInput = fopen('php://input', 'rb');
 		$RAWData = '';
 		while (!feof($RAWInput)) $RAWData .= fread($RAWInput, 8192);
 		fclose($RAWInput);
-		file_put_contents($this->TMPFolder.'test.dat', $RAWData); // Raw Data
 		$userHeaderLength = intval(substr($RAWData, 1, 8)); // User HEADER Length
-		$userHeader = substr($RAWData, 9, $userHeaderLength); // User Header
+		$userHeader = explode(',', substr($RAWData, 9, $userHeaderLength)); // User Header
+		foreach($userHeader as $h){
+			$h = explode('=', $h);
+			$$h[0] = $h[1]; // 分配變數 ($user = XXX, $time = XXX)
+		}
+		$datData = ($nowTime - $time);
+		$filename = $nowTime.'_'.$user; // 檔名
+		file_put_contents($this->TMPFolder.$filename.'.dat', $datData); // Recognize Data (作畫秒數)
 
 		$imgLength = intval(substr($RAWData, 9 + $userHeaderLength, 8)); // Image Data Length
 		$imgData = substr($RAWData, 19 + $userHeaderLength, $imgLength); // Image Data
 		$imgType = substr($imgData, 1, 5); // Image Type (Probably PNG\r\n)
-		file_put_contents($this->TMPFolder.'test.'.(($imgType=="PNG\r\n") ? 'png' : 'jpg'), $imgData);
+		file_put_contents($this->TMPFolder.$filename.(($imgType=="PNG\r\n") ? '.png' : '.jpg'), $imgData);
 
 		$pchLength = intval(substr($RAWData, 19 + $userHeaderLength + $imgLength, 8)); // PCH Length
 		if($pchLength > 0){
 			$pchType = substr($RAWData, 0, 1); // PCH Type
 			$pchData = substr($RAWData, 19 + $userHeaderLength + $imgLength + 8, $pchLength); // PCH BINARY DATA
-			file_put_contents($this->TMPFolder.'test.'.($pchType=='S' ? 's' : '').'pch', $pchData);
+			file_put_contents($this->TMPFolder.$filename.($pchType=='S' ? '.s' : '.').'pch', $pchData);
 		}
 	}
 
 	/* 發文頁面 */
 	function Action_Post(){
 		$resto = isset($_GET['resto']) ? intval($_GET['resto']) : 0; // 回應編號
-		/*
-		TODO: 使文章跟圖檔連結在一起，發出含有特殊資訊的文章(回應)
-		*/
+		$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
+		$imgList = '';
+		foreach(glob($this->TMPFolder.'*_'.$userCode.'.*') as $l){
+			if(preg_match('/\.(jpg|png)$/', $l)) $imgList .= '<div style="float: left; margin: 1em; border: solid grey 1px"><img src="'.$l.'" /><br />'.basename($l).'</div>'."\n";
+		}
+
 		$dat = '';
 		head($dat);
 		form($dat, $resto);
-		$dat .= 'TODO: PostForm Here (Resto transfer OK)';
+		$dat .= '<script type="text/javascript">try{ $g("fupfile").disabled = true; showform(); }catch(e){}</script>
+
+<div id="imglist">
+'.$imgList.'
+</div>';
 
 		foot($dat);
 		echo $dat;
@@ -253,9 +312,19 @@ class mod_paint{
 
 	/* 刪除舊暫存 */
 	function Action_deleteOldTemp(){
-		// TODO: 檢查暫存是否過舊無人認領，超過一段時間就砍
 		if(!is_dir($this->TMPFolder)){ mkdir($this->TMPFolder); @chmod($this->TMPFolder, 0777); }
-		// delete Old Temp here
+		// 檢查暫存是否過舊無人認領，超過一段時間就砍
+		$nowTime = time();
+		$dh = opendir($this->TMPFolder);
+		while(false !== ($f = readdir($dh))){
+			if(strpos($f, '.dat')!==false){
+				if($nowTime - intval($f) > 86400){ // 超過一天未處理
+					$arr = glob($this->TMPFolder.str_replace('.dat', '', $f).'.*');
+					foreach($arr as $a){ unlink($a); } // 刪除暫存
+				}
+			}
+		}
+		closedir($dh);
 	}
 }
 ?>
