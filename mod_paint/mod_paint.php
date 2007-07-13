@@ -62,7 +62,7 @@ class mod_paint{
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		// TODO: 判斷文章圖檔是否為繪圖，如果有動畫就作連結 (action=viewpch&file=XXX.png&type=pch)
+		// TODO: 判斷文章圖檔是否為繪圖(有(S)PCH檔)，如果有動畫就作連結 (action=viewpch&file=XXX.png&type=pch)
 	}
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
@@ -78,13 +78,33 @@ class mod_paint{
 				if(preg_match('/\.(jpg|png)$/', $item)) $imgItem .= '<option>'.basename($item).'</option>';
 			}
 			$imgItem .= '</select>';
-			$form .= '<tr><td class="Form_bg"><b>附加繪圖</b></td><td>'.$imgItem.'<input type="hidden" name="Paint" value="XXXXXXX" /></td></tr>';
+			$form .= '<tr><td class="Form_bg"><b>附加繪圖</b></td><td>'.$imgItem.'<input type="hidden" name="PaintSend" value="true" /></td></tr>';
 		}
 	}
 
 	/* 處理繪圖跟文章的連結 */
-	function autoHookRegistBegin(){
-	
+	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
+		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
+			$upfileInfo['file'] = $this->TMPFolder.$_POST['paintImg'];
+			$upfileInfo['name'] = $_POST['paintImg'];
+			$upfileInfo['status'] = 0;
+		}
+	}
+
+	/* 處理 PCH 檔 (如果有的話) 和暫存清除 */
+	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH){
+		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
+			unlink($this->TMPFolder.$_POST['paintImg']); // 刪除暫存圖檔
+			$pchOldfile = str_replace(strrchr($_POST['paintImg'], '.'), '', $_POST['paintImg']); // 暫存 PCH 動畫檔案名 (不含副檔名)
+			$pchNewfile = './'.IMG_DIR.str_replace(strrchr($dest, '.'), '', basename($dest));
+			$datFile = $this->TMPFolder.$pchOldfile.'.dat'; // Dat 資訊檔
+			if(file_exists($this->TMPFolder.$pchOldfile.'.pch')){ $pchOldfile = $this->TMPFolder.$pchOldfile.'.pch'; $pchNewfile .= '.pch'; }
+			elseif(file_exists($this->TMPFolder.$pchOldfile.'.spch')){ $pchOldfile = $this->TMPFolder.$pchOldfile.'.spch'; $pchNewfile .= '.spch'; }
+			else{ return; }
+			copy($pchOldfile, $pchNewfile); unlink($pchOldfile);
+			$PaintSecond = file_get_contents($datFile); $sub .= ' (作畫時間: '.$PaintSecond.'秒)';
+			unlink($datFile);
+		}
 	}
 
 	/* 中控頁面: 根據 Action 執行指定動作 */
