@@ -63,10 +63,18 @@ class mod_paint{
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		// TODO: 判斷文章圖檔是否為繪圖(有(S)PCH檔)，如果有動畫就作連結 (action=viewpch&file=XXX.png&type=pch)
+		$pchBase = './'.IMG_DIR.$post['tim'];
+		$pchType = '';
+		if(file_exists($pchBase.'.pch')){ $pchFile = $post['tim'].'.pch'; }
+		elseif(file_exists($pchBase.'.spch')){ $pchFile = $post['tim'].'.spch'; $pchType = '&amp;type=spch'; }
+		else{ return; }
+		$pchLink = $this->THISPAGE.'&amp;action=viewpch&amp;file='.$post['tim'].$post['ext'].$pchType;
+		$arrLabels['{$IMG_BAR}'] .= '<small> <a href="'.$pchLink.'">[動畫]</a></small>';
 	}
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		// TODO: 判斷文章圖檔是否為繪圖，如果有動畫就作連結
+		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
 	/* 將繪圖與文章暗中連結起來 */
@@ -271,7 +279,7 @@ class mod_paint{
 
 	/* 顯示動畫 */
 	function Action_ViewPCH(){
-		$imgfile = isset($_GET['file']) ? $this->TMPFolder.$_GET['file'] : false; // 圖檔名
+		$imgfile = isset($_GET['file']) ? './'.IMG_DIR.$_GET['file'] : false; // 圖檔名
 		if(!file_exists($imgfile)) error('File Not Found.');
 		$size = getimagesize($imgfile);
 		$imgW = $size[0]; $imgH = $size[1]; // 繪圖版面大小
@@ -281,6 +289,7 @@ class mod_paint{
 		$name = str_replace(strrchr($imgfile, '.'), '', $imgfile); // 去除副檔名
 		$type = isset($_GET['type']) ? $_GET['type'] : 'pch'; // pch or spch
 		$pchName = $name.'.'.$type; // 動畫檔案位置
+		$pchSize = filesize($pchName);
 
 		switch($type){
 			case 'pch': // PaintBBS PCH File
@@ -307,7 +316,7 @@ class mod_paint{
 <div class="bar_reply">動畫播放模式</div>
 </div>
 <div id="container" style="text-align: center">
-<applet name="pch" code="'.$PappletCode.'" archive="'.$PappletJar.'" width="'.$appletW.'" height="'.$appletW.'" mayscript="mayscript">
+<applet name="pch" code="'.$PappletCode.'" archive="'.$PappletJar.'" width="'.$appletW.'" height="'.$appletH.'" mayscript="mayscript">
 '.$PappletParams.'
 <param name="image_width" value="'.$imgW.'" />
 <param name="image_height" value="'.$imgH.'" />
@@ -323,7 +332,7 @@ class mod_paint{
 <param name="color_bar_select" value="#999999" />
 <param name="color_frame" value="#666666" />
 </applet>
-<p>-Download-<br />(XXX bytes)</p>
+<p>-<a href="'.$pchName.'">Download</a>-<br />('.$pchSize.' bytes)</p>
 </div>
 <hr />';
 		foot($dat);
