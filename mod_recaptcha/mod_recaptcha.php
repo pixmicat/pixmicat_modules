@@ -17,7 +17,7 @@ class mod_recaptcha{
 	}
 
 	function getModuleVersionInfo(){
-		return 'reCAPTCHA 驗證圖像機制 v070615';
+		return 'reCAPTCHA 驗證圖像機制 v070713';
 	}
 
 	/* 在頁面附加 reCAPTCHA 圖像和功能 */
@@ -28,10 +28,10 @@ class mod_recaptcha{
 	}
 
 	/* 在接收到送出要求後馬上檢查是否正確 */
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $POST){
+	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
 		global $recaptcha_verify_server;
 		$recaptcha_verify_server = 'api-verify.recaptcha.net';
-		$resp = recaptcha_check_answer($this->KEY_PRIVATE, $_SERVER['REMOTE_ADDR'], $POST['recaptcha_challenge_field'], $POST['recaptcha_response_field']);
+		$resp = recaptcha_check_answer($this->KEY_PRIVATE, $_SERVER['REMOTE_ADDR'], $_POST['recaptcha_challenge_field'], $_POST['recaptcha_response_field']);
 		if(!$resp->is_valid){ error('reCAPTCHA 驗證碼錯誤！除大小寫須注意之外，標點符號及兩個單字都需輸入 (以空白分隔)'); } // 檢查
 	}
 }
