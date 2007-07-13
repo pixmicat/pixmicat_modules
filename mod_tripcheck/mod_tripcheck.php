@@ -41,13 +41,22 @@ class mod_tripcheck{
 		}
 	}
 
+	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false) {
+		if($pageId == 'admin') $link.=' [<a href="tripadmin.php">Trip管理</a>]';
+	}
+
+	function autoHookAuthenticate($pass, &$result){
+		$result = ($this->_tripPermission($pass=($this->_tripping(substr($pass,1)))) == 'OK');
+	}
+
 	function _tripCheck($trip) {
-		$TripList = @file($this->TRIPFILE);
 		$res='NF';
+		if(!$this->_tripFormat($trip)) return $res;
+		$TripList = @file($this->TRIPFILE);
 
 		if(is_array($TripList)) {
 			foreach($TripList as $tripline){
-				list($szTrip,$szTime,$szIP,$szActivate,$szBan) = explode("<>", $tripline);
+				@list($szTrip,$szTime,$szIP,$szActivate,$szBan) = @explode("<>", trim($tripline));
 				if($trip==$szTrip && $szActivate && !$szBan) {$res='OK'; break;}
 				elseif($trip==$szTrip && !$szActivate) {$res='NA'; break;}
 				elseif($trip==$szTrip && $szBan) {$res='BN'; break;}
@@ -56,6 +65,30 @@ class mod_tripcheck{
 		return $res;
 	}
 
+	function _tripPermission($trip) {
+		$res='NF';
+		if(!$this->_tripFormat($trip)) return $res;
+		$TripList = @file($this->TRIPFILE);
+
+		if(is_array($TripList)) {
+			foreach($TripList as $tripline){
+				@list($szTrip,$szTime,$szIP,$szActivate,$szBan,$szDelPerm) = @explode("<>", trim($tripline));
+				if($trip==$szTrip && $szActivate && !$szBan && $szDelPerm) {$res='OK'; break;}
+				else {$res='NG'; break;}
+			}
+		}
+		return $res;
+	}
+
+	function _tripFormat($trip) {
+		return strlen($trip) == 10;
+	}
+
+	function _tripping($str) {
+		$salt = preg_replace('/[^\.-z]/', '.', substr($str.'H.', 1, 2));
+		$salt = strtr($salt, ':;<=>?@[\\]^_`', 'ABCDEFGabcdef');
+		return substr(crypt($str, $salt), -10);
+	}
 
 }
 ?>

@@ -45,7 +45,7 @@ function SysError($text) {
 <META http-equiv="Content-Style-Type" content="text/css">
 <TITLE>ERROR！</TITLE>
 </HEAD>
-<body bgcolor="'.BODY_BGCOL.'" text="'.BODY_TXTCOL.'" link="'.LINK_COL.'" vlink="'.LINK_VCOL.'">
+<body>
 <FONT size="+1" color="#FF0000"><B>ERROR：'.$text.'</B></FONT>
 <BR><BR>
 ';
@@ -61,7 +61,7 @@ function HtmlHeader() {
 <META http-equiv="Content-Style-Type" content="text/css">
 <TITLE>トリップ事務所</TITLE>
 </HEAD>
-<body bgcolor="'.BODY_BGCOL.'" text="'.BODY_TXTCOL.'" link="'.LINK_COL.'" vlink="'.LINK_VCOL.'">
+<body>
 <H2><FONT face="Arial">トリップ事務所 for futaba</FONT></H2>
 <HR noshade size="1">
 ';
@@ -125,6 +125,7 @@ $goto=0;
 		$delflag = isset($_POST["del"]); // 是否有「削除」勾選
 		$actflag = isset($_POST["act"]); // 是否有「有効」勾選
 		$banflag = isset($_POST["ban"]); // 是否有「禁止」勾選
+		$dpflag = isset($_POST["dp"]); // 是否有「削除人」勾選
 
 		if($delflag || $actflag || $banflag) {
 			$aTripList = FileRead(TRIPFILE);
@@ -132,17 +133,23 @@ $goto=0;
 			$szTemp = "";
 			while(list(, $val) = @each($aTripList)){
 				$bFlag = TRUE;
-				list($szTrip,$szTime,$szIP,$szActivate,$szBan) = explode("<>", $val);
+				@list($szTrip,$szTime,$szIP,$szActivate,$szBan,$szDelPerm) = @explode("<>", $val);
 				if($banflag) {
 					reset($_POST["ban"]);
 					while(list(, $tTrip) = @each($_POST["ban"])){
-						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>".(!$szBan)."<>\n"; break; }
+						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>".(!$szBan)."<>$szDelPerm<>\n"; break; }
+					}
+				}
+				if($dpflag) {
+					reset($_POST["dp"]);
+					while(list(, $tTrip) = @each($_POST["dp"])){
+						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>$szBan<>".(!$szDelPerm)."<>\n"; break; }
 					}
 				}
 				if($actflag) {
 					reset($_POST["act"]);
 					while(list(, $tTrip) = @each($_POST["act"])){
-						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>1<>$szBan<>\n"; break; }
+						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>1<>$szBan<>$szDelPerm<>\n"; break; }
 					}
 				}
 				if($delflag) {
@@ -238,7 +245,7 @@ HTML;
 <FORM method="POST" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
 <INPUT type="hidden" name="action" value="manage">
 <table border=1>
-<tr><th>削除</th><th>トリップ</th><th>日時</th><th>IP</th><th>有効</th><th>禁止</th></tr>
+<tr><th>削除</th><th>トリップ</th><th>日時</th><th>IP</th><th>有効</th><th>禁止</th><th>削除人</th></tr>
 HTML;
 			$TripCount=count($aTripList);
 			if($viewstart == ""){ $vstart = 1; }
@@ -256,8 +263,8 @@ HTML;
 			
 			for($i=$vstart-1;$i<$vend;$i++){
 				if($aTripList[$i] == ""){ break; }
-				list($szTrip,$szTime,$szIP,$szActivate,$szBan) = explode("<>", $aTripList[$i]);
-				echo "<tr><td><INPUT type=\"checkbox\" name=\"del[]\" value=\"$szTrip\"></td><td>$szTrip</td><td>".date('Y-m-d H:m:s',$szTime)."</td><td>$szIP</td><td>".(!$szActivate?"<INPUT type=\"checkbox\" name=\"act[]\" value=\"$szTrip\">":'はい')."</td><td><INPUT type=\"checkbox\" name=\"ban[]\" value=\"$szTrip\">".($szBan?'はい':'')."</td></tr>";
+				@list($szTrip,$szTime,$szIP,$szActivate,$szBan,$szDelPerm) = @explode("<>", $aTripList[$i]);
+				echo "<tr><td><INPUT type=\"checkbox\" name=\"del[]\" value=\"$szTrip\"></td><td>$szTrip</td><td>".date('Y-m-d H:m:s',$szTime)."</td><td>$szIP</td><td>".(!$szActivate?"<INPUT type=\"checkbox\" name=\"act[]\" value=\"$szTrip\">":'はい')."</td><td><INPUT type=\"checkbox\" name=\"ban[]\" value=\"$szTrip\">".($szBan?'はい':'')."</td><td><INPUT type=\"checkbox\" name=\"dp[]\" value=\"$szTrip\">".($szDelPerm?'はい':'')."</td></tr>";
 			}
 			echo "</table>";
 			if($szNextLink != ""){ echo "$szNextLink<BR>"; }
