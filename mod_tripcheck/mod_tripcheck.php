@@ -45,8 +45,8 @@ class mod_tripcheck{
 		if($pageId == 'admin') $link.=' [<a href="tripadmin.php">Trip管理</a>]';
 	}
 
-	function autoHookAuthenticate($pass, &$result){
-		$result = ($this->_tripPermission($pass=($this->_tripping(substr($pass,1)))) == 'OK');
+	function autoHookAuthenticate($pass, $act, &$result){
+		if(!$result) $result = ($this->_tripPermission($this->_tripping(substr($pass,1))) == 'OK');
 	}
 
 	function _tripCheck($trip) {
