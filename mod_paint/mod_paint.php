@@ -36,8 +36,6 @@ class mod_paint{
 			'ShiPainter'=>'./paint/spainter.jar',
 			'PCHViewer'=>'./paint/PCHViewer.jar'
 		);
-
-		$this->Action_deleteOldTemp(); // 清除舊暫存
 	}
 
 	function getModuleName(){
@@ -117,9 +115,16 @@ class mod_paint{
 
 	/* 中控頁面: 根據 Action 執行指定動作 */
 	function ModulePage(){
+		/*
+		TODO:
+		1. 圖被刪除時其 PCH 動畫檔也要刪，但目前沒有這種機制可以安排，只好定期檢查有否落單的 PCH (即圖已被刪) 並清除 (like Action_deleteOldTemp)
+		2. Continue Painting (or Discard this function?)
+		3. 作畫時間格式化 (hh:mm:ss) 較易判斷
+		*/
 		$Action = isset($_GET['action']) ? $_GET['action'] : '';
 		switch($Action){
 			case 'paint':
+				$this->Action_deleteOldTemp(); // 清除舊暫存 (放於此處可以達成觸發又不會太頻繁)
 				$this->Action_Paint(); break;
 			case 'save':
 				$this->Action_Save(); break;
