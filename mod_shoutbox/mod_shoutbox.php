@@ -273,7 +273,7 @@ setInterval("getLatestMessage()",30000);
 		}
 		$pte_vals = array('{$TITLE}'=>TITLE,'{$RESTO}'=>'');
 		$dat .= $PTE->ParseBlock('HEADER',$pte_vals);
-		$this->autoHookHead(&$dat,0); // add my headers
+		$this->autoHookHead($dat,0); // add my headers
 		$dat .= "</head><body id='shoutbox_main'>";
 		$dat.='Shoutbox<br/><form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>';
 		$dat.=$this->_showMessages($page * $this->MES_PER_PAGE,($page+1) * $this->MES_PER_PAGE);
