@@ -20,7 +20,7 @@ if(!function_exists('file_put_contents') && !defined('FILE_APPEND')){
 }
 
 class mod_paint{
-	var $THISPAGE, $TMPFolder, $PMAX_W, $PMAX_H, $SECURITY, $PAINT_RESTRICT, $PaintComponent;
+	var $THISPAGE, $TMPFolder, $PMAX_W, $PMAX_H, $SECURITY, $PAINT_RESTRICT, $PaintComponent, $TIME_UNIT;
 	function mod_paint(){
 		global $PMS;
 		$PMS->hookModuleMethod('ModulePage', 'mod_paint');
@@ -36,6 +36,7 @@ class mod_paint{
 			'ShiPainter'=>'./paint/spainter.jar',
 			'PCHViewer'=>'./paint/PCHViewer.jar'
 		);
+		$this->TIME_UNIT = array('TIME'=>'作畫時間：', 'D'=> '日', 'H'=>'時', 'M'=>'分', 'S'=>'秒'); // 時間單位
 	}
 
 	function getModuleName(){
@@ -60,18 +61,40 @@ class mod_paint{
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		// TODO: 判斷文章圖檔是否為繪圖(有(S)PCH檔)，如果有動畫就作連結 (action=viewpch&file=XXX.png&type=pch)
 		$pchBase = './'.IMG_DIR.$post['tim'];
 		$pchType = '';
 		if(file_exists($pchBase.'.pch')){ $pchFile = $post['tim'].'.pch'; }
 		elseif(file_exists($pchBase.'.spch')){ $pchFile = $post['tim'].'.spch'; $pchType = '&amp;type=spch'; }
 		else{ return; }
 		$pchLink = $this->THISPAGE.'&amp;action=viewpch&amp;file='.$post['tim'].$post['ext'].$pchType;
-		$arrLabels['{$IMG_BAR}'] .= '<small> <a href="'.$pchLink.'">[動畫]</a></small>';
+		$paintTime = '';
+		if(preg_match('/_PCH\(([0-9]+)\)_/', $post['status'], $paintTime)){
+			$paintTime = intval($paintTime[1]);
+			$ptime = '';
+			if($paintTime >= 86400){
+				$D = intval($paintTime/86400);
+				$ptime .= $D.$this->TIME_UNIT['D'];
+				$paintTime -= $D * 86400;
+			}
+			if($paintTime >= 3600){
+				$H = intval($paintTime/3600);
+				$ptime .= $H.$this->TIME_UNIT['H'];
+				$paintTime -= $H * 3600;
+			}
+			if($paintTime >= 60){
+				$M = intval($paintTime/60); 
+				$ptime .= $M.$this->TIME_UNIT['M'];
+				$paintTime -= $M * 60;
+			}
+			if($paintTime){
+				$ptime .= $paintTime.$this->TIME_UNIT['S'];
+			}
+			$paintTime = ' - '.$this->TIME_UNIT['TIME'].$ptime.' ';
+		}
+		$arrLabels['{$IMG_BAR}'] .= '<small>'.$paintTime.'<a href="'.$pchLink.'">[動畫]</a></small>';
 	}
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
-		// TODO: 判斷文章圖檔是否為繪圖，如果有動畫就作連結
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
@@ -90,6 +113,7 @@ class mod_paint{
 
 	/* 處理繪圖跟文章的連結 */
 	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
+		if(!isset($_POST['paintImg'])) return; // 沒選圖檔
 		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
 			$upfileInfo['file'] = $this->TMPFolder.$_POST['paintImg'];
 			$upfileInfo['name'] = $_POST['paintImg'];
@@ -98,18 +122,19 @@ class mod_paint{
 	}
 
 	/* 處理 PCH 檔 (如果有的話) 和暫存清除 */
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH){
+	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
+		if(!isset($_POST['paintImg'])) return; // 沒選圖檔
 		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
 			unlink($this->TMPFolder.$_POST['paintImg']); // 刪除暫存圖檔
 			$pchOldfile = str_replace(strrchr($_POST['paintImg'], '.'), '', $_POST['paintImg']); // 暫存 PCH 動畫檔案名 (不含副檔名)
 			$pchNewfile = './'.IMG_DIR.str_replace(strrchr($dest, '.'), '', basename($dest));
 			$datFile = $this->TMPFolder.$pchOldfile.'.dat'; // Dat 資訊檔
+			$PaintSecond = file_get_contents($datFile); $status .= '_PCH('.$PaintSecond.')_'; // 於狀態增設作畫時間旗標
+			unlink($datFile);
 			if(file_exists($this->TMPFolder.$pchOldfile.'.pch')){ $pchOldfile = $this->TMPFolder.$pchOldfile.'.pch'; $pchNewfile .= '.pch'; }
 			elseif(file_exists($this->TMPFolder.$pchOldfile.'.spch')){ $pchOldfile = $this->TMPFolder.$pchOldfile.'.spch'; $pchNewfile .= '.spch'; }
 			else{ return; }
 			copy($pchOldfile, $pchNewfile); unlink($pchOldfile);
-			$PaintSecond = file_get_contents($datFile); $sub .= ' (作畫時間: '.$PaintSecond.'秒)';
-			unlink($datFile);
 		}
 	}
 
@@ -117,9 +142,7 @@ class mod_paint{
 	function ModulePage(){
 		/*
 		TODO:
-		1. 圖被刪除時其 PCH 動畫檔也要刪，但目前沒有這種機制可以安排，只好定期檢查有否落單的 PCH (即圖已被刪) 並清除 (like Action_deleteOldTemp)
-		2. Continue Painting (or Discard this function?)
-		3. 作畫時間格式化 (hh:mm:ss) 較易判斷
+		- Continue Painting (or Discard this function?)
 		*/
 		$Action = isset($_GET['action']) ? $_GET['action'] : '';
 		switch($Action){
@@ -265,7 +288,9 @@ class mod_paint{
 		$resto = isset($_GET['resto']) ? intval($_GET['resto']) : 0; // 回應編號
 		$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
 		$imgList = '';
-		foreach(glob($this->TMPFolder.'*_'.$userCode.'.*') as $l){
+		$imgs = glob($this->TMPFolder.'*_'.$userCode.'.*');
+		if(count($imgs) == 0) error('目前沒有屬於您的繪圖存在，請先作畫');
+		foreach($imgs as $l){
 			if(preg_match('/\.(jpg|png)$/', $l)) $imgList .= '<div style="float: left; margin: 1em; border: solid grey 1px"><img src="'.$l.'" /><br />'.basename($l).'</div>'."\n";
 		}
 
@@ -349,6 +374,17 @@ class mod_paint{
 		if(!is_dir($this->TMPFolder)){ mkdir($this->TMPFolder); @chmod($this->TMPFolder, 0777); }
 		// 檢查暫存是否過舊無人認領，超過一段時間就砍
 		$nowTime = time();
+		$files = glob($this->TMPFolder.'*');
+		foreach($files as $f){
+			if($nowTime - intval($f) > 86400){ unlink($f); } // 超過一天未處理則刪除
+		}
+		// 作畫動畫檔相依性檢查
+		$files2 = array_merge(glob(IMG_DIR.'*.pch'), glob(IMG_DIR.'*.spch'));
+		foreach($files2 as $ff){
+			$fff = basename($ff, strrchr($ff, '.'));
+			if(!file_exists(IMG_DIR.$fff.'.png') || !file_exists(IMG_DIR.$fff.'.jpg')){ unlink($ff); } // 作畫動畫原始圖檔已刪
+		}
+		/*
 		$dh = opendir($this->TMPFolder);
 		while(false !== ($f = readdir($dh))){
 			if(strpos($f, '.dat')!==false){
@@ -359,6 +395,7 @@ class mod_paint{
 			}
 		}
 		closedir($dh);
+		*/
 	}
 }
 ?>
