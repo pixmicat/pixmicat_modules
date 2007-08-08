@@ -90,7 +90,7 @@ class mod_paint{
 				$ptime .= $paintTime.$this->TIME_UNIT['S'];
 			}
 			$paintTime = ' - '.$this->TIME_UNIT['TIME'].$ptime.' ';
-		}
+		}else{ $paintTime = ''; }
 		$arrLabels['{$IMG_BAR}'] .= '<small>'.$paintTime.'<a href="'.$pchLink.'">[動畫]</a></small>';
 	}
 
