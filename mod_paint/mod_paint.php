@@ -68,7 +68,7 @@ class mod_paint{
 		else{ return; }
 		$pchLink = $this->THISPAGE.'&amp;action=viewpch&amp;file='.$post['tim'].$post['ext'].$pchType;
 		$paintTime = '';
-		if(preg_match('/_PCH\(([0-9]+)\)_/', $post['status'], $paintTime)){
+		if(preg_match('/_PCH:([0-9]+)_/', $post['status'], $paintTime)){
 			$paintTime = intval($paintTime[1]);
 			$ptime = '';
 			if($paintTime >= 86400){
@@ -129,7 +129,7 @@ class mod_paint{
 			$pchOldfile = str_replace(strrchr($_POST['paintImg'], '.'), '', $_POST['paintImg']); // 暫存 PCH 動畫檔案名 (不含副檔名)
 			$pchNewfile = './'.IMG_DIR.str_replace(strrchr($dest, '.'), '', basename($dest));
 			$datFile = $this->TMPFolder.$pchOldfile.'.dat'; // Dat 資訊檔
-			$PaintSecond = file_get_contents($datFile); $status .= '_PCH('.$PaintSecond.')_'; // 於狀態增設作畫時間旗標
+			$PaintSecond = file_get_contents($datFile); $status .= '_PCH:'.$PaintSecond.'_'; // 於狀態增設作畫時間旗標
 			unlink($datFile);
 			if(file_exists($this->TMPFolder.$pchOldfile.'.pch')){ $pchOldfile = $this->TMPFolder.$pchOldfile.'.pch'; $pchNewfile .= '.pch'; }
 			elseif(file_exists($this->TMPFolder.$pchOldfile.'.spch')){ $pchOldfile = $this->TMPFolder.$pchOldfile.'.spch'; $pchNewfile .= '.spch'; }
