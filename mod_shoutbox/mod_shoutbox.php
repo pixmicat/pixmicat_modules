@@ -137,7 +137,7 @@ setInterval("getLatestMessage()",30000);
 					list(,$date,$emo,$mes,)=explode(',',$logs[0]);
 					echo $this->_rebuildJSON($date,$emo,$mes);
 				}
-			} else return "{}"; // return null object
+			} else echo "{}"; // return null object
 		}
 	}
 
