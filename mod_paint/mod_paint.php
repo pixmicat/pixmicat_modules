@@ -382,20 +382,8 @@ class mod_paint{
 		$files2 = array_merge(glob(IMG_DIR.'*.pch'), glob(IMG_DIR.'*.spch'));
 		foreach($files2 as $ff){
 			$fff = basename($ff, strrchr($ff, '.'));
-			if(!file_exists(IMG_DIR.$fff.'.png') || !file_exists(IMG_DIR.$fff.'.jpg')){ unlink($ff); } // 作畫動畫原始圖檔已刪
+			if(!file_exists(IMG_DIR.$fff.'.png') && !file_exists(IMG_DIR.$fff.'.jpg')){ unlink($ff); } // 作畫動畫原始圖檔已刪
 		}
-		/*
-		$dh = opendir($this->TMPFolder);
-		while(false !== ($f = readdir($dh))){
-			if(strpos($f, '.dat')!==false){
-				if($nowTime - intval($f) > 86400){ // 超過一天未處理
-					$arr = glob($this->TMPFolder.str_replace('.dat', '', $f).'.*');
-					foreach($arr as $a){ unlink($a); } // 刪除暫存
-				}
-			}
-		}
-		closedir($dh);
-		*/
 	}
 }
 ?>
