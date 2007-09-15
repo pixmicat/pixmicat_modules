@@ -137,7 +137,7 @@ setInterval("getLatestMessage()",30000);
 					list(,$date,$emo,$mes,)=explode(',',$logs[0]);
 					echo $this->_rebuildJSON($date,$emo,$mes);
 				}
-			} else echo "{}"; // return null object
+			} else return "{}"; // return null object
 		}
 	}
 
@@ -199,6 +199,11 @@ setInterval("getLatestMessage()",30000);
 		if($logs===false) $logs=array();
 		if(($this->logcount+1) > $this->LOG_MAX) @array_splice($logs,$this->LOG_MAX-2); // chop by index
 
+		// 檢查重複
+		if($logs[0]) {
+			list(,,,$lmsg,)=explode(',',$logs[0]);
+			if($lmsg == $mesg) return;
+		}
 		$logs=(++$this->lastno).",".($now=time()).",".$this->EMOTIONS[$emo].",$mesg,$_SERVER[REMOTE_ADDR],\n".implode('',$logs);
 		$this->_write($this->MESG_LOG,$logs);
 
@@ -273,7 +278,7 @@ setInterval("getLatestMessage()",30000);
 		}
 		$pte_vals = array('{$TITLE}'=>TITLE,'{$RESTO}'=>'');
 		$dat .= $PTE->ParseBlock('HEADER',$pte_vals);
-		$this->autoHookHead($dat,0); // add my headers
+		$this->autoHookHead(&$dat,0); // add my headers
 		$dat .= "</head><body id='shoutbox_main'>";
 		$dat.='Shoutbox<br/><form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>';
 		$dat.=$this->_showMessages($page * $this->MES_PER_PAGE,($page+1) * $this->MES_PER_PAGE);
