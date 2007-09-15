@@ -23,7 +23,7 @@ class mod_threadlist{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Thread List Module v070214';
+		return 'Pixmicat! Thread List Module v070910';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -38,16 +38,21 @@ class mod_threadlist{
 			$dat = ''; // HTML Buffer
 			$plist = $PIO->fetchThreadList(0, $this->THREADLIST_NUMBER_IN_MAIN, true); // 編號由大到小排序
 			$post = $PIO->fetchPosts($plist); // 取出資料
-			$post_count = count($post);
-		    $dat .= "<div id='topiclist' style='clear:both'><table cellpadding='0' cellspacing='0' border='0' width='100%' align='center'>".
-		            "<tr><th class='reply_hl'>題名一覧</th></tr></table>\n".
-		            "<table width='100%' cellpadding='0' cellspacing='0' align='center' valign='top' class='navi' style='margin-bottom:1em;font-size:0.8em;'><tr><td><table width='100%'>";
+			$post_count = ceil(count($post) / 2);
+		    $dat .= '<div id="topiclist" style="text-align: center; clear: both;">
+<table cellpadding="1" cellspacing="1" border="0" width="100%" style="margin: 0px auto; text-align: left; margin-bottom: 1em; font-size: 1em;">
+<tr><th class="reply_hl" colspan="2" style="text-align: center;">題名一覽</th></tr>
+';
 			for($i = 0; $i < $post_count; $i++){
-				list($no, $sub, $name, $now) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['now']);
-				$dat .= '<tr class="ListRow'.(($i+1) % 2 + 1).'_bg"><td>'.$no.': <a href="'.PHP_SELF.'?res='.$no.'">'.$sub.' ('.($PIO->postCount($no) - 1).')</a></td></tr>'."\n";
-		        if($i % 10 == 9) $dat .= "</table></td><td><table width='100%'>";
+				$leftStr = $post[$i]['no'].': <a href="'.PHP_SELF.'?res='.$post[$i]['no'].'">'.$post[$i]['sub'].' ('.($PIO->postCount($post[$i]['no']) - 1).')</a>';
+				$rightStr = isset($post[$i + $post_count]) ? $post[$i + $post_count]['no'].': <a href="'.PHP_SELF.'?res='.$post[$i + $post_count]['no'].'">'.$post[$i + $post_count]['sub'].' ('.($PIO->postCount($post[$i + $post_count]['no']) - 1).')</a>' : '';
+				$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg"><td style="width: 50%">'.$leftStr.'</td><td>'.$rightStr.'</td></tr>'."\n";
 			}
-		    $txt .= $dat."</table></td></tr></table></div>\n";
+$dat .= '</table>
+</div>
+
+';
+		    $txt .= $dat;
 		}
 	}
 
