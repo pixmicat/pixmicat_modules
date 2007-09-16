@@ -126,8 +126,7 @@ class mod_siokara{
 
 	function ModulePage(){
 		global $PIO;
-		session_start();
-		if(!isset($_SESSION['pmcLogin'])) die('403 Access denied');
+		if(!adminAuthenticate('check')) die('403 Access denied');
 		$act=isset($_GET['action'])?$_GET['action']:'';
 		
 		switch($act) {
