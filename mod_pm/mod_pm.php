@@ -89,7 +89,7 @@ class mod_pm{
 		if($logs=@file($this->MESG_LOG)) { // mesgno,trip,date,from,topic,mesg = each $logs, order desc
 			if(!$this->lastno) if(isset($logs[0])) $this->lastno = intval(substr($logs[0],strpos($logs[0],','))); // last no
 			foreach($logs as $log) {
-				list($mno,$trip,$pdate,)=explode(',',$log);
+				list($mno,$trip,$pdate,)=explode(',',trim($log));
 				if(isset($this->trips[$trip])) {
 					$this->trips[$trip]['c']++;
 //					if($this->trips[$trip]['d']<$pdate) $this->trips[$trip]['d'] = $pdate;
@@ -141,7 +141,7 @@ class mod_pm{
 		$from = str_replace(_T('deletor'), '"'._T('deletor').'"', $from);
 		$from = str_replace('&'._T('trip_pre'), '&amp;'._T('trip_pre'), $from); // 避免 &#xxxx; 後面被視為 Trip 留下 & 造成解析錯誤
 		$mesg = str_replace(',','&#44;',$mesg); // 轉換","
-		$mesg = nl2br($mesg);
+		$mesg = str_replace("\n",'<br/>',$mesg); //nl2br不行
 
 		$this->_loadCache();
 
@@ -159,7 +159,7 @@ class mod_pm{
 		
 		if($logs=@file($this->MESG_LOG)) { // mesgno,trip,date,from,topic,mesg,ip = each $logs, order desc
 			foreach($logs as $log) {
-				list($mno,$totrip,$pdate,$from,$topic,$mesg,$ip)=explode(',',$log);
+				list($mno,$totrip,$pdate,$from,$topic,$mesg,$ip)=explode(',',trim($log));
 				if($totrip==$tripped) {
 					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
 					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate)." IP:".preg_replace('/\d+$/','*',$ip), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'), '{$RESTO}'=>1);
@@ -269,7 +269,7 @@ $g("pmform").from.value=getCookie("namec");
 <label>Trip:<input type="text" name="trip" value="" size="28" /></label><input type="submit" name="submit" value="'._T('form_submit_btn').'"/>(以"#"為首)
 </form>
 <script type="text/javascript">
-$g("pmform").trip.value=getCookie("namec").replace(/^.*#/,"#");
+$g("pmform").trip.value=getCookie("namec").replace(/^[^#]*#/,"#");
 </script>';
 			if($action == 'check' && isset($_POST['trip']) && substr($_POST['trip'],0,1) == '#') echo $this->_getPM($_POST['trip']);
 
