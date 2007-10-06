@@ -296,7 +296,7 @@ class mod_paint{
 
 		$dat = '';
 		head($dat);
-		form($dat, $resto);
+		form($dat, $resto, false); // 發文表單不摺疊
 		$dat .= '<script type="text/javascript">try{ $g("fupfile").disabled = true; showform(); }catch(e){}</script>
 
 <div id="imglist">

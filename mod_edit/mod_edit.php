@@ -46,7 +46,7 @@ class mod_edit{
 			$dat='';
 			head($dat);
 			$PMS->hookModuleMethod('PostInfo',array($this,'_EditPostInfo'));
-			form($dat,$resto,$this->mypage.'&amp;no='.$_GET['no'],$name,$email,$sub,$com,substr(str_replace('&#44;', ',', $category),1,-1),true);
+			form($dat,$resto,false,$this->mypage.'&amp;no='.$_GET['no'],$name,$email,$sub,$com,substr(str_replace('&#44;', ',', $category),1,-1),'edit');
 			foot($dat);
 			echo $dat;
 		} else {
