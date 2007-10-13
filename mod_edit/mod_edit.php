@@ -16,7 +16,7 @@ class mod_edit{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Post Editor (Alpha) v070925';
+		return 'Pixmicat! Post Editor (Alpha) v071013';
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
@@ -46,7 +46,7 @@ class mod_edit{
 			$dat='';
 			head($dat);
 			$PMS->hookModuleMethod('PostInfo',array($this,'_EditPostInfo'));
-			form($dat,$resto,false,$this->mypage.'&amp;no='.$_GET['no'],$name,$email,$sub,$com,substr(str_replace('&#44;', ',', $category),1,-1),'edit');
+			form($dat,$resto,false,$this->mypage.'&amp;no='.$_GET['no'],$name,$email,$sub,str_replace('<br />', "\n", $com),substr(str_replace('&#44;', ',', $category),1,-1),'edit');
 			foot($dat);
 			echo $dat;
 		} else {
