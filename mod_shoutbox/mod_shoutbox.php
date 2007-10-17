@@ -223,7 +223,7 @@ setInterval("getLatestMessage()",30000);
 				$gotmesg=true;
 				list($mno,$date,$emo,$mesg,)=explode(',',$logs[$i]);
 					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" />';
-					$dat.="<input type='checkbox' name='$mno' value='delete' /><span class='e'>$emo</span>&gt; <span class='m'>$mesg</span> <span class='d'>(".date("Y-m-d H:i:s",$date).')</span><br/>';
+					$dat.="<input type='checkbox' name='$mno' value='delete' /><span class='e'>$emo</span>&gt; <span class='m'>$mesg</span> <span class='d'>(".gmdate("Y-m-d H:i:s",$date+TIME_ZONE*3600).')</span><br/>';
 			}
 
 			// 換頁列
