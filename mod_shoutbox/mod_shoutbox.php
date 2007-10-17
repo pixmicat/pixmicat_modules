@@ -154,7 +154,7 @@ setInterval("getLatestMessage()",30000);
 	}
 
 	function _rebuildJSON($date,$emo,$mes) {
-		$json='{"emotion":"'.addslashes($emo).'","message":"'.addslashes($mes).'","date":"'.date("Y-m-d H:i:s",$date).'"}';
+		$json='{"emotion":"'.addslashes($emo).'","message":"'.addslashes($mes).'","date":"'.gmdate("Y-m-d H:i:s",$date+TIME_ZONE*3600).'"}';
 		$this->_write($this->JSON_CACHE,$json);
 		return $json;
 	}
@@ -259,6 +259,11 @@ setInterval("getLatestMessage()",30000);
 			if($found) {
 				$newlogs=implode('',$logs);
 				$this->_write($this->MESG_LOG,$newlogs);
+				$newloglines=explode("\n",$newlogs);
+				if(count($newloglines)) {
+					list(,$now,$emo,$mesg,) = explode(',',$newloglines[0]);
+					$this->_rebuildJSON($now,$emo,$mesg);
+				}
 				$this->_rebuildCache();
 			}
 		}
