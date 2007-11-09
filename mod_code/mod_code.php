@@ -7,11 +7,11 @@ class mod_code{
 	}
 
 	function getModuleName(){
-		return 'mod_code';
+		return 'mod_code : dp.SyntaxHighlighter Embedded';
 	}
 
 	function getModuleVersionInfo(){
-		return 'mod_code : dp.SyntaxHighlighter Embedded v070808';
+		return '4th.Release.2 (v071109)';
 	}
 
 	function autoHookHead(&$dat){
@@ -28,14 +28,14 @@ _EOF_;
 	}
 
 	function _textarea($s){
-		return '<textarea name="code" cols="10\" rows="10" class="'.$s[1].'">'.str_replace('<br />', '', $s[2]).'</textarea>';
+		return '<textarea name="code" cols="48" rows="6" class="'.$s[1].'">'.str_replace('<br />', "\n", $s[2]).'</textarea>';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		extract($post);
 		if(strpos($arrLabels['{$COM}'], '[/code]')===false) return;
 
-		$arrLabels['{$COM}'] = preg_replace_callback('/\[code=(\w*?)\](.*?)\[\/code\]/us', array(&$this, '_textarea'), $arrLabels['{$COM}']);
+		$arrLabels['{$COM}'] = preg_replace_callback('/\[code=(\S*?)\](.*?)\[\/code\]/us', array(&$this, '_textarea'), $arrLabels['{$COM}']);
 	}
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){

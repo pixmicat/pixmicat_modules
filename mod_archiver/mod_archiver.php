@@ -21,7 +21,13 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Archiver Module v070425';
+		return '4th.Release.2 (v071109)';
+	}
+
+	/* 自動掛載：頂部連結列 */
+	function autoHookToplink(&$linkbar, $isReply){
+		global $PMS;
+		$linkbar .= '[<a href="./archives/">精華區</a>]'."\n";
 	}
 
 	function ModulePage(){
@@ -37,8 +43,7 @@ class mod_archiver{
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
 		global $PMS;
-		extract($post);
-		if(!$isres) $modFunc .= '[<a href="'.$PMS->getModulePageURL('mod_archiver').'&amp;res='.$no.'">存</a>]';
+		if(!$isres) $modFunc .= '[<a href="'.$PMS->getModulePageURL('mod_archiver').'&amp;res='.$post['no'].'">存</a>]';
 	}
 
 	/* 取出討論串結構並製成XML結構 */

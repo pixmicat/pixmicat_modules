@@ -1,7 +1,7 @@
 <?php
 class mod_bbcode{
 	var $ImgTagTagMode, $URLTagMode, $MaxURLCount, $URLTrapLog;
-	var $myPage,$urlcount;
+	var $myPage, $urlcount;
 
 	function mod_bbcode(){
 		global $PMS;
@@ -16,11 +16,11 @@ class mod_bbcode{
 	}
 
 	function getModuleName(){
-		return 'mod_bbcode';
+		return 'mod_bbcode : 內文BBCode轉換';
 	}
 
 	function getModuleVersionInfo(){
-		return 'mod_bbcode : 內文BBCode轉換';
+		return '4th.Release.2 (v071109)';
 	}
 
 	function autoHookPostInfo(&$postinfo){
@@ -28,70 +28,65 @@ class mod_bbcode{
 	}
 
 	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
-		$com=$this->_bb2html($com,$dest);
+		$com = $this->_bb2html($com,$dest);
 	}
 
-	function _bb2html($string,$dest) {
+	function _bb2html($string, $dest){
 		$this->urlcount=0; // Reset counter
 		$string = preg_replace("#\[b\](.*?)\[/b\]#si", "<b>\\1</b>", $string);
 		$string = preg_replace("#\[i\](.*?)\[/i\]#si", "<i>\\1</i>", $string);
 		$string = preg_replace("#\[u\](.*?)\[/u\]#si", "<u>\\1</u>", $string);
 		$string = preg_replace("#\[p\](.*?)\[/p\]#si", "<p>\\1</p>", $string);
 
-		$string = preg_replace("#\[color=(\S+?)\](.*?)\[/color\]#si",
-			"<font color=\"\\1\">\\2</font>", $string);
+		$string = preg_replace("#\[color=(\S+?)\](.*?)\[/color\]#si", "<font color=\"\\1\">\\2</font>", $string);
 
-		$string = preg_replace("#\[s([1-7])\](.*?)\[/s([1-7])\]#si",
-			"<font size=\"\\1\">\\2</font>", $string);
+		$string = preg_replace("#\[s([1-7])\](.*?)\[/s([1-7])\]#si", "<font size=\"\\1\">\\2</font>", $string);
 
 		$string = preg_replace("#\[pre\](.*?)\[/pre\]#si", "<pre>\\1</pre>", $string);
 		$string = preg_replace("#\[quote\](.*?)\[/quote\]#si", "<blockquote>\\1</blockquote>", $string);
 
-		if($this->URLTagMode) {
-			$string=preg_replace_callback("#\[url\](http|https|ftp)(://\S+?)\[/url\]#si",array(&$this,'_URLConv1'),$string);
-			$string=preg_replace_callback("#\[url\](\S+?)\[/url\]#si",array(&$this,'_URLConv2'),$string);
-			$string=preg_replace_callback("#\[url=(http|https|ftp)(://\S+?)\](.*?)\[/url\]#si",array(&$this,'_URLConv3'),$string);
-			$string=preg_replace_callback("#\[url=(\S+?)\](.*?)\[/url\]#si",array(&$this,'_URLConv4'),$string);
+		if($this->URLTagMode){
+			$string=preg_replace_callback("#\[url\](http|https|ftp)(://\S+?)\[/url\]#si", array(&$this, '_URLConv1'), $string);
+			$string=preg_replace_callback("#\[url\](\S+?)\[/url\]#si", array(&$this, '_URLConv2'), $string);
+			$string=preg_replace_callback("#\[url=(http|https|ftp)(://\S+?)\](.*?)\[/url\]#si", array(&$this, '_URLConv3'), $string);
+			$string=preg_replace_callback("#\[url=(\S+?)\](.*?)\[/url\]#si", array(&$this, '_URLConv4'), $string);
 			$this->_URLExcced();
 		}
 
-		$string = preg_replace("#\[email\](\S+?@\S+?\\.\S+?)\[/email\]#si",
-			"<a href=\"mailto:\\1\">\\1</a>", $string);
+		$string = preg_replace("#\[email\](\S+?@\S+?\\.\S+?)\[/email\]#si", "<a href=\"mailto:\\1\">\\1</a>", $string);
 
-		$string = preg_replace("#\[email=(\S+?@\S+?\\.\S+?)\](.*?)\[/email\]#si",
-			"<a href=\"mailto:\\1\">\\2</a>", $string);
-		if (($this->ImgTagTagMode == 2) || ($this->ImgTagTagMode && !$dest)) {
-			$string = preg_replace("#\[img\](([a-z]+?)://([^ \n\r]+?))\[\/img\]#si",
-				"<img src=\"\\1\" border=\"0\" alt=\"\\1\" />", $string);
-		} 
+		$string = preg_replace("#\[email=(\S+?@\S+?\\.\S+?)\](.*?)\[/email\]#si", "<a href=\"mailto:\\1\">\\2</a>", $string);
+		if (($this->ImgTagTagMode == 2) || ($this->ImgTagTagMode && !$dest)){
+			$string = preg_replace("#\[img\](([a-z]+?)://([^ \n\r]+?))\[\/img\]#si", "<img src=\"\\1\" border=\"0\" alt=\"\\1\" />", $string);
+		}
 
 		return $string;
 	}
 
-	function _URLConv1($m) {
+	function _URLConv1($m){
 		++$this->urlcount;
 		return "<a href=\"$m[1]$m[2]\" rel=\"_blank\">$m[1]$m[2]</a>";
 	}
 
-	function _URLConv2($m) {
+	function _URLConv2($m){
 		++$this->urlcount;
 		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[1]</a>";
 	}
 
-	function _URLConv3($m) {
+	function _URLConv3($m){
 		++$this->urlcount;
 		return "<a href=\"$m[1]$m[2]\" rel=\"_blank\">$m[3]</a>";
 	}
 
-	function _URLConv4($m) {
+	function _URLConv4($m){
 		++$this->urlcount;
 		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[2]</a>";
 	}
 
-	function _URLExcced() {
+	function _URLExcced(){
 		if($this->urlcount > $this->MaxURLCount) {
-		  	  $fh=fopen($this->URLTrapLog,'a+b');
-		  	  fwrite($fh,time()."\t$_SERVER[REMOTE_ADDR]\t$cnt\n");
+		  	  $fh = fopen($this->URLTrapLog, 'a+b');
+		  	  fwrite($fh, time()."\t$_SERVER[REMOTE_ADDR]\t$cnt\n");
 		  	  fclose($fh);
 		  	  error("[url]標籤超過上限");
 		}

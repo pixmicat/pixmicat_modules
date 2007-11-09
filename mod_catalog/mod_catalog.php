@@ -16,26 +16,26 @@ class mod_catalog{
 
 	/* Get the name of module */
 	function getModuleName(){
-		return 'mod_catalog : 以相簿模式列出圖檔方便瀏覽及抓取';
+		return 'mod_catalog : 以相簿模式列出圖檔';
 	}
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Catalog Module v070702';
-	}
-
-	/* 自動掛載：樣式表 */
-	function autoHookHead(&$style, $isReply){
-		$style .= '<style type="text/css">
-div.list { float: left; margin: 5px; width: '.MAX_RW.'px; height: '.MAX_RH.'px; } /* (相簿模式) div 框格設定 */
-</style>
-';
+		return '4th.Release.2 (v071109)';
 	}
 
 	/* 自動掛載：頂部連結列 */
 	function autoHookToplink(&$linkbar, $isReply){
 		global $PMS;
 		$linkbar .= '[<a href="'.$PMS->getModulePageURL('mod_catalog').'">相簿模式</a>]'."\n";
+	}
+
+	/* 掛載樣式表 */
+	function hookHeadCSS(&$style, $isReply){
+		$style .= '<style type="text/css">
+div.list { float: left; margin: 5px; width: '.MAX_RW.'px; height: '.MAX_RH.'px; } /* (相簿模式) div 框格設定 */
+</style>
+';
 	}
 
 	/* 模組獨立頁面 */
@@ -52,6 +52,7 @@ div.list { float: left; margin: 5px; width: '.MAX_RW.'px; height: '.MAX_RH.'px; 
 		$post = $PIO->fetchPosts($plist); // 取出資料
 		$post_count = count($post);
 
+		$PMS->hookModuleMethod('Head', array(&$this, 'hookHeadCSS'));
 		head($dat);
 		$dat .= '<div id="contents">
 [<a href="'.PHP_SELF2.'?'.time().'">回到版面</a>]

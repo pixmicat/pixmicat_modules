@@ -1,22 +1,23 @@
 <?php
-
 class mod_edit{
 	var $mypage;
+	var $shown_in_page;
 
 	function mod_edit(){
 		global $PMS;
 		$PMS->hookModuleMethod('ModulePage', 'mod_edit'); // 向系統登記模組專屬獨立頁面
 		$this->mypage = $PMS->getModulePageURL('mod_edit');
+		$this->shown_in_page = true; // 是否顯示編輯功能於前端頁面供使用者自行修改
 	}
 
 	/* Get the name of module */
 	function getModuleName(){
-		return 'mod_edit : Pixmicat! Post Editor (Alpha)';
+		return 'mod_edit : 文章編輯功能';
 	}
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Post Editor (Alpha) v071013';
+		return '4th.Release.2 (v071109)';
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
@@ -24,15 +25,15 @@ class mod_edit{
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		$arrLabels['{$REPLYBTN}'].=' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
+		if($this->shown_in_page) $arrLabels['{$REPLYBTN}'] .= ' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
 	}
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
-		$arrLabels['{$QUOTEBTN}'].=' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
+		if($this->shown_in_page) $arrLabels['{$QUOTEBTN}'] .= ' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
 	}
-	
-	function _EditPostInfo(&$txt) {
-		$txt='<li><span style="font-size:110%;font-weight:bold;">不用更換的欄位請留空。</span></li>'.$txt;
+
+	function _EditPostInfo(&$txt){
+		$txt = '<li><span style="font-size:110%;font-weight:bold;">不用更換的欄位請留空。</span></li>'.$txt;
 	}
 
 	function ModulePage(){
@@ -45,8 +46,8 @@ class mod_edit{
 			extract($post[0]);
 			$dat='';
 			head($dat);
-			$PMS->hookModuleMethod('PostInfo',array($this,'_EditPostInfo'));
-			form($dat,$resto,false,$this->mypage.'&amp;no='.$_GET['no'],$name,$email,$sub,str_replace('<br />', "\n", $com),substr(str_replace('&#44;', ',', $category),1,-1),'edit');
+			$PMS->hookModuleMethod('PostInfo', array($this,'_EditPostInfo'));
+			form($dat, $resto, false, $this->mypage.'&amp;no='.$_GET['no'], $name, $email, $sub, str_replace('<br />', "\n", $com), substr(str_replace('&#44;', ',', $category),1,-1), 'edit');
 			foot($dat);
 			echo $dat;
 		} else {
@@ -55,7 +56,6 @@ class mod_edit{
 			$newValues = array();
 
 			if(!count($post)) die('[Error] Post does not exist.');
-
 
 			$name = isset($_POST[FT_NAME]) ? $_POST[FT_NAME] : '';
 			$email = isset($_POST[FT_EMAIL]) ? $_POST[FT_EMAIL] : '';
@@ -149,8 +149,8 @@ class mod_edit{
 				$category = '&#44;'.implode('&#44;', array_map('trim', $category)).'&#44;'; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
 			}else{ $category = ''; }
 
-			$age=false;$dest='';
-			$W=$post[0]['tw']; $H=$post[0]['th']; $imgW=$post[0]['imgw']; $imgH=$post[0]['imgh']; $status=$post[0]['status'];
+			$age = false; $dest = '';
+			$W = $post[0]['tw']; $H = $post[0]['th']; $imgW = $post[0]['imgw']; $imgH = $post[0]['imgh']; $status = $post[0]['status'];
 			$PMS->useModuleMethods('RegistBeforeCommit', array(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, array($W, $H, $imgW, $imgH), &$status)); // "RegistBeforeCommit" Hook Point
 
 			if($name != $post[0]['name'] && $_POST[FT_NAME]) $newValues['name'] = $name;
@@ -159,11 +159,10 @@ class mod_edit{
 			if($com != $post[0]['com'] && $_POST[FT_COMMENT]) $newValues['com'] = $com;
 			if($category != $post[0]['category'] && $_POST['category']) $newValues['category'] = $category;
 			
-			$PIO->updatePost($_GET['no'],$newValues);
+			$PIO->updatePost($_GET['no'], $newValues);
 			$PIO->dbCommit();
 			echo "Done. Please go back and update pages.";
 		}
 	}
-
 }
 ?>

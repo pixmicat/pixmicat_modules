@@ -23,7 +23,7 @@ class mod_mobile{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Mobile Module v070224';
+		return '4th.Release.2 (v071109)';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -72,7 +72,7 @@ class mod_mobile{
 	/* 行動版頁首 */
 	function mobileHead(&$dat, $title){
 		$dat .= '<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.1//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><meta http-equiv="Cache-Control" content="no-cache"/><title>'.$title.'</title><style type="text/css">.s {color:red;} .n{color:green;} .w{color:gray;}</style></head>
 <body>
