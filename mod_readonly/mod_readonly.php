@@ -4,26 +4,26 @@ mod_readonly.php
 */
 
 class mod_readonly{
-	var $READONLY,$ALLOWREPLY;
+	var $READONLY, $ALLOWREPLY;
 
 	function mod_readonly(){
-		$this->READONLY = true; // 設置唯讀
-		$this->ALLOWREPLY = false; // 開放回文?
+		$this->READONLY = true; // 設置唯讀 (無法發文及回應)
+		$this->ALLOWREPLY = false; // 開放回應
 	}
 
 	function getModuleName(){
-		return 'mod_readonly';
+		return 'mod_readonly : 版面唯讀';
 	}
 
 	function getModuleVersionInfo(){
-		return '版面唯讀 v0700701';
+		return '4th.Release.2 (v071111)';
 	}
 
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $POST){
-		$pwd = isset($POST['pwd']) ? $POST['pwd'] : '';
-		$resto = isset($POST['resto']) ? $POST['resto'] : 0;
+	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
+		$pwd = isset($_POST['pwd']) ? $_POST['pwd'] : '';
+		$resto = isset($_POST['resto']) ? $_POST['resto'] : 0;
 
-		if($this->ALLOWREPLY && $resto) return; // 開放回文
+		if($this->ALLOWREPLY && $resto) return; // 開放回應
 		if($this->READONLY && $pwd != ADMIN_PASS && ($name != CAP_NAME && $pwd != CAP_PASS)){ error('唯讀模式下不能寫入新文章'); } // 檢查是否唯讀
 	}
 }

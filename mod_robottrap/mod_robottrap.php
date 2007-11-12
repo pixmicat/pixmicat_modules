@@ -21,17 +21,17 @@ class mod_robottrap{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Robot Trap Module v070126';
+		return '4th.Release.2 (v071111)';
 	}
 
 	/* 自動掛載陷阱點 */
 	function autoHookThreadFront(&$dat, $isReply){
-		$dat .= '<a href="imglist.htm"></a><a href="thumb/1126628412168.jpg"></a>'."\n";
+		$dat .= '<a href="imglist.htm"></a><a href="src/11266284o2168.jpg"></a>'."\n";
 	}
 
 	/* 自動掛載陷阱點 */
 	function autoHookThreadRear(&$dat, $isReply){
-		$dat .= '<a href="allimage.htm"></a><a href="thumb/1131459150542.jpg"></a>'."\n";
+		$dat .= '<a href="allimage.htm"></a><a href="src/113145915o542.jpg"></a>'."\n";
 	}
 
 	/* 加入封鎖名單 */

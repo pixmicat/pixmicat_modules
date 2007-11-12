@@ -1,8 +1,8 @@
 # Place in the same folder as pixmicat.php
 
 RewriteEngine On
-RewriteRule thumb/1126628412168.jpg pixmicat.php?mode=module&load=mod_robottrap
-RewriteRule thumb/1131459150542.jpg pixmicat.php?mode=module&load=mod_robottrap
+RewriteRule src/11266284o2168.jpg pixmicat.php?mode=module&load=mod_robottrap
+RewriteRule src/113145915o542.jpg pixmicat.php?mode=module&load=mod_robottrap
 RewriteRule imglist.htm pixmicat.php?mode=module&load=mod_robottrap
 RewriteRule allimage.htm pixmicat.php?mode=module&load=mod_robottrap
 

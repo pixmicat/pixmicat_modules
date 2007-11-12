@@ -1,11 +1,11 @@
 <?php
 class mod_showhide{
 	function getModuleName(){
-		return 'mod_showhide';
+		return 'mod_showhide : 自由隱藏顯示討論串';
 	}
 
 	function getModuleVersionInfo(){
-		return 'mod_showhide : 自由隱藏顯示討論串 v070506';
+		return '4th.Release.2 (v071112)';
 	}
 
 	function autoHookHead(&$txt, $isReply){

@@ -16,5 +16,5 @@ English Instruction:
 0. Please sign up for a FREE account of reCAPTCHA. (http://recaptcha.net/whyrecaptcha.html) And you can get two 40-letter-long keys.
 1. Download the "recaptchalib.php" from http://code.google.com/p/recaptcha/downloads/list?q=label:phplib-Latest
 2. Put the following files into the module/ directory: "mod_recaptcha.php" and "recaptchalib.php."
-3. Use your favorite editor to open the "mod_recaptcha.php" and fill out the public key and the private key which are gotton at step 0.
+3. Use your favorite editor to open the "mod_recaptcha.php" and fill out the public key and the private key you got at step 0.
 4. Finally, open the "config.php" and add one line ($ModuleList[] = 'mod_recaptcha';) into the "Modules to be loaded" block.

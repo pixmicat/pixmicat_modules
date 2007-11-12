@@ -5,7 +5,7 @@ By: scribe
 */
 
 class mod_rss{
-	var $FEED_COUNT, $FEED_STATUSFILE, $FEED_CACHEFILE, $FEED_DISPLAYTYPE, $BASEDIR;
+	var $FEED_COUNT, $FEED_STATUSFILE, $FEED_CACHEFILE, $FEED_DISPLAYTYPE, $BASEDIR, $SELF;
 
 	function mod_rss(){
 		global $PMS;
@@ -14,8 +14,9 @@ class mod_rss{
 		$this->FEED_COUNT = 10; // RSS產生最大篇數
 		$this->FEED_STATUSFILE = 'mod_rss.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
 		$this->FEED_CACHEFILE = 'rss.xml'; // 資料輸出暫存檔 (靜態快取Feed格式)
-		$this->FEED_DISPLAYTYPE = 'Thread'; // 資料取出形式 (Thread: 討論串取向, Post: 文章取向)
+		$this->FEED_DISPLAYTYPE = 'T'; // 資料取出形式 (T: 討論串取向, P: 文章取向)
 		$this->BASEDIR = fullURL(); // 基底URL
+		$this->SELF = $PMS->getModulePageURL('mod_rss'); // 本頁面連結
 	}
 
 	/* Get the name of module */
@@ -25,13 +26,12 @@ class mod_rss{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! RSS Feed Module v070506';
+		return '4th.Release.2 (v071112)';
 	}
 
 	/* Auto hook to "Head" hookpoint */
 	function autoHookHead(&$txt, $isReply){
-		global $PMS;
-		$txt .= '<link rel="alternate" type="application/rss+xml" title="RSS 2.0 Feed" href="'.$PMS->getModulePageURL('mod_rss').'" />'."\n";
+		$txt .= '<link rel="alternate" type="application/rss+xml" title="RSS 2.0 Feed" href="'.$this->SELF.'" />'."\n";
 	}
 
 	/* 模組獨立頁面 */
@@ -68,14 +68,14 @@ class mod_rss{
 		$RFC_timezone = ' '.(TIME_ZONE < 0 ? '-' : '+').substr('0'.abs(TIME_ZONE), -2).'00'; // RFC標準所用之時區格式
 
 		switch($this->FEED_DISPLAYTYPE){
-			case 'Thread':
+			case 'T':
 				$plist = $PIO->fetchThreadList(0, $this->FEED_COUNT); // 取出前n筆討論串首篇編號
 				$plist_count = count($plist);
 				// 為何這樣取？避免 SQL-like 自動排序喪失時間順序
 				$post = array();
 				for($p = 0; $p < $plist_count; $p++) $post[] = array_pop($PIO->fetchPosts($plist[$p])); // 取出編號文章資料
 				break;
-			case 'Post':
+			case 'P':
 				$plist = $PIO->fetchPostList(0, 0, $this->FEED_COUNT); // 取出前n筆文章編號
 				$post = $PIO->fetchPosts($plist);
 				break;
@@ -83,13 +83,14 @@ class mod_rss{
 		$post_count = count($post);
 		// RSS Feed內容
 		$tmp_c = '<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
 <title>'.TITLE.'</title>
 <link>'.$this->BASEDIR.'</link>
 <description>'.TITLE.'</description>
 <language>zh-TW</language>
 <generator>'.$this->getModuleVersionInfo().'</generator>
+<atom:link href="'.$this->BASEDIR.$this->SELF.'" rel="self" type="application/rss+xml" />
 ';
 		for($i = 0; $i < $post_count; $i++){
 			$imglink = ''; // 圖檔

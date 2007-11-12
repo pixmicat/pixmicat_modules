@@ -1,5 +1,3 @@
-jQuery.noConflict(); // No Conflict Mode
-
 if(!Array.prototype.indexOf){ // Inplemented in JavaScript 1.6
 	Array.prototype.indexOf = function(item){
 		var len = this.length;
@@ -15,6 +13,12 @@ var TmodShowhide = {
 	init : function(){
 		var t;
 		if(location.href.indexOf('.php?res=')!==-1){ return; } // 回應模式不動作
+		jQuery('div.threadpost').each(function(){
+			var j = jQuery(this).wrap('<div class="threadStructure" id="t'+this.id+'"></div>').parent();
+			var replies = [];
+			while((j = j.next('.reply')).size() !== 0){ replies.push(j); }
+			jQuery(replies).insertAfter(this);
+		});
 		if(t = getCookie('hideList')){
 			//alert('getCookie');
 			TmodShowhide.hideList = t.split(',');
@@ -27,7 +31,6 @@ var TmodShowhide = {
 		jQuery('div.threadStructure').each(function(){
 			jQuery(this).before('[<a href="javascript:void(0);" onclick="TmodShowhide.switchThread(\''+this.id+'\');" title="Hide/Show this thread">+ / -</a>]<br />');
 		});
-		//jQuery('div#postinfo > ul').append('<li>mod_showhide Testing</li>');
 		//alert('OK:'+TmodShowhide.hideList);
 	},
 	/* 切換文章顯示與否 */
