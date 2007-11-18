@@ -4,14 +4,12 @@ mod_captcha is not a part of Pixmicat! package. So it's not licensed under the C
 
 中文安裝指引:
 
-1. 將 mod_captcha.php 放到 module/ 目錄
-2. 找尋使用的字型檔 (預設為 arial.ttf) 並放置在 module/ 目錄，可自由添加不同的字型
-3. 修改 mod_captcha.php，可自由修改 $this->CAPTCHA_ 前綴的參數
-4. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_captcha';
+1. 將 mod_captcha.php、font1.gdf 放到 module/ 目錄
+2. 修改 mod_captcha.php，可自由修改 $this->CAPTCHA_ 前綴的參數
+3. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_captcha';
 
 English Instruction:
 
-1. Put "mod_captcha.php" into the module/ directory.
-2. Search "arial.ttf" or other font files you like, and put them into the module/ directory, too.
-3. Use your favorite editor to open "mod_captcha.php". You can change the "$this->CAPTCHA_" prefix settings.
-4. Finally open "config.php" and add one line ($ModuleList[] = 'mod_showhide';) into the "Modules to be loaded" block.
+1. Put "mod_captcha.php" and "font1.gdf" into the module/ directory.
+2. Use your favorite editor to open "mod_captcha.php". You can change the "$this->CAPTCHA_" prefix settings.
+3. Finally open "config.php" and add one line ($ModuleList[] = 'mod_showhide';) into the "Modules to be loaded" block.

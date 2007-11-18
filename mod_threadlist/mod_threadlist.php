@@ -23,7 +23,7 @@ class mod_threadlist{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! Thread List Module v070910';
+		return '4th.Release.2 (v071115)';
 	}
 
 	/* 自動掛載：頂部連結列 */

@@ -40,11 +40,11 @@ class mod_paint{
 	}
 
 	function getModuleName(){
-		return 'mod_paint : PaintBBS &amp; Shi-Painter Bridge';
+		return 'mod_paint : PaintBBS &amp; しぃペインター(Pro) 支援模組';
 	}
 
 	function getModuleVersionInfo(){
-		return 'PaintBBS &amp; しぃペインター(Pro) 支援模組 Pre-Alpha';
+		return '4th.Release.2 (v071111)';
 	}
 
 	/* Hook to ThreadFront */
@@ -247,6 +247,34 @@ class mod_paint{
 <param name="tool_color_bar" value="#FFFFFF" />
 <param name="tool_color_frame" value="#666666" />
 </applet>
+<br />
+'.$this->TIME_UNIT['TIME'].'<input type="text" id="count" />
+<script type="text/javascript">
+// <![CDATA[
+stime = new Date();
+setInterval(function(){
+	now = new Date();
+	s = Math.floor((now.getTime() - stime.getTime())/1000);
+	disp = "";
+	if(s >= 86400){
+		d = Math.floor(s/86400);
+		disp += d+"'.$this->TIME_UNIT['D'].'";
+		s -= d*86400;
+	}
+	if(s >= 3600){
+		h = Math.floor(s/3600);
+		disp += h+"'.$this->TIME_UNIT['H'].'";
+		s -= h*3600;
+	}
+	if(s >= 60){
+		m = Math.floor(s/60);
+		disp += m+"'.$this->TIME_UNIT['M'].'";
+		s -= m*60;
+	}
+	document.getElementById("count").value = disp+s+"'.$this->TIME_UNIT['S'].'";
+}, 1000);
+// ]]>
+</script>
 </div>
 <hr />';
 		foot($dat);

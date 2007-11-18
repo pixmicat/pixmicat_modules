@@ -26,7 +26,7 @@ class mod_rss{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071112)';
+		return '4th.Release.2 (v071115)';
 	}
 
 	/* Auto hook to "Head" hookpoint */
@@ -89,7 +89,7 @@ class mod_rss{
 <link>'.$this->BASEDIR.'</link>
 <description>'.TITLE.'</description>
 <language>zh-TW</language>
-<generator>'.$this->getModuleVersionInfo().'</generator>
+<generator>'.$this->getModuleName().' '.$this->getModuleVersionInfo().'</generator>
 <atom:link href="'.$this->BASEDIR.$this->SELF.'" rel="self" type="application/rss+xml" />
 ';
 		for($i = 0; $i < $post_count; $i++){

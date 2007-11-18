@@ -10,7 +10,7 @@ http://jmhoule314.blogspot.com/2006/05/easy-php-captcha-tutorial-today-im.html
 */
 
 class mod_captcha{
-	var $SELF, $CAPTCHA_TMPDIR, $CAPTCHA_WIDTH, $CAPTCHA_HEIGHT, $CAPTCHA_LENGTH, $CAPTCHA_GAP, $CAPTCHA_TEXTY, $CAPTCHA_FONTFACE, $CAPTCHA_ECOUNT;
+	var $SELF, $CAPTCHA_TMPDIR, $CAPTCHA_WIDTH, $CAPTCHA_HEIGHT, $CAPTCHA_LENGTH, $CAPTCHA_GAP, $CAPTCHA_TEXTY, $CAPTCHA_FONTMETHOD, $CAPTCHA_FONTFACE, $CAPTCHA_ECOUNT;
 
 	function mod_captcha(){
 		global $PMS;
@@ -22,7 +22,8 @@ class mod_captcha{
 		$this->CAPTCHA_LENGTH = 6; // 明碼字數
 		$this->CAPTCHA_GAP = 20; // 明碼字元間隔
 		$this->CAPTCHA_TEXTY = 20; // 字元直向位置
-		$this->CAPTCHA_FONTFACE = array('module/arial.ttf'); // 使用之 TrueType 字型 (可隨機挑選)
+		$this->CAPTCHA_FONTMETHOD = 0; // 字體使用種類 (0: GDF (*.gdf) 1: TrueType Font (*.ttf))
+		$this->CAPTCHA_FONTFACE = array('./module/font1.gdf'); // 使用之字型 (可隨機挑選，惟字型種類需要相同不可混用)
 		$this->CAPTCHA_ECOUNT = 2; // 圖片混淆用橢圓個數
 
 		AttechLanguage(array($this, '_loadLanguage')); // 載入語言檔
@@ -33,13 +34,13 @@ class mod_captcha{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '4th.Release.2 (v071118)';
 	}
 
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
 	function autoHookPostForm(&$form){
 		global $languages;
-		$form .= '<tr><td class="Form_bg"><b>'._T('modcaptcha_captcha').'</b></td><td><img src="'.$this->SELF.'" alt="'._T('modcaptcha_captcha_alt').'" /><br /><input type="text" name="captchacode" />'._T('modcaptcha_enterword').'</td></tr>'."\n";
+		$form .= '<tr><td class="Form_bg"><b>'._T('modcaptcha_captcha').'</b></td><td><img src="'.$this->SELF.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&\';})();">'._T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" />'._T('modcaptcha_enterword').'</td></tr>'."\n";
 	}
 
 	/* 在接收到送出要求後馬上檢查明暗碼是否符合 */
@@ -75,11 +76,17 @@ class mod_captcha{
 
 		// 打入文字
 		for($p = 0; $p < $this->CAPTCHA_LENGTH; $p++){
-			// 設定旋轉角度 (左旋或右旋)
-	    	if(rand(1, 2)==1) $degree = rand(0, 25);
-	    	else $degree = rand(335, 360);
-	    	// 圖層, 字型大小, 旋轉角度, X軸, Y軸, 字色, 字型, 印出文字
-			ImageTTFText($captcha, rand(14, 16), $degree, ($p + 1) * $this->CAPTCHA_GAP, $this->CAPTCHA_TEXTY, $txtColor, $this->CAPTCHA_FONTFACE[rand(0, $rndFontCount - 1)], substr($LCode, $p, 1)); // 印出單個字元
+			if($this->CAPTCHA_FONTMETHOD){ // TrueType 字型
+				// 設定旋轉角度 (左旋或右旋)
+		    	if(rand(1, 2)==1) $degree = rand(0, 25);
+		    	else $degree = rand(335, 360);
+				// 圖層, 字型大小, 旋轉角度, X軸, Y軸 (字左下方起算), 字色, 字型, 印出文字
+				ImageTTFText($captcha, rand(14, 16), $degree, ($p + 1) * $this->CAPTCHA_GAP, $this->CAPTCHA_TEXTY, $txtColor, $this->CAPTCHA_FONTFACE[rand(0, $rndFontCount - 1)], substr($LCode, $p, 1));
+			}else{ // GDF 字型
+				$font = ImageLoadFont($this->CAPTCHA_FONTFACE[rand(0, $rndFontCount - 1)]);
+				// 圖層, 字型, X軸, Y軸 (字左上方起算), 印出文字, 字色
+				ImageString($captcha, $font, ($p + 1) * $this->CAPTCHA_GAP, $this->CAPTCHA_TEXTY - 18, substr($LCode, $p, 1), $txtColor);
+			}
 		}
 
 		// 混淆用 (畫橢圓)
@@ -90,6 +97,7 @@ class mod_captcha{
 
 		// 輸出圖像
 		header('Content-Type: image/png');
+		header('Cache-Control: no-cache');
 		ImagePNG($captcha);
 		ImageDestroy($captcha);
 	}
@@ -101,17 +109,20 @@ class mod_captcha{
 
 		if($lang=='zh_TW'){
 			$language['modcaptcha_captcha'] = '發文驗證碼';
-			$language['modcaptcha_enterword'] = '<small>(請輸入你在圖中看到的文字)</small>';
+			$language['modcaptcha_reload'] = '看不懂？重讀';
+			$language['modcaptcha_enterword'] = '<small>(請輸入你在圖中看到的文字 大小寫不分)</small>';
 			$language['modcaptcha_captcha_alt'] = 'CAPTCHA 驗證碼圖像';
 			$language['modcaptcha_worderror'] = '您輸入的驗證碼錯誤！';
 		}elseif($lang=='ja_JP'){
 			$language['modcaptcha_captcha'] = '画像認証';
-			$language['modcaptcha_enterword'] = '<small>(画像に描かれている文字を入力してください)</small>';
+			$language['modcaptcha_reload'] = 'リロード';
+			$language['modcaptcha_enterword'] = '<br /><small>(画像に表示されている文字を入力してください。大文字と小文字は区別されません。)</small>';
 			$language['modcaptcha_captcha_alt'] = 'CAPTCHA画像';
 			$language['modcaptcha_worderror'] = '画像認証に失敗しました';
 		}elseif($lang=='en_US'){
 			$language['modcaptcha_captcha'] = 'Captcha';
-			$language['modcaptcha_enterword'] = '<small>(Please enter the words you saw)</small>';
+			$language['modcaptcha_reload'] = 'Can\'t read? Reload';
+			$language['modcaptcha_enterword'] = '<small>(Please enter the words you saw. Case-insensitive.)</small>';
 			$language['modcaptcha_captcha_alt'] = 'CAPTCHA Image';
 			$language['modcaptcha_worderror'] = 'The words you sent are error!'; 
 		}
