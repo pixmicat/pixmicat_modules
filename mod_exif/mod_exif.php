@@ -14,11 +14,11 @@ class mod_exif{
 	}
 
 	function getModuleName(){
-		return 'mod_exif';
+		return 'mod_exif : EXIF資訊';
 	}
 
 	function getModuleVersionInfo(){
-		return 'mod_exif : EXIF information (Pre-Alpha)';
+		return 'v071119';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
@@ -40,7 +40,7 @@ class mod_exif{
 		if($file && $FileIO->imageExists($file)){
 			$pfile=IMG_DIR.'/'.$file;
 			if(function_exists("exif_read_data")) {
-				echo "DEBUG: Using exif_read_data<br/>";
+//				echo "DEBUG: Using exif_read_data<br/>";
 				$exif_data = exif_read_data($pfile,0,true);
 				if(isset($exif_data['FILE'])) unset($exif_data['FILE']);
 				if(isset($exif_data['COMPUTED'])) unset($exif_data['COMPUTED']);
@@ -53,7 +53,7 @@ class mod_exif{
 				}
 				echo "</table>";
 			} else {
-				echo "DEBUG: Using built-in exif library<br/>";
+//				echo "DEBUG: Using built-in exif library<br/>";
 				$exif=new exif($pfile);
 				echo !count($exif->exif_data) ? "No EXIF data found.<br />" : "Image contains EXIF data:<br /><br />";
 				echo "<table border='1'>";

@@ -18,11 +18,11 @@ class mod_pm{
 	}
 
 	function getModuleName(){
-		return 'mod_pm';
+		return 'mod_pm : Trip私人訊息';
 	}
 
 	function getModuleVersionInfo(){
-		return 'mod_pm : Personal Messages for Trip (Pre-Alpha)';
+		return 'v071119';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -67,7 +67,7 @@ class mod_pm{
 
 		foreach($this->trips as $t => $v) { //d=last update date, c=count
 			if($v['d']<time()-864000) break; // out of range (10 days)
-			$htm.='<tr><td>'.date('Y-m-d H:i:s',$v['d']).($v['d']>time()-86400?' <span style="font-size:0.8em;color:#f44;">(new!)</span>':'').'</td><td class="name">'._T('trip_pre').substr($t,0,5)."...</td><td align='center'>$v[c] "._T('info_basic_threads')."</td></tr>";
+			$htm.='<tr><td>'.gmdate('Y-m-d H:i:s',$v['d']+TIME_ZONE*3600).($v['d']>time()-86400?' <span style="font-size:0.8em;color:#f44;">(new!)</span>':'').'</td><td class="name">'._T('trip_pre').substr($t,0,5)."...</td><td align='center'>$v[c] "._T('info_basic_threads')."</td></tr>";
 		}
 		return $htm.'</table></div></td></tr></table>';
 	}
@@ -162,7 +162,7 @@ class mod_pm{
 				list($mno,$totrip,$pdate,$from,$topic,$mesg,$ip)=explode(',',trim($log));
 				if($totrip==$tripped) {
 					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
-					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate)." IP:".preg_replace('/\d+$/','*',$ip), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'), '{$RESTO}'=>1);
+					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>gmdate('Y-m-d H:i:s',$pdate+TIME_ZONE*3600)." IP:".preg_replace('/\d+$/','*',$ip), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'), '{$RESTO}'=>1);
 					$PMS->useModuleMethods('ThreadPost', array(&$arrLabels, array(), 0)); // "ThreadPost" Hook Point
 					$dat .= $PTE->ParseBlock('THREAD',$arrLabels);
 					$dat .= $PTE->ParseBlock('REALSEPARATE',array());

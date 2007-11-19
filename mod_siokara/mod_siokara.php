@@ -16,12 +16,12 @@ class mod_siokara{
 
 	/* Get the name of module */
 	function getModuleName(){
-		return 'mod_siokara : Pixmicat! siokara management subset (Alpha)';
+		return 'mod_siokara : しおから式管理擴充套件';
 	}
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Pixmicat! siokara management subset (Alpha) v070901';
+		return 'v071119';
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){

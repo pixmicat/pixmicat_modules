@@ -11,14 +11,14 @@ class mod_tripcheck{
 	}
 
 	function getModuleName(){
-		return 'mod_tripcheck';
-	}
-
-	function getModuleVersionInfo(){
 		return 'mod_tripcheck : Trip限制模組';
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
+	function getModuleVersionInfo(){
+		return 'v071119';
+	}
+
+	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
 		$trip='';
 		if(($trippos=strpos($name,_T('trip_pre')))!==false) {
 			$trip=substr($name,$trippos+strlen(_T('trip_pre')));

@@ -7,14 +7,14 @@ class mod_vipquality{
     }
 
 	function getModuleName(){
-		return 'mod_vipquality';
+		return 'mod_vipquality : VIPクオリティ(子集)';
 	}
 
 	function getModuleVersionInfo(){
-		return 'mod_vipquality : VIPクオリティ';
+		return 'v071119';
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
+	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
 		if(strpos($name,"!dama")!==false) $this->_dama($name);
 		if(strpos($name,"!omikuji")!==false) $this->_omikuji($name);
 		if(strpos($name,"!uptime")!==false) $this->_uptime($name);
