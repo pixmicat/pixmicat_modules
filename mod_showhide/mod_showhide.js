@@ -17,7 +17,7 @@ var TmodShowhide = {
 			var j = jQuery(this).wrap('<div class="threadStructure" id="t'+this.id+'"></div>').parent();
 			var replies = [];
 			while((j = j.next('.reply')).size() !== 0){ replies.push(j); }
-			jQuery(replies).insertAfter(this);
+			jQuery(replies).appendTo(jQuery(this).parent());
 		});
 		if(t = getCookie('hideList')){
 			//alert('getCookie');
