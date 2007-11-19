@@ -102,10 +102,10 @@ class mod_rss{
 			$time = gmdate("D, d M Y H:i:s", $time + TIME_ZONE * 60 * 60).$RFC_timezone; // 本地時間RFC標準格式
 			$reslink = $this->BASEDIR.PHP_SELF.'?res='.($resto ? $resto : $no); // 回應連結
 			switch($this->FEED_DISPLAYTYPE){
-				case 'Thread':
+				case 'T':
 					$titleBar = $sub.' No.'.$no.' (Res: '.($PIO->postCount($no) - 1).')'; // 標題 No.編號 (Res:回應數)
 					break;
-				case 'Post':
+				case 'P':
 					$titleBar = $sub.' ('.$no.')'; // 標題 (編號)
 					break;
 			}
