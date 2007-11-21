@@ -12,4 +12,4 @@ English Instruction:
 
 1. Put "mod_captcha.php" and "font1.gdf" into the module/ directory.
 2. Use your favorite editor to open "mod_captcha.php". You can change the "$this->CAPTCHA_" prefix settings.
-3. Finally open "config.php" and add one line ($ModuleList[] = 'mod_showhide';) into the "Modules to be loaded" block.
+3. Finally open "config.php" and add one line ($ModuleList[] = 'mod_captcha';) into the "Modules to be loaded" block.

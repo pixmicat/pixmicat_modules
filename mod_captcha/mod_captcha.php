@@ -40,7 +40,7 @@ class mod_captcha{
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
 	function autoHookPostForm(&$form){
 		global $languages;
-		$form .= '<tr><td class="Form_bg"><b>'._T('modcaptcha_captcha').'</b></td><td><img src="'.$this->SELF.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&\';})();">'._T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" />'._T('modcaptcha_enterword').'</td></tr>'."\n";
+		$form .= '<tr><td class="Form_bg"><b>'._T('modcaptcha_captcha').'</b></td><td><img src="'.$this->SELF.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&amp;\';})();">'._T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" />'._T('modcaptcha_enterword').'</td></tr>'."\n";
 	}
 
 	/* 在接收到送出要求後馬上檢查明暗碼是否符合 */
