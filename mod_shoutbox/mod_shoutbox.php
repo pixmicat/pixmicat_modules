@@ -189,6 +189,7 @@ setInterval("getLatestMessage()",30000);
 		$mesg=isset($_POST['message'])?$_POST['message']:'';
 		$mesg=CleanStr($mesg);
 		if(!$mesg) error("請填入內文");
+		if(preg_match("/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/",$mesg)) error('eMail禁止');
 		if(strlen($mesg)>$this->MESSAGE_MAX) error(_T('regist_commenttoolong'));
 		$mesg = str_replace("\n"," ",$mesg); // 消除換行
 		$mesg = str_replace(',','&#44;',$mesg); // 轉換","
