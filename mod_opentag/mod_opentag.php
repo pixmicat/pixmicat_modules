@@ -1,5 +1,4 @@
 <?php
-
 class mod_opentag{
 	var $mypage;
 
@@ -16,7 +15,7 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '4th.Release.3-dev (v080219)';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
@@ -44,13 +43,17 @@ class mod_opentag{
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.');
 			if(USE_CATEGORY && $_POST['tag']){ // 修整標籤樣式
+				$ss = method_exists($PIO, '_replaceComma') ? '&#44;' : ','; // Dirty implement
 				$category = explode(',', $_POST['tag']); // 把標籤拆成陣列
-				$category = '&#44;'.implode('&#44;', array_map('trim', $category)).'&#44;'; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
+				$category = $ss.implode($ss, array_map('trim', $category)).$ss; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
 			}else{ $category = ''; }
 
 			$PIO->updatePost($_GET['no'], array('category'=>$category));
 			$PIO->dbCommit();
-			echo "Done. Please go back and update pages.";
+			updatelog();
+			header('HTTP/1.1 302 Moved Temporarily');
+			header('Location: '.fullURL().PHP_SELF2.'?'.time());
+			//echo "Done. Please go back and update pages.";
 		}
 	}
 }
