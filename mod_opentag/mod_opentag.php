@@ -15,7 +15,7 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080219)';
+		return '4th.Release.3-dev (v080224)';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
@@ -36,11 +36,14 @@ class mod_opentag{
 			$pte_vals = array('{$TITLE}'=>TITLE, '{$RESTO}'=>'');
 			$dat = $PTE->ParseBlock('HEADER', $pte_vals);
 			$dat .= '</head><body id="main">';
-			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="POST">Tag: <input type="text" name="tag" value="'.substr(str_replace('&#44;', ',', $post[0]['category']),1,-1).'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
+			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="POST">Tag: <input type="text" name="tag" value="'.htmlentities(substr(str_replace('&#44;', ',', $post[0]['category']),1,-1), ENT_QUOTES, 'UTF-8').'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
 			echo $dat."</body></html>";
 		} else {
 			if($_SERVER['REQUEST_METHOD'] != 'POST') error(_T('regist_notpost')); // 非正規POST方式
 			$post = $PIO->fetchPosts($_GET['no']);
+			$parentNo = $post[0]['resto'] ? $post[0]['resto'] : $post[0]['no'];
+			$threads = array_flip($PIO->fetchThreadList());
+			$threadPage = floor($threads[$parentNo] / PAGE_DEF);
 			if(!count($post)) die('[Error] Post does not exist.');
 			if(USE_CATEGORY && $_POST['tag']){ // 修整標籤樣式
 				$ss = method_exists($PIO, '_replaceComma') ? '&#44;' : ','; // Dirty implement
@@ -50,7 +53,8 @@ class mod_opentag{
 
 			$PIO->updatePost($_GET['no'], array('category'=>$category));
 			$PIO->dbCommit();
-			updatelog();
+			updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
+			deleteCache(array($parentNo)); // 刪除討論串舊快取
 			header('HTTP/1.1 302 Moved Temporarily');
 			header('Location: '.fullURL().PHP_SELF2.'?'.time());
 			//echo "Done. Please go back and update pages.";
