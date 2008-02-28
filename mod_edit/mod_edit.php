@@ -44,12 +44,8 @@ class mod_edit{
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.');
 			extract($post[0]);
-			if($bbcode=$PMS->getModuleInstance('mod_bbcode')) { //己載入mod_bbcode?
-				$bbcode->_html2bb($com);
-			} else {
-				$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
-				if($bbcode=$PMS->getModuleInstance('mod_bbcode')) $bbcode->_html2bb($com);
-			}
+			$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
+			if($bbcode=$PMS->getModuleInstance('mod_bbcode')) $bbcode->_html2bb($com);
 			$dat='';
 			head($dat);
 			$PMS->hookModuleMethod('PostInfo', array($this,'_EditPostInfo'));
