@@ -33,31 +33,31 @@ class mod_bbcode{
 
 	function _bb2html($string, $dest){
 		$this->urlcount=0; // Reset counter
-		$string = preg_replace("#\[b\](.*?)\[/b\]#si", "<b>\\1</b>", $string);
-		$string = preg_replace("#\[i\](.*?)\[/i\]#si", "<i>\\1</i>", $string);
-		$string = preg_replace("#\[u\](.*?)\[/u\]#si", "<u>\\1</u>", $string);
-		$string = preg_replace("#\[p\](.*?)\[/p\]#si", "<p>\\1</p>", $string);
+		$string = preg_replace('#\[b\](.*?)\[/b\]#si', '<b>\1</b>', $string);
+		$string = preg_replace('#\[i\](.*?)\[/i\]#si', '<i>\1</i>', $string);
+		$string = preg_replace('#\[u\](.*?)\[/u\]#si', '<u>\1</u>', $string);
+		$string = preg_replace('#\[p\](.*?)\[/p\]#si', '<p>\1</p>', $string);
 
-		$string = preg_replace("#\[color=(\S+?)\](.*?)\[/color\]#si", "<font color=\"\\1\">\\2</font>", $string);
+		$string = preg_replace('#\[color=(\S+?)\](.*?)\[/color\]#si', '<font color="\1">\2</font>', $string);
 
-		$string = preg_replace("#\[s([1-7])\](.*?)\[/s([1-7])\]#si", "<font size=\"\\1\">\\2</font>", $string);
+		$string = preg_replace('#\[s([1-7])\](.*?)\[/s([1-7])\]#si', '<font size="\1">\2</font>', $string);
 
-		$string = preg_replace("#\[pre\](.*?)\[/pre\]#si", "<pre>\\1</pre>", $string);
-		$string = preg_replace("#\[quote\](.*?)\[/quote\]#si", "<blockquote>\\1</blockquote>", $string);
+		$string = preg_replace('#\[pre\](.*?)\[/pre\]#si', '<pre>\1</pre>', $string);
+		$string = preg_replace('#\[quote\](.*?)\[/quote\]#si', '<blockquote>\1</blockquote>', $string);
 
 		if($this->URLTagMode){
-			$string=preg_replace_callback("#\[url\](http|https|ftp)(://\S+?)\[/url\]#si", array(&$this, '_URLConv1'), $string);
-			$string=preg_replace_callback("#\[url\](\S+?)\[/url\]#si", array(&$this, '_URLConv2'), $string);
-			$string=preg_replace_callback("#\[url=(http|https|ftp)(://\S+?)\](.*?)\[/url\]#si", array(&$this, '_URLConv3'), $string);
-			$string=preg_replace_callback("#\[url=(\S+?)\](.*?)\[/url\]#si", array(&$this, '_URLConv4'), $string);
+			$string=preg_replace_callback('#\[url\](https?|ftp)(://\S+?)\[/url\]#si', array(&$this, '_URLConv1'), $string);
+			$string=preg_replace_callback('#\[url\](\S+?)\[/url\]#si', array(&$this, '_URLConv2'), $string);
+			$string=preg_replace_callback('#\[url=(https?|ftp)(://\S+?)\](.*?)\[/url\]#si', array(&$this, '_URLConv3'), $string);
+			$string=preg_replace_callback('#\[url=(\S+?)\](.*?)\[/url\]#si', array(&$this, '_URLConv4'), $string);
 			$this->_URLExcced();
 		}
 
-		$string = preg_replace("#\[email\](\S+?@\S+?\\.\S+?)\[/email\]#si", "<a href=\"mailto:\\1\">\\1</a>", $string);
+		$string = preg_replace('#\[email\](\S+?@\S+?\\.\S+?)\[/email\]#si', '<a href="mailto:\1">\1</a>', $string);
 
-		$string = preg_replace("#\[email=(\S+?@\S+?\\.\S+?)\](.*?)\[/email\]#si", "<a href=\"mailto:\\1\">\\2</a>", $string);
+		$string = preg_replace('#\[email=(\S+?@\S+?\\.\S+?)\](.*?)\[/email\]#si', '<a href="mailto:\1">\2</a>', $string);
 		if (($this->ImgTagTagMode == 2) || ($this->ImgTagTagMode && !$dest)){
-			$string = preg_replace("#\[img\](([a-z]+?)://([^ \n\r]+?))\[\/img\]#si", "<img src=\"\\1\" border=\"0\" alt=\"\\1\" />", $string);
+			$string = preg_replace('#\[img\](([a-z]+?)://([^ \n\r]+?))\[\/img\]#si', '<img src="\1" border="0" alt="\1" />', $string);
 		}
 
 		return $string;
@@ -82,6 +82,26 @@ class mod_bbcode{
 		++$this->urlcount;
 		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[2]</a>";
 	}
+
+	function _html2bb(&$string){
+		$string = preg_replace('#<b>(.*?)</b>#si', '[b]\1[/b]', $string);
+		$string = preg_replace('#<i>(.*?)</i>#si', '[i]\1[/i]', $string);
+		$string = preg_replace('#<u>(.*?)</u>#si', '[u]\1[/u]', $string);
+		$string = preg_replace('#<p>(.*?)</p>#si', '[p]\1[/p]', $string);
+
+		$string = preg_replace('#<font color="(\S+?)">(.*?)</font>#si', '[color=\1]\2[/color]', $string);
+
+		$string = preg_replace('#<font size="([1-7])">(.*?)</font>#si', '[s\1]\2[/s\1]', $string);
+
+		$string = preg_replace('#<pre>(.*?)</pre>#si', '[pre]\1[/pre]', $string);
+		$string = preg_replace('#<blockquote>(.*?)</blockquote>#si', '[quote]\1[/quote]', $string);
+
+		$string = preg_replace('#<a href="(https?|ftp)(://\S+?)" rel="_blank">(.*?)</a>#si', '[url=\1\2]\3[/url]', $string);
+		$string = preg_replace('#<a href="mailto:(\S+?@\S+?\\.\S+?)">(.*?)</a>#si', '[email=\1]\2[/email]', $string);
+
+		$string = preg_replace('#<img src="(([a-z]+?)://([^ \n\r]+?))" border="0" alt=".*?" />#si', '[img]\1[/img]', $string);
+	}
+
 
 	function _URLExcced(){
 		if($this->urlcount > $this->MaxURLCount) {
