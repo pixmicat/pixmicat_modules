@@ -16,7 +16,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 
 /* 取出 XML 檔案討論串資訊 */
 $sub = $name = $tmp = '';
-
 function startElement($p, $name, $attrs){
 	global $tmp;
 	$tmp = $name;
@@ -40,10 +39,13 @@ function getSubjectAndName($file){
 	$xml_parser = xml_parser_create();
 	xml_set_element_handler($xml_parser, "startElement", "endElement");
 	xml_set_character_data_handler($xml_parser, "characterData");
-	if(!xml_parse($xml_parser, file_get_contents($file), true)) return false;
-
+	$line = file($file); $countline = count($line);
+	for($i = 0; $i < $countline; $i++){
+		if(!xml_parse($xml_parser, $line[$i], ($i == $countline - 1))) return false;
+		if($sub != '' && $name != '') break;
+	}
 	xml_parser_free($xml_parser);
-	return array('sub'=>$sub, 'name'=> $name);
+	return array('sub' => $sub, 'name' => $name);
 }
 
 /* 取得靜態庫存頁面列表 */
