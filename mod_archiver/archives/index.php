@@ -14,7 +14,40 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 <p>靜態庫存頁面列表：</p>
 ';
 
+/* 取出 XML 檔案討論串資訊 */
+$sub = $name = $tmp = '';
+
+function startElement($p, $name, $attrs){
+	global $tmp;
+	$tmp = $name;
+}
+
+function endElement($p, $name){
+	global $tmp;
+	$tmp = '';
+}
+
+function characterData($p, $data){
+	global $tmp, $sub, $name;
+    if($sub == '' && $tmp == 'SUBJECT') $sub = $data;
+    if($name == '' && $tmp=='NAME') $name = $data;
+}
+
+function getSubjectAndName($file){
+	global $tmp, $sub, $name;
+	$sub = $name = $tmp = '';
+
+	$xml_parser = xml_parser_create();
+	xml_set_element_handler($xml_parser, "startElement", "endElement");
+	xml_set_character_data_handler($xml_parser, "characterData");
+	if(!xml_parse($xml_parser, file_get_contents($file), true)) return false;
+
+	xml_parser_free($xml_parser);
+	return array('sub'=>$sub, 'name'=> $name);
+}
+
 /* 取得靜態庫存頁面列表 */
+$fileList = Array();
 function GetArchives($sPath){
 	global $fileList;
 	// 打開目錄逐個搜尋XML檔案並加入陣列
@@ -29,14 +62,15 @@ function GetArchives($sPath){
     @reset($fileList);
 }
 
-$fileList = Array();
 GetArchives('.');
+$t = array(); $infobar = '';
 
 // 列出檔案連結
 echo "<ul>\n";
 if($fileList_count = count($fileList)){ // 有列表
 	for($i = 0; $i < $fileList_count; $i++){
-		echo '	<li><a href="'.$fileList[$i].'">'.$fileList[$i]."</a></li>\n";
+		$infobar = ($t = getSubjectAndName($fileList[$i])) ? $t['name'].' - '.$t['sub'] : '';
+		echo '	<li><a href="'.$fileList[$i].'">'.$fileList[$i]."</a> $infobar</li>\n";
 	}
 }else{
 	echo '<li>目前還沒有靜態庫存頁面可供瀏覽</li>';
