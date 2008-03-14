@@ -28,8 +28,8 @@ function endElement($p, $name){
 
 function characterData($p, $data){
 	global $tmp, $sub, $name;
-    if($sub == '' && $tmp == 'SUBJECT') $sub = $data;
-    if($name == '' && $tmp=='NAME') $name = $data;
+	if($sub == '' && $tmp == 'SUBJECT') $sub = $data;
+	if($name == '' && $tmp=='NAME') $name = $data;
 }
 
 function getSubjectAndName($file){
