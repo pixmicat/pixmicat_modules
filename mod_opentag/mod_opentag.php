@@ -15,7 +15,7 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080224)';
+		return '4th.Release.3-dev (v080318)';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
@@ -53,7 +53,7 @@ class mod_opentag{
 
 			$PIO->updatePost($_GET['no'], array('category'=>$category));
 			$PIO->dbCommit();
-			updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
+			if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
 			header('HTTP/1.1 302 Moved Temporarily');
 			header('Location: '.fullURL().PHP_SELF2.'?'.time());
