@@ -46,6 +46,7 @@ class mod_edit{
 			extract($post[0]);
 			$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
 			if($bbcode=$PMS->getModuleInstance('mod_bbcode')) $bbcode->_html2bb($com);
+			$name=preg_replace('|<span.*?>(.*?)</span>|','\1',$name);
 			$dat='';
 			head($dat);
 			$PMS->hookModuleMethod('PostInfo', array($this,'_EditPostInfo'));

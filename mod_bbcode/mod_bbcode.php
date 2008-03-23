@@ -83,6 +83,24 @@ class mod_bbcode{
 		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[2]</a>";
 	}
 
+	function _URLRevConv($m){
+		if($m[1]=='http' && $m[2]=='://'.$m[3]) {
+			return '[url]'.$m[3].'[/url]';
+		} elseif(($m[1].$m[2])==$m[3]) {
+			return '[url]'.$m[1].$m[2].'[/url]';
+		} else {
+			if($m[1]=='http')
+				return '[url='.substr($m[2],3).']'.$m[3].'[/url]';
+			else
+				return '[url='.$m[1].$m[2].']'.$m[3].'[/url]';
+		}
+	}
+
+	function _EMailRevConv($m){
+		if($m[1]==$m[2]) return '[email]'.$m[1].'[/email]';
+		else return '[email='.$m[1].']'.$m[2].'[/email]';
+	}
+
 	function _html2bb(&$string){
 		$string = preg_replace('#<b>(.*?)</b>#si', '[b]\1[/b]', $string);
 		$string = preg_replace('#<i>(.*?)</i>#si', '[i]\1[/i]', $string);
@@ -96,8 +114,8 @@ class mod_bbcode{
 		$string = preg_replace('#<pre>(.*?)</pre>#si', '[pre]\1[/pre]', $string);
 		$string = preg_replace('#<blockquote>(.*?)</blockquote>#si', '[quote]\1[/quote]', $string);
 
-		$string = preg_replace('#<a href="(https?|ftp)(://\S+?)" rel="_blank">(.*?)</a>#si', '[url=\1\2]\3[/url]', $string);
-		$string = preg_replace('#<a href="mailto:(\S+?@\S+?\\.\S+?)">(.*?)</a>#si', '[email=\1]\2[/email]', $string);
+		$string = preg_replace_callback('#<a href="(https?|ftp)(://\S+?)" rel="_blank">(.*?)</a>#si', array(&$this, '_URLRevConv'), $string);
+		$string = preg_replace_callback('#<a href="mailto:(\S+?@\S+?\\.\S+?)">(.*?)</a>#si', array(&$this, '_EMailRevConv'), $string);
 
 		$string = preg_replace('#<img src="(([a-z]+?)://([^ \n\r]+?))" border="0" alt=".*?" />#si', '[img]\1[/img]', $string);
 	}
