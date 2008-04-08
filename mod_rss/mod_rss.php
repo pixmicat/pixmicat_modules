@@ -51,7 +51,7 @@ class mod_rss{
 	}
 
 	function autoHookFoot(&$foot){
-		$foot .= '<div style="position: absolute; top: 10px;"><a href="'.$this->SELF.'">RSS feed</a></div>
+		$foot .= '<div style="position: absolute; top: 10px; left: 10px;"><a href="'.$this->SELF.'">RSS feed</a></div>
 ';
 	}
 
