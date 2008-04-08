@@ -9,29 +9,50 @@ class mod_rss{
 
 	function mod_rss(){
 		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_rss'); // 向系統登記模組專屬獨立頁面
 
-		$this->FEED_COUNT = 10; // RSS產生最大篇數
-		$this->FEED_STATUSFILE = 'mod_rss.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
-		$this->FEED_CACHEFILE = 'rss.xml'; // 資料輸出暫存檔 (靜態快取Feed格式)
+		$this->FEED_COUNT = 10; // RSS 產生最大篇數
+		$this->FEED_UPDATETYPE = 1; // RSS 更新時機 (1: 瀏覽 MODULEPAGE 時更新, 2: 有新文章貼出時更新)
 		$this->FEED_DISPLAYTYPE = 'T'; // 資料取出形式 (T: 討論串取向, P: 文章取向)
-		$this->BASEDIR = fullURL(); // 基底URL
-		$this->SELF = $PMS->getModulePageURL('mod_rss'); // 本頁面連結
+		$this->FEED_CACHEFILE = 'rss.xml'; // 資料輸出暫存檔 (靜態快取Feed格式)
+
+		$this->BASEDIR = fullURL(); // 基底 URL
+		switch($this->FEED_UPDATETYPE){
+			case 1: // MODULEPAGE
+				$PMS->hookModuleMethod('ModulePage', 'mod_rss'); // 註冊獨立頁面
+				$this->SELF = $this->BASEDIR.$PMS->getModulePageURL('mod_rss'); // RSS 連結
+				$this->FEED_STATUSFILE = 'mod_rss.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
+				break;
+			case 2: // Update on RegistAfterCommit
+				$this->SELF = $this->BASEDIR.$this->FEED_CACHEFILE; // RSS 連結
+				break;
+		}
 	}
 
-	/* Get the name of module */
 	function getModuleName(){
 		return 'mod_rss : 提供RSS Feed訂閱服務';
 	}
 
-	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071115)';
+		return '4th.Release.3-dev (b080408)';
 	}
 
-	/* Auto hook to "Head" hookpoint */
+	/* 在頁面加入指向 RSS 的 <link> 標籤*/
 	function autoHookHead(&$txt, $isReply){
 		$txt .= '<link rel="alternate" type="application/rss+xml" title="RSS 2.0 Feed" href="'.$this->SELF.'" />'."\n";
+	}
+
+	/* 文章儲存後更新 RSS 檔案 ($this->FEED_UPDATETYPE == 2 觸發) */
+	function autoHookRegistAfterCommit(){
+		global $PIO;
+		if($this->FEED_UPDATETYPE == 2){
+			$PIO->dbPrepare();
+			$this->GenerateCache(); // 更新 RSS
+		}
+	}
+
+	function autoHookFoot(&$foot){
+		$foot .= '<div style="position: absolute; top: 10px;"><a href="'.$this->SELF.'">RSS feed</a></div>
+';
 	}
 
 	/* 模組獨立頁面 */
@@ -90,15 +111,25 @@ class mod_rss{
 <description>'.TITLE.'</description>
 <language>zh-TW</language>
 <generator>'.$this->getModuleName().' '.$this->getModuleVersionInfo().'</generator>
-<atom:link href="'.$this->BASEDIR.$this->SELF.'" rel="self" type="application/rss+xml" />
+<atom:link href="'.$this->SELF.'" rel="self" type="application/rss+xml" />
 ';
 		for($i = 0; $i < $post_count; $i++){
 			$imglink = ''; // 圖檔
 			$resto = 0; // 回應
-			list($no, $resto, $time, $tw, $th, $tim, $ext, $sub, $com) = array($post[$i]['no'], $post[$i]['resto'], substr($post[$i]['tim'], 0, -3), $post[$i]['tw'], $post[$i]['th'], $post[$i]['tim'], $post[$i]['ext'], $post[$i]['sub'], $post[$i]['com']);
+			list($no, $resto, $time, $tw, $th, $tim, $ext, $sub, $com) = array(
+				$post[$i]['no'],
+				$post[$i]['resto'],
+				substr($post[$i]['tim'], 0, -3),
+				$post[$i]['tw'],
+				$post[$i]['th'],
+				$post[$i]['tim'],
+				$post[$i]['ext'],
+				$post[$i]['sub'],
+				$post[$i]['com']);
 
 			// 處理資料
-			if($ext && $FileIO->imageExists($tim.'s.jpg')) $imglink = '<img src="'.$FileIO->getImageURL($tim.'s.jpg').'" alt="'.$tim.$ext.'" width="'.$tw.'" height="'.$th.'" /><br />';
+			if($ext && $FileIO->imageExists($tim.'s.jpg'))
+				$imglink = '<img src="'.$FileIO->getImageURL($tim.'s.jpg').'" alt="'.$tim.$ext.'" width="'.$tw.'" height="'.$th.'" /><br />';
 			$time = gmdate("D, d M Y H:i:s", $time + TIME_ZONE * 60 * 60).$RFC_timezone; // 本地時間RFC標準格式
 			$reslink = $this->BASEDIR.PHP_SELF.'?res='.($resto ? $resto : $no); // 回應連結
 			switch($this->FEED_DISPLAYTYPE){

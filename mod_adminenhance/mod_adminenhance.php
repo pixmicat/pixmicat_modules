@@ -11,12 +11,20 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return 'Pre-Alpha 2008/3/14';
+		return 'Pre-Alpha 2008/4/7';
+	}
+
+	function _showHostString(&$arrLabels, $post, $isReply){
+		$arrLabels['{$NOW}'] .= " <u>{$post['host']}</u>";
 	}
 
 	function autoHookAdminFunction($action, &$param, $funcLabel='', &$message=''){
-		global $PIO;
+		global $PIO, $PMS;
 		if($action=='add'){
+			// Manual hook: showing hostname of users
+			$PMS->hookModuleMethod('ThreadPost', array(&$this, '_showHostString'));
+			$PMS->hookModuleMethod('ThreadReply', array(&$this, '_showHostString'));
+
 			$param[] = array('mod_adminenhance_thstop', 'AE: 停止/恢復討論串');
 			$param[] = array('mod_adminenhance_banip', 'AE: IP 加到黑名單 (鎖 Class C)');
 			$param[] = array('mod_adminenhance_banimg', 'AE: 圖檔 MD5 加到黑名單');
