@@ -28,12 +28,13 @@ jQuery(function($){
 		var no = this.href.match(/&no=([0-9]+)/) ? RegExp.$1 : 0;
 		var obj = $(this);
 		obj.siblings("a").each(function(){ tag += "," + this.innerHTML; });
-		obj.parent().html("<input type=\'text\' value=\'" + tag.substr(1) + "\'><input type=\'button\' value=\'Tag!\' id=\'sendTag" + no + "\'>");
+		obj.parent().html("<input type=\'text\' id=\'attrTag" + no + "\' size=\'28\'><input type=\'button\' value=\'Tag!\' id=\'sendTag" + no + "\'>");
+		$g("attrTag" + no).value = tag.substr(1);
 		$("#sendTag" + no).click(function(){
 			var tmpthis = this;
 			$.post("'.str_replace('&amp;', '&', $this->mypage).'&no=" + no, {ajaxmode: true, tag: this.previousSibling.value}, function(newTag){
 				newTag = $.map(newTag.split(","), function(n){
-					return n.link("pixmicat.php?mode=category&c=" + n);
+					return n.link("pixmicat.php?mode=category&c=" + encodeURI(n));
 				});
 				tmpthis.parentNode.innerHTML = newTag.join(", ");
 			});
