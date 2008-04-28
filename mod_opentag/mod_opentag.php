@@ -67,15 +67,16 @@ jQuery(function($){
 			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="POST">Tag: <input type="text" name="tag" value="'.htmlentities(substr(str_replace('&#44;', ',', $post[0]['category']),1,-1), ENT_QUOTES, 'UTF-8').'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
 			echo $dat."</body></html>";
 		} else {
+			$Tag = CleanStr($_POST['tag']);
 			if($_SERVER['REQUEST_METHOD'] != 'POST') error(_T('regist_notpost')); // 非正規POST方式
 			$post = $PIO->fetchPosts($_GET['no']);
 			$parentNo = $post[0]['resto'] ? $post[0]['resto'] : $post[0]['no'];
 			$threads = array_flip($PIO->fetchThreadList());
 			$threadPage = floor($threads[$parentNo] / PAGE_DEF);
 			if(!count($post)) die('[Error] Post does not exist.');
-			if(USE_CATEGORY && $_POST['tag']){ // 修整標籤樣式
+			if(USE_CATEGORY && $Tag){ // 修整標籤樣式
 				$ss = method_exists($PIO, '_replaceComma') ? '&#44;' : ','; // Dirty implement
-				$category = explode(',', $_POST['tag']); // 把標籤拆成陣列
+				$category = explode(',', $Tag); // 把標籤拆成陣列
 				$category = $ss.implode($ss, array_map('trim', $category)).$ss; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
 			}else{ $category = ''; }
 
@@ -85,7 +86,7 @@ jQuery(function($){
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
 
 			if(isset($_POST['ajaxmode'])){
-				echo $_POST['tag'];
+				echo $Tag;
 			}else{
 				header('HTTP/1.1 302 Moved Temporarily');
 				header('Location: '.fullURL().PHP_SELF2.'?'.time());
