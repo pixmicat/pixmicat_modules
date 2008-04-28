@@ -4,8 +4,8 @@ class mod_opentag{
 
 	function mod_opentag(){
 		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_opentag'); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL('mod_opentag');
+		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
+		$this->mypage = $PMS->getModulePageURL(__CLASS__);
 	}
 
 	/* Get the name of module */
@@ -15,19 +15,46 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080318)';
+		return '4th.Release.3-dev (v080428)';
+	}
+
+	function autoHookHead(&$txt, $isReply){
+		$txt .= '<script type="text/javascript" src="module/jquery-1.2.3.min.js"></script>
+<script type="text/javascript">
+// <![CDATA[
+jQuery(function($){
+	$("div.category a.change").click(function(){
+		var tag = "";
+		var no = this.href.match(/&no=([0-9]+)/) ? RegExp.$1 : 0;
+		var obj = $(this);
+		obj.siblings("a").each(function(){ tag += "," + this.innerHTML; });
+		obj.parent().html("<input type=\'text\' value=\'" + tag.substr(1) + "\'><input type=\'button\' value=\'Tag!\' id=\'sendTag" + no + "\'>");
+		$("#sendTag" + no).click(function(){
+			var tmpthis = this;
+			$.post("'.str_replace('&amp;', '&', $this->mypage).'&no=" + no, {ajaxmode: true, tag: this.previousSibling.value}, function(newTag){
+				newTag = $.map(newTag.split(","), function(n){
+					return n.link("pixmicat.php?mode=category&c=" + n);
+				});
+				tmpthis.parentNode.innerHTML = newTag.join(", ");
+			});
+		});
+		return false;
+	});
+});
+// ]]>
+</script>';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		if(USE_CATEGORY) $arrLabels['{$CATEGORY}'].=' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">變更</a>]';
+		if(USE_CATEGORY) $arrLabels['{$CATEGORY}'] = '<span>'.$arrLabels['{$CATEGORY}'].' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'" class="change">變更</a>]</span>';
 	}
 
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
-		if(USE_CATEGORY) $arrLabels['{$CATEGORY}'].=' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">變更</a>]';
+		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
 	function ModulePage(){
-		global $PIO, $FileIO, $PMS, $PTE;
+		global $PIO, $PTE;
 
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
 		if(!isset($_POST['tag'])) {
@@ -55,9 +82,13 @@ class mod_opentag{
 			$PIO->dbCommit();
 			if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
-			header('HTTP/1.1 302 Moved Temporarily');
-			header('Location: '.fullURL().PHP_SELF2.'?'.time());
-			//echo "Done. Please go back and update pages.";
+
+			if(isset($_POST['ajaxmode'])){
+				echo $_POST['tag'];
+			}else{
+				header('HTTP/1.1 302 Moved Temporarily');
+				header('Location: '.fullURL().PHP_SELF2.'?'.time());
+			}
 		}
 	}
 }
