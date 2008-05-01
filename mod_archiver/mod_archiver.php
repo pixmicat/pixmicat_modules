@@ -5,13 +5,14 @@ by: scribe
 */
 
 class mod_archiver{
-	var $ARCHIVE_ROOT;
+	var $ARCHIVE_ROOT,$MULTI_COPY;
 
 	function mod_archiver(){
 		global $PMS;
 		$PMS->hookModuleMethod('ModulePage', 'mod_archiver'); // 向系統登記模組專屬獨立頁面
 
 		$this->ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
+		$this->MULTI_COPY = true; // 容許同一串有多份存檔
 	}
 
 	/* Get the name of module */
@@ -33,7 +34,7 @@ class mod_archiver{
 	function ModulePage(){
 		$res = isset($_GET['res']) ? $_GET['res'] : 0; // 欲生成靜態庫存頁面之討論串編號
 
-		if(!$res || file_exists($this->ARCHIVE_ROOT.$res.'.xml')){
+		if(!$res || (!$this->MULTI_COPY && glob($this->ARCHIVE_ROOT.$res.'-*.xml'))){
 			echo('No argument or the archive already existed.'); // 參數不對或XML檔案已存在
 		}else{
 			$this->GenerateArchive($res); // 生成靜態庫存頁面
@@ -49,7 +50,7 @@ class mod_archiver{
 	/* 取出討論串結構並製成XML結構 */
 	function GenerateArchive($res){
 		global $PIO, $FileIO;
-		$aryNO = $aryNAME = $aryDATE = $arySUBJECT = $aryCOMMENT = $aryIMAGE = array(); // 討論串結構陣列
+		$aryNO = $aryNAME = $aryDATE = $arySUBJECT = $aryCOMMENT = $aryCATEGORY = $aryIMAGE = array(); // 討論串結構陣列
 
 		/* 第一部份：先製成討論串結構陣列 */
 		$tid = $PIO->fetchPostList($res); // 取得特定討論串之編號結構
@@ -57,24 +58,31 @@ class mod_archiver{
 		$post_count = count($post);
 		if($post_count==0){ echo 'Not found.'; break; }
 		for($i = 0; $i < $post_count; $i++){
-			list($imgw,$imgh,$no,$now,$name,$sub,$com,$ext,$tim) = array($post[$i]['imgw'], $post[$i]['imgh'], $post[$i]['no'], $post[$i]['now'], $post[$i]['name'], $post[$i]['sub'], $post[$i]['com'], $post[$i]['ext'], $post[$i]['tim']);
+			extract($post[$i]);
 			$name = preg_replace('/(◆.{10})/', '<span class="nor">$1</span>', $name); // Trip取消粗體
-			$aryNO[] = $no; $aryNAME[] = $name; $aryDATE[] = $now; $arySUBJECT[] = $sub; $aryCOMMENT[] = $com; // 置入陣列
+			if(USE_CATEGORY) {
+				$ary_category2 = array(); $ary_category = explode('&#44;', $category); $ary_category = array_map('trim', $ary_category);
+				foreach($ary_category as $c) if($c) $ary_category2[]=$c;
+				$category = implode(', ', $ary_category2);
+			} else $category = '';
+			$aryNO[] = $no; $aryNAME[] = $name; $aryDATE[] = $now; $arySUBJECT[] = $sub; $aryCOMMENT[] = $com; $aryCATEGORY[] = $category; // 置入陣列
 			if($FileIO->imageExists($tim.$ext)){ // 有貼圖
 				$size = (int)($FileIO->getImageFilesize($tim.$ext) / 1024);
 				$aryIMAGE[] = array($size, $imgw.'x'.$imgh, $ext, $tim);
 			}else $aryIMAGE[] = '';
 		}
+		$archiveDate = date('Ymdhis');
 
 		/* 第二部份：生成XML結構 */
 		$tmp_c = '<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="archivestyle.xsl"?>
 <threads no="'.$aryNO[0].'">
-	<meta creator="'.$this->getModuleVersionInfo().'" />
+	<meta creator="'.$this->getModuleVersionInfo().'"'.($this->MULTI_COPY?' archivedate="'.$archiveDate.'"':'').' />
 	<name>'.$aryNAME[0].'</name>
 	<date>'.$aryDATE[0].'</date>
 	<subject>'.$arySUBJECT[0].'</subject>
 	<comment>'.$aryCOMMENT[0].'</comment>
+	<category>'.$aryCATEGORY[0].'</category>
 ';
 		if($aryIMAGE[0]) $tmp_c .= '	<image kbyte="'.$aryIMAGE[0][0].'" scale="'.$aryIMAGE[0][1].'" ext="'.$aryIMAGE[0][2].'">'.$aryIMAGE[0][3].'</image>';
 		else $tmp_c .= '	<image kbyte="" scale="" ext=""></image>';
@@ -85,6 +93,7 @@ class mod_archiver{
 		<date>'.$aryDATE[$p].'</date>
 		<subject>'.$arySUBJECT[$p].'</subject>
 		<comment>'.$aryCOMMENT[$p].'</comment>
+		<category>'.$aryCATEGORY[$p].'</category>
 ';
 			if($aryIMAGE[$p]) $tmp_c .= '		<image kbyte="'.$aryIMAGE[$p][0].'" scale="'.$aryIMAGE[$p][1].'" ext="'.$aryIMAGE[$p][2].'">'.$aryIMAGE[$p][3].'</image>';
 			else $tmp_c .= '		<image kbyte="" scale="" ext=""></image>';
@@ -95,12 +104,12 @@ class mod_archiver{
 </threads>';
 
 		/* 第三部份：儲存檔案 */
-		$fp = fopen($this->ARCHIVE_ROOT.$res.'.xml', 'w');
+		$fp = fopen($this->ARCHIVE_ROOT.$res.'-'.$archiveDate.'.xml', 'w');
 		stream_set_write_buffer($fp, 0); // 立刻寫入不用緩衝
 		fwrite($fp, $tmp_c); // 寫入XML結構
 		fclose($fp);
 		// 另開新資料夾保存圖片
-		$nfolder = $this->ARCHIVE_ROOT.$res.'_files/'; // 保存圖檔資料夾
+		$nfolder = $this->ARCHIVE_ROOT.$res.'-'.$archiveDate.'_files/'; // 保存圖檔資料夾
 		if(!is_dir($nfolder)){ mkdir($nfolder); chmod($nfolder, 0777); } // 建立存放資料夾
 		for($n = 0; $n < $post_count; $n++){
 			if($aryIMAGE[$n]){

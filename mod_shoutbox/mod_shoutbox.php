@@ -117,8 +117,7 @@ setInterval("getLatestMessage()",30000);
 
 <iframe id="shoutbox" class="hide" name="shoutbox" frameborder="0"></iframe>
 <form action="'.$this->myPage.'" method="POST" id="realshoutboxform" style="display:none" target="shoutbox"><input type="hidden" name="action" value="shout"/><input type="hidden" name="emotion" id="real_shout_emo" value=""/><input type="hidden" name="message" id="real_shout_mesg" value=""/></form>
-<span id="shoutboxform">[<form action="'.$this->myPage.'" method="POST" id="shoutboxform" target="shoutbox" onsubmit="return realsubmit();"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>]</span>
-[<a href="javascript:ToggleShoutBox();">Shoutbox</a>]'."\n".$linkbar;
+<span id="shoutboxform">[<a href="javascript:ToggleShoutBox();">Shoutbox</a> <form action="'.$this->myPage.'" method="POST" id="shoutboxform" target="shoutbox" onsubmit="return realsubmit();"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>]</span>'."\n".$linkbar;
 	}
 
 	function _getEmotionHTML() {

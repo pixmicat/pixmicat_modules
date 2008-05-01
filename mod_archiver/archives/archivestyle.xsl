@@ -36,7 +36,7 @@ if(typeof ActiveXObject!='undefined'){
 </xsl:template>
 
 <xsl:template match="threads">
-	<xsl:variable name="image_base"><xsl:value-of select="@no" />_files/</xsl:variable>
+	<xsl:variable name="image_base"><xsl:value-of select="@no" /><xsl:if test="meta/@archivedate != ''">-<xsl:value-of select="meta/@archivedate" /></xsl:if>_files/</xsl:variable>
 	<div class="threadpost">
 	<xsl:if test="image != ''"> <!--有圖片-->
 		<xsl:variable name="image_name"><xsl:value-of select="image" /><xsl:value-of select="image/@ext" /></xsl:variable>
@@ -73,6 +73,9 @@ if(typeof ActiveXObject!='undefined'){
 			</a>
 		</xsl:if>
 		<div class="quote"><xsl:apply-templates select="comment" /></div>
+		<xsl:if test="category != ''"> <!--有類別-->
+		<div class="category">類別: <xsl:value-of select="category" /></div>
+		</xsl:if>
 		</div>
 	</xsl:for-each>
 </xsl:template>

@@ -37,6 +37,7 @@ class mod_threadlist{
 		if($this->SHOW_IN_MAIN && !$isReply) {
 			$dat = ''; // HTML Buffer
 			$plist = $PIO->fetchThreadList(0, $this->THREADLIST_NUMBER_IN_MAIN, true); // 編號由大到小排序
+			$PMS->useModuleMethods('ThreadOrder', array($isReply,0,0,&$plist)); // "ThreadOrder" Hook Point
 			$post = $PIO->fetchPosts($plist); // 取出資料
 			$post_count = ceil(count($post) / 2);
 		    $dat .= '<div id="topiclist" style="text-align: center; clear: both;">
@@ -67,6 +68,7 @@ $dat .= '</table>
 		$page = isset($_GET['page']) ? intval($_GET['page']) : 0; // 目前所在分頁頁數
 		if($page < 0 || $page > $pageMax) exit('Page out of range.'); // $page 超過範圍
 		$plist = $PIO->fetchThreadList($this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER, true); // 編號由大到小排序
+		$PMS->useModuleMethods('ThreadOrder', array(0,$page,0,&$plist)); // "ThreadOrder" Hook Point
 		$post = $PIO->fetchPosts($plist); // 取出資料
 		$post_count = count($post);
 
