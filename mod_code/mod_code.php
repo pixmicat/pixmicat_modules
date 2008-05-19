@@ -2,25 +2,21 @@
 class mod_code{
 	var $brushes;
 
-	function mod_code(){
-		$this->brushes = array('Php', 'JScript', 'Ruby'); // 選擇載入支援程式刷
-	}
-
 	function getModuleName(){
 		return 'mod_code : dp.SyntaxHighlighter Embedded';
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '4th.Release.3-dev (v080519)';
 	}
 
 	function autoHookHead(&$dat){
 		$dat .= <<< _EOF_
 <link rel="stylesheet" type="text/css" href="module/SyntaxHighlighter.css" />
+<script type="text/javascript" src="module/mod_code.js"></script>
 <script type="text/javascript" src="module/shCore.js"></script>
 
 _EOF_;
-		foreach($this->brushes as $b){ $dat .= '<script type="text/javascript" src="module/shBrush'.$b.'.js"></script>'."\n"; } // 載入刷子檔
 	}
 
 	function autoHookPostInfo(&$postinfo){
@@ -43,7 +39,7 @@ _EOF_;
 	}
 
 	function autoHookFoot(&$dat){
-		$dat .= '<script type="text/javascript">dp.SyntaxHighlighter.HighlightAll(\'code\');</script>'."\n";
+		$dat .= '<script type="text/javascript">Tdp.SyntaxHighlighter(\'code\');</script>'."\n";
 	}
 }
 ?>

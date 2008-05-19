@@ -23,8 +23,8 @@ class mod_paint{
 	var $THISPAGE, $TMPFolder, $PMAX_W, $PMAX_H, $SECURITY, $PAINT_RESTRICT, $PaintComponent, $TIME_UNIT;
 	function mod_paint(){
 		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_paint');
-		$this->THISPAGE = $PMS->getModulePageURL('mod_paint');
+		$PMS->hookModuleMethod('ModulePage', __CLASS__);
+		$this->THISPAGE = $PMS->getModulePageURL(__CLASS__);
 		// 可設定項目
 		$this->TMPFolder = './tmp/'; // 圖檔暫存目錄
 		$this->PMAX_W = 500; $this->PMAX_H = 500; // 繪圖最大長寬尺寸
@@ -44,7 +44,7 @@ class mod_paint{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071111)';
+		return '4th.Release.3-dev (v080519)';
 	}
 
 	/* Hook to ThreadFront */
@@ -127,7 +127,7 @@ class mod_paint{
 		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
 			unlink($this->TMPFolder.$_POST['paintImg']); // 刪除暫存圖檔
 			$pchOldfile = str_replace(strrchr($_POST['paintImg'], '.'), '', $_POST['paintImg']); // 暫存 PCH 動畫檔案名 (不含副檔名)
-			$pchNewfile = './'.IMG_DIR.str_replace(strrchr($dest, '.'), '', basename($dest));
+			$pchNewfile = './'.IMG_DIR.str_replace(strrchr($dest, '.'), '', basename($dest)); // 本機儲存 PCH 動畫檔案路徑 (不含副檔名)
 			$datFile = $this->TMPFolder.$pchOldfile.'.dat'; // Dat 資訊檔
 			$PaintSecond = file_get_contents($datFile); $status .= '_PCH:'.$PaintSecond.'_'; // 於狀態增設作畫時間旗標
 			unlink($datFile);
@@ -399,6 +399,8 @@ setInterval(function(){
 
 	/* 刪除舊暫存 */
 	function Action_deleteOldTemp(){
+		global $FileIO;
+
 		if(!is_dir($this->TMPFolder)){ mkdir($this->TMPFolder); @chmod($this->TMPFolder, 0777); }
 		// 檢查暫存是否過舊無人認領，超過一段時間就砍
 		$nowTime = time();
@@ -410,7 +412,7 @@ setInterval(function(){
 		$files2 = array_merge(glob(IMG_DIR.'*.pch'), glob(IMG_DIR.'*.spch'));
 		foreach($files2 as $ff){
 			$fff = basename($ff, strrchr($ff, '.'));
-			if(!file_exists(IMG_DIR.$fff.'.png') && !file_exists(IMG_DIR.$fff.'.jpg')){ unlink($ff); } // 作畫動畫原始圖檔已刪
+			if(!$FileIO->imageExists($fff.'.png') && !$FileIO->imageExists($fff.'.jpg')){ unlink($ff); } // 作畫動畫原始圖檔已刪
 		}
 	}
 }

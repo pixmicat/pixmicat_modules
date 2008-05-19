@@ -13,6 +13,6 @@ mod_code is not a part of Pixmicat! package. So it's not licensed under the Clar
 English Instruction:
 
 1. Download the SyntaxHighlighter from the SyntaxHighlighter project page (http://code.google.com/p/syntaxhighlighter/).
-2. Put the following files into the module/ directory: "mod_code.php", "shCore.js", "SyntaxHighlighter.css" and "shBrushXxx.js." (Choose what you want)
+2. Put the following files into the module/ directory: "mod_code.php", "shCore.js", "SyntaxHighlighter.css" and all "shBrushXxx.js."
 3. Use your favorite editor to open the "config.php" and add one line ($ModuleList[] = 'mod_code';) into the "Modules to be loaded" block.
 4. You can change the value of USE_XHTML to 0 to avoid display problem in XHTML parsing mode.

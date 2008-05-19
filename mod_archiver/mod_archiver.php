@@ -9,7 +9,7 @@ class mod_archiver{
 
 	function mod_archiver(){
 		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_archiver'); // 向系統登記模組專屬獨立頁面
+		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
 
 		$this->ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
 		$this->MULTI_COPY = true; // 容許同一串有多份存檔
@@ -22,7 +22,7 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '4th.Release.3-dev (v080519)';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -44,7 +44,7 @@ class mod_archiver{
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
 		global $PMS;
-		if(!$isres) $modFunc .= '[<a href="'.$PMS->getModulePageURL('mod_archiver').'&amp;res='.$post['no'].'">存</a>]';
+		if(!$isres) $modFunc .= '[<a href="'.$PMS->getModulePageURL(__CLASS__).'&amp;res='.$post['no'].'">存</a>]';
 	}
 
 	/* 取出討論串結構並製成XML結構 */
@@ -113,8 +113,17 @@ class mod_archiver{
 		if(!is_dir($nfolder)){ mkdir($nfolder); chmod($nfolder, 0777); } // 建立存放資料夾
 		for($n = 0; $n < $post_count; $n++){
 			if($aryIMAGE[$n]){
-				if($FileIO->imageExists($aryIMAGE[$n][3].$aryIMAGE[$n][2])) copy($FileIO->getImageURL($aryIMAGE[$n][3].$aryIMAGE[$n][2], true), $nfolder.$aryIMAGE[$n][3].$aryIMAGE[$n][2]); // 原圖
-				if($FileIO->imageExists($aryIMAGE[$n][3].'s.jpg')) copy($FileIO->getImageURL($aryIMAGE[$n][3].'s.jpg', true), $nfolder.$aryIMAGE[$n][3].'s.jpg'); // 縮圖
+				$img = $aryIMAGE[$n][3].$aryIMAGE[$n][2]; // 原圖
+				$thumb = $aryIMAGE[$n][3].'s.jpg'; // 預覽圖
+				if(FILEIO_BACKEND=='normal'){ // 一般後端，獨立判斷避免http wrapper被關閉無法複製的問題
+					$img2 = IMG_DIR.$aryIMAGE[$n][3].$aryIMAGE[$n][2];
+					$thumb2 = THUMB_DIR.$aryIMAGE[$n][3].'s.jpg';
+				}else{
+					$img2 = $FileIO->getImageURL($aryIMAGE[$n][3].$aryIMAGE[$n][2]);
+					$thumb2 = $FileIO->getImageURL($aryIMAGE[$n][3].'s.jpg');
+				}
+				if($FileIO->imageExists($img)) copy($img2, $nfolder.$img);
+				if($FileIO->imageExists($thumb)) copy($thumb2, $nfolder.$thumb);
 			}
 		}
 	}

@@ -5,7 +5,7 @@ class mod_showhide{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071112)';
+		return '4th.Release.3-dev (v080519)';
 	}
 
 	function autoHookHead(&$txt, $isReply){

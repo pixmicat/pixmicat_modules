@@ -14,6 +14,7 @@ var TmodShowhide = {
 		var t;
 		if(location.href.indexOf('.php?res=')!==-1){ return; } // 回應模式不動作
 		jQuery('div.threadpost').each(function(){
+			if(!this.id){ return; }
 			var j = jQuery(this).wrap('<div class="threadStructure" id="t'+this.id+'"></div>').parent();
 			var replies = [];
 			while((j = j.next('.reply, br')).size() !== 0){ replies.push(j); }

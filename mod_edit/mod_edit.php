@@ -5,9 +5,9 @@ class mod_edit{
 
 	function mod_edit(){
 		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_edit'); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL('mod_edit');
-		$this->shown_in_page = true; // 是否顯示編輯功能於前端頁面供使用者自行修改
+		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
+		$this->mypage = $PMS->getModulePageURL(__CLASS__);
+		$this->shown_in_page = false; // 是否顯示編輯功能於前端頁面供使用者自行修改
 	}
 
 	/* Get the name of module */
@@ -17,7 +17,7 @@ class mod_edit{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '4th.Release.3-dev (v080519)';
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
@@ -40,7 +40,9 @@ class mod_edit{
 		global $PIO, $FileIO, $PMS, $language, $BAD_STRING, $BAD_FILEMD5, $BAD_IPADDR, $LIMIT_SENSOR;
 
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
-		if(!isset($_POST['mode'])) {
+		if(!isset($_POST['mode'])){ // 顯示表單
+			if(!$this->shown_in_page && !adminAuthenticate('check')) die('[Error] Access Denied.');
+
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.');
 			extract($post[0]);
@@ -53,7 +55,7 @@ class mod_edit{
 			form($dat, $resto, false, $this->mypage.'&amp;no='.$_GET['no'], $name, $email, $sub, str_replace('<br />', "\n", $com), substr(str_replace('&#44;', ',', $category),1,-1), 'edit');
 			foot($dat);
 			echo $dat;
-		} else {
+		} else { // 儲存
 			if($_SERVER['REQUEST_METHOD'] != 'POST') error(_T('regist_notpost')); // 非正規POST方式
 			$post = $PIO->fetchPosts($_GET['no']);
 			$newValues = array();
@@ -161,10 +163,18 @@ class mod_edit{
 			if($sub != $post[0]['sub'] && $_POST[FT_SUBJECT]) $newValues['sub'] = $sub;
 			if($com != $post[0]['com'] && $_POST[FT_COMMENT]) $newValues['com'] = $com;
 			if($category != $post[0]['category'] && $_POST['category']) $newValues['category'] = $category;
-			
+
 			$PIO->updatePost($_GET['no'], $newValues);
 			$PIO->dbCommit();
-			echo "Done. Please go back and update pages.";
+
+			$parentNo = $post[0]['resto'] ? $post[0]['resto'] : $post[0]['no'];
+			$threads = array_flip($PIO->fetchThreadList());
+			$threadPage = floor($threads[$parentNo] / PAGE_DEF);
+			if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
+			deleteCache(array($parentNo)); // 刪除討論串舊快取
+
+			header('HTTP/1.1 302 Moved Temporarily');
+			header('Location: '.fullURL().PHP_SELF2.'?'.time());
 		}
 	}
 }

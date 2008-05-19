@@ -15,7 +15,7 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080428)';
+		return '4th.Release.3-dev (v080519)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -28,7 +28,7 @@ jQuery(function($){
 		var no = this.href.match(/&no=([0-9]+)/) ? RegExp.$1 : 0;
 		var obj = $(this);
 		obj.siblings("a").each(function(){ tag += "," + this.innerHTML; });
-		obj.parent().html("<input type=\'text\' id=\'attrTag" + no + "\' size=\'28\'><input type=\'button\' value=\'Tag!\' id=\'sendTag" + no + "\'>");
+		obj.parent().html("<input type=\'text\' id=\'attrTag" + no + "\' size=\'28\' /><input type=\'button\' value=\'Tag!\' id=\'sendTag" + no + "\' />");
 		$g("attrTag" + no).value = tag.substr(1);
 		$("#sendTag" + no).click(function(){
 			var tmpthis = this;
