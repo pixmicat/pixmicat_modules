@@ -7,14 +7,12 @@ class mod_code{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080519)';
+		return '4th.Release.3-dev (v080520)';
 	}
 
 	function autoHookHead(&$dat){
 		$dat .= <<< _EOF_
 <link rel="stylesheet" type="text/css" href="module/SyntaxHighlighter.css" />
-<script type="text/javascript" src="module/mod_code.js"></script>
-<script type="text/javascript" src="module/shCore.js"></script>
 
 _EOF_;
 	}
@@ -39,7 +37,9 @@ _EOF_;
 	}
 
 	function autoHookFoot(&$dat){
-		$dat .= '<script type="text/javascript">Tdp.SyntaxHighlighter(\'code\');</script>'."\n";
+		$dat .= '<script type="text/javascript" src="module/mod_code.js"></script>
+<script type="text/javascript" src="module/shCore.js"></script>
+<script type="text/javascript">Tdp.SyntaxHighlighter(\'code\');</script>'."\n";
 	}
 }
 ?>
