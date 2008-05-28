@@ -19,7 +19,7 @@ class mod_opentag{
 	}
 
 	function autoHookHead(&$txt, $isReply){
-		$txt .= '<script type="text/javascript" src="module/jquery-1.2.3.min.js"></script>
+		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.3/jquery.min.js"></script>
 <script type="text/javascript">
 // <![CDATA[
 jQuery(function($){
