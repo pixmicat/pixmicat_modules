@@ -36,7 +36,7 @@ class mod_typepad_antispam{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080601)';
+		return '4th.Release.3 (v080703)';
 	}
 
 	function ModulePage(){
@@ -180,7 +180,7 @@ class mod_typepad_antispam{
 			$query_string .= $key.'='.urlencode(stripslashes($data)).'&';
 
 		$response = $this->_typepadantispam_http_post($query_string, $this->api_host, "/$this->protocol_ver/comment-check", $this->api_port);
-		if ('true' == $response[1]){ // 判斷為 Spam
+		if (isset($response[1]) && 'true' == $response[1]){ // 判斷為 Spam
 			$this->_typepadantispam_spam_count_update($this->_typepadantispam_spam_count() + 1);
 			error('經判斷此發言為 Spam');
 		}

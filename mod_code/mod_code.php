@@ -7,7 +7,7 @@ class mod_code{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080520)';
+		return '4th.Release.3 (v080520)';
 	}
 
 	function autoHookHead(&$dat){

@@ -33,7 +33,7 @@ class mod_rss{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (b080408)';
+		return '4th.Release.3 (v080408)';
 	}
 
 	/* 在頁面加入指向 RSS 的 <link> 標籤*/

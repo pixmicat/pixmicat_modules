@@ -22,7 +22,7 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080519)';
+		return '4th.Release.3 (v080519)';
 	}
 
 	/* 自動掛載：頂部連結列 */

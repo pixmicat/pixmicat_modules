@@ -11,7 +11,7 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return 'Pre-Alpha 2008/4/7';
+		return '4th.Release.3 (v080407)';
 	}
 
 	function _showHostString(&$arrLabels, $post, $isReply){

@@ -17,7 +17,7 @@ class mod_edit{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080519)';
+		return '4th.Release.3 (v080519)';
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
