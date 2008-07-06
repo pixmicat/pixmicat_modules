@@ -9,7 +9,7 @@ class mod_siokara{
 
 	function mod_siokara(){
 		global $PMS;
-		AttechLanguage(array($this,'_loadLanguage')); // 載入語言檔
+		AttachLanguage(array($this,'_loadLanguage')); // 載入語言檔
 		$PMS->hookModuleMethod('ModulePage', 'mod_siokara'); // 向系統登記模組專屬獨立頁面
 		$this->mypage = $PMS->getModulePageURL('mod_siokara');
 	}
