@@ -13,17 +13,20 @@ class mod_tag{
 
 	/* Get the name of module */
 	function getModuleName(){
-		/* Note:	Majority of this code is based off of mod_opentag and base pixmicat's category feature.
-				In fact, we are stealing code pretty much directly word for word for a lot of the features,
-				and we are using the same field in the database.  This means there will be no modification
-				to your database, but you will not be able to use both features at the same time.
+		/* 注意:	這個插件大部分的原碼來自 mod_opentag 以及 pixmicat 內建的 "category" 功能。
+				絕大部分還是剪貼過來的, 而且本插件採用相同的資料庫欄位。因此，本插件不會修改
+				您的資料庫格式。但是您不能同時採用這個插件以及內建的 "category" 功能。
+				簡單說，這個插件修改程式基本作業，廢掉內建的 "category" 來提供更實用的標籤系統。
+
+				本插件採取類似論壇軟體的標籤系統，只允許 OP 帖可以有標籤。搜尋的時候自動調用
+				整串討論出來。如果您需要允許每篇回覆都有自己的標籤，請用內建的 "category" 功能。
 		*/
 		return 'mod_tag : 標籤編輯系統';
 	}
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return 'Alpha Release';
+		return 'Alpha Release (svn: r648++)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -56,39 +59,36 @@ jQuery(function($){
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		global $language;
-		// use string replace to force tags to go to our own module page instead!
-		// die ($arrLabels['{$CATEGORY}']);
-		// die (var_dump($post));
+		// 改變 category 顯示規定
 		if ($post["resto"] == 0) {
-			// parse the tags to our own URL
+		// if (!$isReply) {
+			// OP，把連結改到我們的 tag search
 			$arrLabels['{$CATEGORY}'] = str_replace("mode=category&amp;c=", "mode=module&amp;load=mod_tag&amp;do=search&amp;c=", $arrLabels['{$CATEGORY}']);
-			$arrLabels['{$CATEGORY}'] = '<span>'.$arrLabels['{$CATEGORY}'].' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'" class="change">' . $language['modtag_edit'] . '</a>]</span>';
+			$arrLabels['{$CATEGORY}'] = "<span>".$arrLabels['{$CATEGORY}']." [<a href='".$this->mypage."&amp;no=".$post['no']."' class='change'>" . $language['modtag_edit'] . "</a>]</span>";
 		} else {
-			// die (var_dump($arrLabels));
-			// kill the tag for a non-thread start
+			// 回文，刪除 category 資料
 			$arrLabels['{$CATEGORY}'] = '';	
 		}
 	}
-
-	// These shouldn't appear for replies, it should only be present for the first post in each thread.
+	
 	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+		// 導向至 autoHookThreadPost 來一起處理
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
-
-/*
-	// Don't need to have a custom one if we're using category field on form
+	
 	function autoHookPostForm(&$form){
-		global $languages, $resto;
-		if (!isset($_GET['res']) && (!isset($resto))) {
-			// poor check like this, need to also add it for edit scren only if it is an op?
-			$form .= '<tr><td class="Form_bg"><b>'._T('modtag_tag').'</b></td><td><input type="text" name="category" size="28" value="" /><small>('._T('modtag_separate_with_comma').')</small></td></tr>'."\n";
+		// 很白目的隱藏表單上 category 的欄位的辦法
+		if (isset($_GET['res']) || (isset($_GET['no']) && ($_GET['load'] == "mod_edit"))) {
+			global $PTE;
+			// 從回文的表單上移除標籤欄位
+			$what = '<tr><td class="Form_bg"><b>{$FORM_CATEGORY_TEXT}</b></td><td>{$FORM_CATEGORY_FIELD}<small>{$FORM_CATEGORY_NOTICE}</small></td></tr>';
+			$PTE->tpl = str_replace($what, "", $PTE->tpl);
 		}
 	}
-*/
 
 	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status) {
+		// 移除回文的 category
 		if ($isReply) {
-			// strip replies of its category
 			$category = "";
 		}
 	}
@@ -97,7 +97,7 @@ jQuery(function($){
 	function ModulePage(){
 		global $PIO, $PTE;
 		if(!isset($_GET['do'])) {
-		// no do condition, legacy links for listing current post tags, and adding tags
+		// 沒有 "do" 指令，舊的 tag 連接
 			if(!isset($_GET['no'])) die('[Error] not enough parameter.');
 			if(!isset($_POST['tag'])) {
 				$post = $PIO->fetchPosts($_GET['no']);
@@ -132,9 +132,9 @@ jQuery(function($){
 				}
 			}
 		} else {
-		// yes do condition, what are we doing?
+		// 有 "do" 指令，查看下一步
 			if ($_GET['do'] == "search") {
-			// searching for threads with the given tag
+			// 搜尋符合標籤的主題
 				global $PTE, $PIO, $PMS, $FileIO, $language;
 				$category = isset($_GET['c']) ? strtolower(strip_tags(trim($_GET['c']))) : ''; // 搜尋之類別標籤
 				if(!$category) error(_T('category_nokeyword'));
@@ -191,13 +191,18 @@ jQuery(function($){
 				foot($dat);
 				echo $dat;
 			} else if ($_GET['do'] == "cloud") {
-			// get a pretty tag cloud?
+			// 建立 tag cloud?
 				// blah blah blah
+			} else {
+			// 不知道該如何處理的 "do" 指令
+				echo "スクリプトはTranslation Server Errorに免費の午餐を食べています！<br />";
+				echo "...你想表達什麼?";
 			}
 		}
 	}
 
 	function _loadLanguage(){
+		// 載入語言
 		global $language;
 		if(PIXMICAT_LANGUAGE != 'zh_TW' && PIXMICAT_LANGUAGE != 'ja_JP' && PIXMICAT_LANGUAGE != 'en_US') $lang = 'en_US';
 		else $lang = PIXMICAT_LANGUAGE;
@@ -216,6 +221,5 @@ jQuery(function($){
 			$language['modtag_edit'] = 'Edit';
 		}
 	}
-
 }
 ?>
