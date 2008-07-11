@@ -30,8 +30,10 @@ class mod_siokara{
 
 		$fh=new FlagHelper($status);
 		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=sage"'.($fh->value('asage')?' title="'._T('siokara_admin_ufsage').'">s':' title="'._T('siokara_admin_fsage').'">S').'</a>]';
-		if($ext) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=thumb"'.($fh->value('htmb')?' title="'._T('siokara_admin_uhtmb').'">t':' title="'._T('siokara_admin_htmb').'">T').'</a>]';
-		if($ext == '.gif') $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=agif"'.($fh->value('agif')?' title="'._T('siokara_admin_agif').'">g':' title="'._T('siokara_admin_uagif').'">G').'</a>]';
+		if($ext && $FileIO->imageExists($tim.$ext)) {
+			$modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=thumb"'.($fh->value('htmb')?' title="'._T('siokara_admin_uhtmb').'">t':' title="'._T('siokara_admin_htmb').'">T').'</a>]';
+			if($ext == '.gif') $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=agif"'.($fh->value('agif')?' title="'._T('siokara_admin_agif').'">g':' title="'._T('siokara_admin_uagif').'">G').'</a>]';
+		}
 	}
 
 	function autoHookPostForm(&$form){
@@ -46,14 +48,16 @@ class mod_siokara{
 			if($arrLabels['{$COM}']) $arrLabels['{$WARN_ENDREPLY}'].='<br/><span class="warn_txt"><small>'._T('siokara_warn_sage').'<br/></small></span>';
 			else $arrLabels['{$WARN_ENDREPLY}'] = '<span class="warn_txt"><small>'._T('siokara_warn_sage').'<br/></small></span>';
 		}
-		if($fh->value('agif')) { // 動態GIF
-			$imgURL = $FileIO->getImageURL($post['tim'].$post['ext']);
-			$arrLabels['{$IMG_SRC}']=preg_replace('/<img src=".*"/U','<img src="'.$imgURL.'"',$arrLabels['{$IMG_SRC}']);
-			$arrLabels['{$IMG_BAR}'].='<small>['._T('siokara_anigif').']</small>';
-		}
-		if($fh->value('htmb')) { // 替換縮圖
-			$arrLabels['{$IMG_SRC}']=preg_replace('/<img src=".*" style="width: \d+px; height: \d+px;"/U','<img src="nothumb.gif"',$arrLabels['{$IMG_SRC}']);
-			$arrLabels['{$COM}'].='<br/><br/><span class="warn_txt"><small>'._T('siokara_warn_hidethumb').'<br/></small></span>';
+		if($FileIO->imageExists($post['tim'].$post['ext'])) {
+			if($fh->value('agif')) { // 動態GIF
+				$imgURL = $FileIO->getImageURL($post['tim'].$post['ext']);
+				$arrLabels['{$IMG_SRC}']=preg_replace('/<img src=".*"/U','<img src="'.$imgURL.'"',$arrLabels['{$IMG_SRC}']);
+				$arrLabels['{$IMG_BAR}'].='<small>['._T('siokara_anigif').']</small>';
+			}
+			if($fh->value('htmb')) { // 替換縮圖
+				$arrLabels['{$IMG_SRC}']=preg_replace('/<img src=".*" style="width: \d+px; height: \d+px;"/U','<img src="nothumb.gif"',$arrLabels['{$IMG_SRC}']);
+				$arrLabels['{$COM}'].='<br/><br/><span class="warn_txt"><small>'._T('siokara_warn_hidethumb').'<br/></small></span>';
+			}
 		}
 	}
 
