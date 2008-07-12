@@ -25,7 +25,7 @@ class mod_siokara{
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
-		global $PMS;
+		global $PMS,$FileIO;
 		extract($post);
 
 		$fh=new FlagHelper($status);
@@ -129,7 +129,7 @@ class mod_siokara{
 	}
 
 	function ModulePage(){
-		global $PIO;
+		global $PIO,$FileIO;
 		if(!adminAuthenticate('check')) die('403 Access denied');
 		$act=isset($_GET['action'])?$_GET['action']:'';
 		
@@ -149,6 +149,7 @@ class mod_siokara{
 				$post = $PIO->fetchPosts($_GET['no']);
 				if(!count($post)) die('[Error] Post does not exist.');
 				if($post[0]['ext']) {
+					if(!$FileIO->imageExists($post[0]['tim'].$post[0]['ext'])) die('[Error] attachment does not exist.');
 					$flgh = $PIO->getPostStatus($post[0]['status']);
 					$flgh->toggle('htmb');
 					$PIO->setPostStatus($post[0]['no'], $flgh->toString());
@@ -159,7 +160,8 @@ class mod_siokara{
 			case 'agif'; // 動態GIF
 				$post = $PIO->fetchPosts($_GET['no']);
 				if(!count($post)) die('[Error] Post does not exist.');
-				if($post[0]['ext']) {
+				if($post[0]['ext'] && $post[0]['ext'] == '.gif') {
+					if(!$FileIO->imageExists($post[0]['tim'].$post[0]['ext'])) die('[Error] attachment does not exist.');
 					$flgh = $PIO->getPostStatus($post[0]['status']);
 					$flgh->toggle('agif');
 					$PIO->setPostStatus($post[0]['no'], $flgh->toString());
