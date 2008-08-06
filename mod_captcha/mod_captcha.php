@@ -26,7 +26,7 @@ class mod_captcha{
 		$this->CAPTCHA_FONTFACE = array('./module/font1.gdf'); // 使用之字型 (可隨機挑選，惟字型種類需要相同不可混用)
 		$this->CAPTCHA_ECOUNT = 2; // 圖片混淆用橢圓個數
 
-		AttechLanguage(array($this, '_loadLanguage')); // 載入語言檔
+		AttachLanguage(array($this, '_loadLanguage')); // 載入語言檔
 	}
 
 	function getModuleName(){
@@ -34,7 +34,7 @@ class mod_captcha{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071118)';
+		return '4th.Release.3 (v080806)';
 	}
 
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
