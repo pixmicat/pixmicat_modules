@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080806)';
+		return '4th.Release.3-dev (v080807)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -27,6 +27,7 @@ class mod_pushpost{
 // <![CDATA[
 function mod_pushpostShow(pid){
 	$g("mod_pushpostID").value = pid;
+	$g("mod_pushpostName").value = getCookie("namec");
 	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+">.quote")).show();
 	return false;
 }
@@ -34,7 +35,7 @@ function mod_pushpostSend(){
 	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm");
 	if(o2.value==""){ alert("'._T('modpushpost_nocomment').'"); return false; }
 	$.post("'.str_replace('&amp;', '&', $this->mypage).'&no="+o0.value, {ajaxmode: true, name: o1.value, comm: o2.value}, function(rv){
-		if(rv.substr(0, 4)!="+OK "){ alert("'._T('modpushpost_failure').'"); return false; }
+		if(rv.substr(0, 4)!="+OK "){ alert(rv); return false; }
 		rv = rv.substr(4);
 		$("div#r"+o0.value+">.quote>.pushpost").append("<br />"+rv);
 		o0.value = o1.value = o2.value = "";
@@ -55,8 +56,10 @@ function mod_pushpostSend(){
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		global $language;
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.$this->mypage.'&amp;no='.$post['no'].'" onclick="return mod_pushpostShow('.$post['no'].')">'._T('modpushpost_pushbutton').'</a>';
+		global $language, $PIO;
+		$f = $PIO->getPostStatus($post['status']);
+		$pushcount = $f->value('mppCnt'); // 被推次數
+		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.$this->mypage.'&amp;no='.$post['no'].'" onclick="return mod_pushpostShow('.$post['no'].')">'.$pushcount._T('modpushpost_pushbutton').'</a>';
 		if(strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />') !== false){
 			$arrLabels['{$COM}'] = str_replace($this->PUSHPOST_SEPARATOR.'<br />', '<div class="pushpost">', $arrLabels['{$COM}']).'</div>';
 		}
@@ -81,15 +84,16 @@ function mod_pushpostSend(){
 
 			$dat = $PTE->ParseBlock('HEADER', array('{$TITLE}'=>TITLE, '{$RESTO}'=>''));
 			$dat .= '</head><body id="main">';
-			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="POST">
+			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="post">
 '._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
 </form>';
 			echo $dat, '</body></html>';
 		}else{
-			if($_SERVER['REQUEST_METHOD'] != 'POST') error(_T('regist_notpost'));
+			if($_SERVER['REQUEST_METHOD'] != 'POST') die(_T('regist_notpost')); // 傳送方法不正確
 			$name = CleanStr($_POST['name']); $comm = CleanStr($_POST['comm']);
-			if(strlen($comm) > 160) error(_T('modpushhpost_maxlength'));
-			$name = str_replace(_T('trip_pre'), _T('trip_pre_fake'), $name);
+			if(strlen($comm) > 160) die(_T('modpushhpost_maxlength')); // 太多字
+			if(strlen($comm) == 0) die(_T('modpushhpost_nocomment')); // 沒打字
+			$name = str_replace(array(_T('trip_pre'), _T('admin'), _T('deletor')), array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'), $name);
 			$pushtime = gmdate('y/m/d H:i', time() + intval(TIME_ZONE) * 3600);
 			if(preg_match('/(.*?)[#＃](.*)/u', $name, $regs)){
 				$cap = strtr($regs[2], array('&amp;'=>'&'));
@@ -98,7 +102,7 @@ function mod_pushpostSend(){
 			}
 			if(!$name || ereg("^[ |　|]*$", $name)){
 				if(ALLOW_NONAME) $name = DEFAULT_NONAME;
-				else error(_T('regist_withoutname'));
+				else die(_T('regist_withoutname')); // 不接受匿名
 			}
 			$pushpost = $name.': '.$comm.' ('.$pushtime.')'; // 推文主體
 
@@ -114,7 +118,9 @@ function mod_pushpostSend(){
 			if($flgh->exists('TS')) die('[Error] '._T('regist_threadlocked')); // 首篇禁止回應/同時表示禁止推文
 
 			$post[0]['com'] .= ((strpos($post[0]['com'], $this->PUSHPOST_SEPARATOR)===false) ? $this->PUSHPOST_SEPARATOR : '').'<br />'.$pushpost;
-			$PIO->updatePost($_GET['no'], array('com'=>$post[0]['com']));
+			$flgh2 = $PIO->getPostStatus($post[0]['status']);
+			$flgh2->plus('mppCnt'); // 推文次數+1
+			$PIO->updatePost($_GET['no'], array('com'=>$post[0]['com'], 'status'=>$flgh2->toString())); // 更新推文
 			$PIO->dbCommit();
 			if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
@@ -135,19 +141,16 @@ function mod_pushpostSend(){
 
 		if($lang=='zh_TW'){
 			$language['modpushpost_nocomment'] = '請輸入內文';
-			$language['modpushpost_failure'] = '推文失敗，請檢查網路連線或輸入內容是否超過上限';
 			$language['modpushpost_pushpost'] = '[推文]';
 			$language['modpushpost_pushbutton'] = '推';
 			$language['modpushpost_maxlength'] = '你話太多了';
 		}elseif($lang=='ja_JP'){
 			$language['modpushpost_nocomment'] = '何か書いて下さい';
-			$language['modpushpost_failure'] = '失敗しました';
 			$language['modpushpost_pushpost'] = '[推文]';
 			$language['modpushpost_pushbutton'] = '推';
 			$language['modpushpost_maxlength'] = 'コメントが長すぎます';
 		}elseif($lang=='en_US'){
 			$language['modpushpost_nocomment'] = 'Please type your comment.';
-			$language['modpushpost_failure'] = 'Push this post failed. Check your Internet connection or if your length of comment reached the limit.';
 			$language['modpushpost_pushpost'] = '[Push this post]';
 			$language['modpushpost_pushbutton'] = 'PUSH';
 			$language['modpushpost_maxlength'] = 'You typed too many words';
