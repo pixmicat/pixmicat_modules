@@ -22,7 +22,7 @@ class mod_pushpost{
 
 	function autoHookHead(&$txt, $isReply){
 		global $language;
-		$txt .= '<style>.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
+		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
 <script type="text/javascript">
 // <![CDATA[
 function mod_pushpostShow(pid){
