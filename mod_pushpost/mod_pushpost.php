@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080807)';
+		return '4th.Release.3-dev (v080808)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -57,8 +57,11 @@ function mod_pushpostSend(){
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		global $language, $PIO;
-		$f = $PIO->getPostStatus($post['status']);
-		$pushcount = $f->value('mppCnt'); // 被推次數
+		$postcount = '';
+		if($post['status'] != ''){
+			$f = $PIO->getPostStatus($post['status']);
+			$pushcount = $f->value('mppCnt'); // 被推次數
+		}
 		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.$this->mypage.'&amp;no='.$post['no'].'" onclick="return mod_pushpostShow('.$post['no'].')">'.$pushcount._T('modpushpost_pushbutton').'</a>';
 		if(strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />') !== false){
 			$arrLabels['{$COM}'] = str_replace($this->PUSHPOST_SEPARATOR.'<br />', '<div class="pushpost">', $arrLabels['{$COM}']).'</div>';
