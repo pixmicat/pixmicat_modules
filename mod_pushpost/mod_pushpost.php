@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080816)';
+		return '4th.Release.3-dev (v080821)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -31,15 +31,23 @@ function mod_pushpostShow(pid){
 	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+">.quote")).show();
 	return false;
 }
-function mod_pushpostSend(){
+function mod_pushpostSend(o3){
 	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm");
 	if(o2.value==""){ alert("'._T('modpushpost_nocomment').'"); return false; }
-	$.post("'.str_replace('&amp;', '&', $this->mypage).'&no="+o0.value, {ajaxmode: true, name: o1.value, comm: o2.value}, function(rv){
-		if(rv.substr(0, 4)!="+OK "){ alert(rv); return false; }
-		rv = rv.substr(4);
-		$("div#r"+o0.value+">.quote>.pushpost").append("<br />"+rv);
-		o0.value = o1.value = o2.value = "";
-		$("div#mod_pushpostBOX").hide();
+	o3.disabled = true;
+	$.ajax({
+		url: "'.str_replace('&amp;', '&', $this->mypage).'&no="+o0.value,
+		type: "POST",
+		data: {ajaxmode: true, name: o1.value, comm: o2.value},
+		success: function(rv){
+			if(rv.substr(0, 4)!="+OK "){ alert(rv); o3.disabled = false; return false; }
+			rv = rv.substr(4);
+			$("div#r"+o0.value+">.quote>.pushpost").append("<br />"+rv);
+			o0.value = o1.value = o2.value = "";
+			o3.disabled = false;
+			$("div#mod_pushpostBOX").hide();
+		},
+		error: function(){ alert("Network error."); o3.disabled = false; }
 	});
 }
 // ]]>
@@ -50,14 +58,14 @@ function mod_pushpostSend(){
 		global $language;
 		$foot .= '
 <div id="mod_pushpostBOX" style="display:none">
-<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend()" /></li></ul>
+<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend(this)" /></li></ul>
 </div>
 ';
 	}
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		global $language, $PIO;
-		$postcount = '';
+		$pushcount = '';
 		if($post['status'] != ''){
 			$f = $PIO->getPostStatus($post['status']);
 			$pushcount = $f->value('mppCnt'); // 被推次數
@@ -94,8 +102,8 @@ function mod_pushpostSend(){
 		}else{
 			if($_SERVER['REQUEST_METHOD'] != 'POST') die(_T('regist_notpost')); // 傳送方法不正確
 			$name = CleanStr($_POST['name']); $comm = CleanStr($_POST['comm']);
-			if(strlen($comm) > 160) die(_T('modpushhpost_maxlength')); // 太多字
-			if(strlen($comm) == 0) die(_T('modpushhpost_nocomment')); // 沒打字
+			if(strlen($comm) > 160) die(_T('modpushpost_maxlength')); // 太多字
+			if(strlen($comm) == 0) die(_T('modpushpost_nocomment')); // 沒打字
 			$name = str_replace(array(_T('trip_pre'), _T('admin'), _T('deletor')), array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'), $name);
 			$pushtime = gmdate('y/m/d H:i', time() + intval(TIME_ZONE) * 3600);
 			if(preg_match('/(.*?)[#＃](.*)/u', $name, $regs)){
