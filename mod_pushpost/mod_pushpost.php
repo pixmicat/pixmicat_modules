@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080821)';
+		return '4th.Release.3-dev (v080823)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -32,19 +32,20 @@ function mod_pushpostShow(pid){
 	return false;
 }
 function mod_pushpostSend(o3){
-	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm");
-	if(o2.value==""){ alert("'._T('modpushpost_nocomment').'"); return false; }
+	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), pp = $("div#r"+o0.value+">.quote");
+	if(o2.value===""){ alert("'._T('modpushpost_nocomment').'"); return false; }
 	o3.disabled = true;
 	$.ajax({
 		url: "'.str_replace('&amp;', '&', $this->mypage).'&no="+o0.value,
 		type: "POST",
 		data: {ajaxmode: true, name: o1.value, comm: o2.value},
 		success: function(rv){
-			if(rv.substr(0, 4)!="+OK "){ alert(rv); o3.disabled = false; return false; }
+			if(rv.substr(0, 4)!=="+OK "){ alert(rv); o3.disabled = false; return false; }
 			rv = rv.substr(4);
-			$("div#r"+o0.value+">.quote>.pushpost").append("<br />"+rv);
-			o0.value = o1.value = o2.value = "";
-			o3.disabled = false;
+			(pp.find(".pushpost").length===0)
+				? pp.append("<div class=\'pushpost\'>"+rv+"</div>")
+				: pp.children(".pushpost").append("<br />"+rv);
+			o0.value = o1.value = o2.value = ""; o3.disabled = false;
 			$("div#mod_pushpostBOX").hide();
 		},
 		error: function(){ alert("Network error."); o3.disabled = false; }
