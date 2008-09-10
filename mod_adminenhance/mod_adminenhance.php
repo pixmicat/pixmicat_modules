@@ -11,14 +11,14 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080407)';
+		return '4th.Release.3 (v080910)';
 	}
 
 	function _showHostString(&$arrLabels, $post, $isReply){
 		$arrLabels['{$NOW}'] .= " <u>{$post['host']}</u>";
 	}
 
-	function autoHookAdminFunction($action, &$param, $funcLabel='', &$message=''){
+	function autoHookAdminFunction($action, &$param, $funcLabel, &$message){
 		global $PIO, $PMS;
 		if($action=='add'){
 			// Manual hook: showing hostname of users
