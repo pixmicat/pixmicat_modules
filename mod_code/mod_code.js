@@ -42,7 +42,7 @@ var Tdp = {
 			tx = tas[i];
 			if(tx.getAttribute('name') == taName){
 				for(var a in Tdp.Alias){ // 逐一搜尋程式類別
-					if(Tdp.Alias[a].indexOf(tx.className) != -1){ // 找到
+					if(Tdp.Alias[a].indexOf(tx.className.toLowerCase()) != -1){ // 找到
 						Tdp.Sensor.LibLoaded.push(a); delete Tdp.Alias[a]; // 推入載入名單
 						break;
 					}
