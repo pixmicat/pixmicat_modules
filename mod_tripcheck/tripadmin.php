@@ -128,7 +128,7 @@ $goto=0;
 		$banflag = isset($_POST["ban"]); // 是否有「禁止」勾選
 		$dpflag = isset($_POST["dp"]); // 是否有「削除人」勾選
 
-		if($delflag || $actflag || $banflag) {
+		if($delflag || $actflag || $banflag || $dpflag) {
 			$aTripList = FileRead(TRIPFILE);
 			
 			$szTemp = "";
