@@ -117,6 +117,7 @@ $goto=0;
 			$_SESSION['username']=$_POST['username'];
 			$_SESSION['password']=$_POST['password'];
 		}
+		check_login();
 		echo "<META http-equiv=\"refresh\" content=\"1;URL=$_SERVER[PHP_SELF]\">";
 		echo "ログインしました。<br />数秒後にページが自動的に切り変わります。<br />しばらく待っても変わらない場合は、<a href=\"$_SERVER[PHP_SELF]\">こちら</a>をクリックしてください。";
 		break;
@@ -137,13 +138,13 @@ $goto=0;
 				if($banflag) {
 					reset($_POST["ban"]);
 					while(list(, $tTrip) = @each($_POST["ban"])){
-						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>".(!$szBan)."<>$szDelPerm<>\n"; break; }
+						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>".($szBan=!$szBan)."<>$szDelPerm<>\n"; break; }
 					}
 				}
 				if($dpflag) {
 					reset($_POST["dp"]);
 					while(list(, $tTrip) = @each($_POST["dp"])){
-						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>$szBan<>".(!$szDelPerm)."<>\n"; break; }
+						if($szTrip == $tTrip){ $val = "$szTrip<>$szTime<>$szIP<>$szActivate<>$szBan<>".($szDelPerm=!$szDelPerm)."<>\n"; break; }
 					}
 				}
 				if($actflag) {
@@ -187,7 +188,7 @@ $goto=0;
 		}
 		if($bFlag){ SysError("同じトリップが存在します。"); }
 		
-		$szTemp = "$trip<>".time()."<>".$_SERVER['REMOTE_ADDR']."<>0<>0<>\n";
+		$szTemp = "$trip<>".time()."<>".$_SERVER['REMOTE_ADDR']."<>0<>0<>0<>\n";
 		FileWrite(TRIPFILE, $szTemp, "a");
 		HtmlHeader();
 		echo "トリップ <B>$trip</B> を追加しました。";
