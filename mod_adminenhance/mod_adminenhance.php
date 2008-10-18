@@ -20,6 +20,7 @@ class mod_adminenhance{
 
 	/* 從資料檔抓出資料 */
 	function _parseBlackListFile($fname, $only1st=false){
+		if(!is_file($fname)) return array();
 		$l = file($fname);
 		$r = array(); $autodelno = array();
 		$tmp = '';
@@ -40,7 +41,7 @@ class mod_adminenhance{
 
 	/* 重新整理記錄檔內容 (同步進行刪除及新增動作) */
 	function _arrangeRecord($fname, $arrDel, $newline){
-		$line = file($fname);
+		$line = is_file($fname) ? file($fname) : array();
 		if(is_array($arrDel)) foreach($arrDel as $delid) unset($line[$delid]); // 刪除
 		$line = implode('', $line).$newline;
 		$fp = fopen($fname, 'w');
