@@ -15,7 +15,7 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (b081018)';
+		return '4th.Release.4-dev (b081113)';
 	}
 
 	/* 從資料檔抓出資料 */
@@ -191,7 +191,7 @@ Desc: <input type="text" name="newdesc" size="30" />
 <table border="0" width="100%">
 <tr><td>Pattern</td><td>Description</td><td>Add Date (Period)</td><td>Delete</td></tr>
 ';
-		foreach($this->_parseBlackListFile('.ht_blacklist') as $i => $l){
+		foreach($this->_parseBlackListFile($this->ipfile) as $i => $l){
 			$dat .= '<tr><td>'.$l[0].'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td>'.
 			'<td>'.(isset($l[2]) ? date('Y/m/d H:m:s', $l[2]) : '-').(isset($l[3]) ? ' ('.$l[3].')' : ' (0)').'</td>'.
 			'<td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
@@ -212,7 +212,7 @@ Desc: <input type="text" name="newdesc" size="30" />
 <table border="0" width="100%">
 <tr><td>MD5</td><td>Description</td><td>Delete</td></tr>
 ';
-		foreach($this->_parseBlackListFile('.ht_md5list') as $i => $l){
+		foreach($this->_parseBlackListFile($this->imgfile) as $i => $l){
 			$dat .= '<tr><td>'.$l[0].'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td><td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
 		}
 		$dat .= '</table>
