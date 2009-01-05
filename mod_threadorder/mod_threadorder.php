@@ -18,7 +18,7 @@ class mod_threadorder{
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
-		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=top" title="Top most">TM</a>][<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=bottom" title="Bottom most">BM</a>]';
+		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$post['no'].'&amp;action=top" title="Top most">TM</a>][<a href="'.$this->mypage.'&amp;no='.$post['no'].'&amp;action=bottom" title="Bottom most">BM</a>]';
 	}
 
 	function _write($file,$data) {
