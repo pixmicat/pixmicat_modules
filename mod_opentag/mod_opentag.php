@@ -15,11 +15,11 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080519)';
+		return '4th.Release.4-dev (v090123)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
-		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.3/jquery.min.js"></script>
+		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
 <script type="text/javascript">
 // <![CDATA[
 jQuery(function($){
@@ -46,6 +46,10 @@ jQuery(function($){
 </script>';
 	}
 
+	function autoHookToplink(&$linkbar, $isReply){
+		$linkbar .= '[<a href="'.$this->mypage.'&amp;action=tagcloud">標籤雲</a>]'."\n";
+	}
+
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		if(USE_CATEGORY) $arrLabels['{$CATEGORY}'] = '<span>'.$arrLabels['{$CATEGORY}'].' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'" class="change">變更</a>]</span>';
 	}
@@ -57,6 +61,44 @@ jQuery(function($){
 	function ModulePage(){
 		global $PIO, $PTE;
 
+		if(isset($_GET['action'])){ // 標籤雲
+			require './module/wordcloud.class.php';
+			$pte_vals = array('{$TITLE}'=>TITLE, '{$RESTO}'=>'');
+			$dat = $PTE->ParseBlock('HEADER', $pte_vals);
+			$dat .= '<style type="text/css">
+.word { padding: 4px 4px 4px 4px; letter-spacing: 3px; text-decoration: none; font-weight: normal; }
+.size9 { color: #000 !important; font-size: 200%; }
+.size8 { color: #111 !important; font-size: 170%; }
+.size7 { color: #222 !important; font-size: 150%; }
+.size6 { color: #333 !important; font-size: 120%; }
+.size5 { color: #444 !important; font-size: 110%; }
+.size4 { color: #555 !important; font-size: 100%; }
+.size3 { color: #666 !important; font-size: 90%; }
+.size2 { color: #777 !important; font-size: 80%; }
+.size1 { color: #888 !important; font-size: 70%; }
+.size0 { color: #999 !important; font-size: 60%; }
+</style>
+</head>
+<body id="main">';
+
+			$p = $PIO->fetchPosts($PIO->fetchPostList());
+			$cloud = new wordCloud();
+			foreach($p as $pp){
+				if($pp['category']){
+					$pp['category'] = substr(str_replace(array(',', '&#44;'), ' ', $pp['category']), 1, -1);
+					$cloud->addString($pp['category']);
+				}
+			}
+
+			$myCloud = $cloud->showCloud('array');
+			if(is_array($myCloud)){
+				foreach ($myCloud as $key => $value){
+					$dat .= '<a href="./pixmicat.php?mode=category&c='.urlencode($value['word']).'" class="word size'.$value['range'].'">'.$value['word'].'</a>'."\n";
+				}
+			}
+			echo $dat."</body></html>";
+			return;
+		}
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
 		if(!isset($_POST['tag'])) {
 			$post = $PIO->fetchPosts($_GET['no']);

@@ -1,0 +1,15 @@
+﻿License:
+
+wordcloud.class.php is part of wordCloud v2 (http://www.lotsofcode.com/php/tag-cloud-v2.htm).
+wordCloud is licensed under GNU General Public License. Copyright ©2007 Derek Harvey.
+Because of using wordCloud, mod_opentag is also licensed under GPL. But this module is not a part of Pixmicat!.
+
+中文安裝指引:
+
+1. 將所有檔案放到 module/ 目錄
+2. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_opentag';
+
+English Instruction:
+
+1. Put all the files into the module/ directory.
+2. Use your favorite editor to open the "config.php" and add one line ($ModuleList[] = 'mod_opentag';) into the "Modules to be loaded" block.
