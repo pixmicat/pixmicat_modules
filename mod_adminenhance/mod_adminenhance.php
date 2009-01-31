@@ -15,7 +15,7 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (b081113)';
+		return '4th.Release.4-dev (b090131)';
 	}
 
 	/* 從資料檔抓出資料 */
@@ -148,9 +148,9 @@ function add(form){
 		if(isset($_POST['operate'])){
 			$op = $_POST['operate'];
 			// 新增資料
-			$ndata = isset($_POST['newdata']) ? $_POST['newdata'] : ''; // 資料內容
+			$ndata = isset($_POST['newdata']) ? (get_magic_quotes_gpc() ? stripslashes($_POST['newdata']) : $_POST['newdata']) : ''; // 資料內容
 			$nperiod = isset($_POST['newperiod']) ? intval($_POST['newperiod']) : 0; // 封鎖天數
-			$ndesc = isset($_POST['newdesc']) ? $_POST['newdesc'] : ''; // 註解
+			$ndesc = isset($_POST['newdesc']) ? CleanStr($_POST['newdesc']) : ''; // 註解
 			// 刪除資料
 			$del = isset($_POST['del']) ? $_POST['del'] : null;
 			$newline = '';
@@ -170,7 +170,7 @@ function add(form){
 			}
 			if(isset($_POST['ajax'])){ // AJAX 要求在此即停止，一般要求則繼續印出頁面
 				$extend = ($op=='ip') ? '<td>'.date('Y/m/d H:m:s', time())." ($nperiod)</td>" : ''; // IP黑名單資訊比圖檔多
-				echo '<tr><td>'.$ndata.'</td><td>'.$ndesc.'</td>'.$extend.'<td><input type="checkbox" name="del[]" value="#NO#" /></td></tr>';
+				echo '<tr><td>'.htmlspecialchars($ndata).'</td><td>'.$ndesc.'</td>'.$extend.'<td><input type="checkbox" name="del[]" value="#NO#" /></td></tr>';
 				return;
 			}
 		}
@@ -192,7 +192,7 @@ Desc: <input type="text" name="newdesc" size="30" />
 <tr><td>Pattern</td><td>Description</td><td>Add Date (Period)</td><td>Delete</td></tr>
 ';
 		foreach($this->_parseBlackListFile($this->ipfile) as $i => $l){
-			$dat .= '<tr><td>'.$l[0].'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td>'.
+			$dat .= '<tr><td>'.htmlspecialchars($l[0]).'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td>'.
 			'<td>'.(isset($l[2]) ? date('Y/m/d H:m:s', $l[2]) : '-').(isset($l[3]) ? ' ('.$l[3].')' : ' (0)').'</td>'.
 			'<td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
 		}
@@ -213,7 +213,7 @@ Desc: <input type="text" name="newdesc" size="30" />
 <tr><td>MD5</td><td>Description</td><td>Delete</td></tr>
 ';
 		foreach($this->_parseBlackListFile($this->imgfile) as $i => $l){
-			$dat .= '<tr><td>'.$l[0].'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td><td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
+			$dat .= '<tr><td>'.htmlspecialchars($l[0]).'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td><td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
 		}
 		$dat .= '</table>
 </div>
