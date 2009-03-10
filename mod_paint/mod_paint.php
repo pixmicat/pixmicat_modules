@@ -33,7 +33,7 @@ class mod_paint{
 		$this->PaintComponent = array( // 各組件所在位置
 			'Base'=>'./paint/', // 其他資源檔基底目錄
 			'PaintBBS'=>'./paint/PaintBBS.jar',
-			'ShiPainter'=>'./paint/spainter.jar',
+			'ShiPainter'=>'./paint/spainter_all.jar',
 			'PCHViewer'=>'./paint/PCHViewer.jar'
 		);
 		$this->TIME_UNIT = array('TIME'=>'作畫時間：', 'D'=> '日', 'H'=>'時', 'M'=>'分', 'S'=>'秒'); // 時間單位
@@ -44,7 +44,7 @@ class mod_paint{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080519)';
+		return '4th.Release.3 (v090310)';
 	}
 
 	/* Hook to ThreadFront */
@@ -101,7 +101,7 @@ class mod_paint{
 	/* 將繪圖與文章暗中連結起來 */
 	function autoHookPostForm(&$form){
 		if(strpos($_SERVER['REQUEST_URI'], str_replace('&amp;', '&', $this->THISPAGE).'&action=post')!==false){ // 符合插入頁面條件
-			$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
+			$userCode = str_replace(array('/','?'), '_', substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12)); // 使用者識別碼 (IP + UserAgent)
 			$imgItem = '<select name="paintImg">';
 			foreach(glob($this->TMPFolder.'*_'.$userCode.'.*') as $item){
 				if(preg_match('/\.(jpg|png)$/', $item)) $imgItem .= '<option>'.basename($item).'</option>';
@@ -177,17 +177,17 @@ class mod_paint{
 		$PimgH = isset($_POST['PimgH']) ? intval($_POST['PimgH']) : 200; if($PimgH < 100){ $PimgH = 100; } if($PimgH > $this->PMAX_H){ $PimgH = $this->PMAX_H; }
 		$AppletW = $PimgW + 150; if($AppletW < 400){ $AppletW = 400; } // Applet Width
 		$AppletH = $PimgH + 170; if($AppletH < 420){ $AppletH = 420; } // Applet Height
-		$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
+		$userCode = str_replace(array('/','?'), '_', substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12)); // 使用者識別碼 (IP + UserAgent)
 		$AppletHeader = "user={$userCode},time=".$nowTime; // Applet send_header
 		switch($Papplet){
 			case '2': // ShiPainterPro
 			case '1': // ShiPainter
 				$ShiSwitch = array(1=>'normal', 2=>'pro');
-				$PappletJar = $this->PaintComponent['ShiPainter'].','.$this->PaintComponent['Base'].$ShiSwitch[intval($Papplet)].'.zip';
+				$PappletJar = $this->PaintComponent['ShiPainter'];
 				$PappletCode = 'c.ShiPainter.class';
 				$PappletParams = '<param name="dir_resource" value="'.$this->PaintComponent['Base'].'" />
-<param name="tt.zip" value="'.$this->PaintComponent['Base'].'tt.zip" />
-<param name="res.zip" value="'.$this->PaintComponent['Base'].'res_'.$ShiSwitch[intval($Papplet)].'.zip" />
+<param name="tt.zip" value="tt_def.zip" />
+<param name="res.zip" value="res.zip" />
 <param name="tools" value="'.$ShiSwitch[intval($Papplet)].'" />
 <param name="layer_count" value="3" />
 <param name="quality" value="1" />';
@@ -314,7 +314,7 @@ setInterval(function(){
 	/* 發文頁面 */
 	function Action_Post(){
 		$resto = isset($_GET['resto']) ? intval($_GET['resto']) : 0; // 回應編號
-		$userCode = substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12); // 使用者識別碼 (IP + UserAgent)
+		$userCode = str_replace(array('/','?'), '_', substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12)); // 使用者識別碼 (IP + UserAgent)
 		$imgList = '';
 		$imgs = glob($this->TMPFolder.'*_'.$userCode.'.*');
 		if(count($imgs) == 0) error('目前沒有屬於您的繪圖存在，請先作畫');
@@ -358,8 +358,8 @@ setInterval(function(){
 			case 'spch': // ShiPainter SPCH File
 				$PappletCode = 'pch2.PCHViewer.class';
 				$PappletJar = $this->PaintComponent['PCHViewer'].','.$this->PaintComponent['ShiPainter'];
-				$PappletParams = '<param name="res.zip" value="'.$this->PaintComponent['Base'].'res_normal.zip" />
-<param name="tt.zip" value="'.$this->PaintComponent['Base'].'tt.zip" />
+				$PappletParams = '<param name="res.zip" value="res.zip" />
+<param name="tt.zip" value="tt_def.zip" />
 <param name="tt_size" value="31" />';
 				break;
 			default:
