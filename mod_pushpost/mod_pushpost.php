@@ -17,7 +17,12 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3-dev (v080823)';
+		return '4th.Release.4-dev (v090318)';
+	}
+
+	/* 生成識別ID */
+	function _getID(){
+		return substr(crypt(md5(getREMOTE_ADDR().IDSEED.gmdate('Ymd', time() + TIME_ZONE * 3600)), 'id'), -8);
 	}
 
 	function autoHookHead(&$txt, $isReply){
@@ -59,7 +64,7 @@ function mod_pushpostSend(o3){
 		global $language;
 		$foot .= '
 <div id="mod_pushpostBOX" style="display:none">
-<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend(this)" /></li></ul>
+<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend(this)" /></li></ul>
 </div>
 ';
 	}
@@ -82,6 +87,7 @@ function mod_pushpostSend(o3){
 	}
 
 	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, &$upfileInfo, $accessInfo, $isReply){
+		if(adminAuthenticate('check')) return; // 登入權限允許標籤留存不轉換 (後端登入修改文章後推文仍有效)
 		if(strpos($com, $this->PUSHPOST_SEPARATOR."\r\n") !== false){ // 防止不正常的插入標籤形式
 			$com = str_replace($this->PUSHPOST_SEPARATOR."\r\n", "\r\n", $com);
 		}
@@ -97,15 +103,17 @@ function mod_pushpostSend(o3){
 			$dat = $PTE->ParseBlock('HEADER', array('{$TITLE}'=>TITLE, '{$RESTO}'=>''));
 			$dat .= '</head><body id="main">';
 			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="post">
-'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
+'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
 </form>';
 			echo $dat, '</body></html>';
 		}else{
 			if($_SERVER['REQUEST_METHOD'] != 'POST') die(_T('regist_notpost')); // 傳送方法不正確
 			$name = CleanStr($_POST['name']); $comm = CleanStr($_POST['comm']);
+			if(strlen($name) > 30) die(_T('modpushpost_maxlength')); // 名稱太長
 			if(strlen($comm) > 160) die(_T('modpushpost_maxlength')); // 太多字
 			if(strlen($comm) == 0) die(_T('modpushpost_nocomment')); // 沒打字
 			$name = str_replace(array(_T('trip_pre'), _T('admin'), _T('deletor')), array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'), $name);
+			$pushID = $this->_getID();
 			$pushtime = gmdate('y/m/d H:i', time() + intval(TIME_ZONE) * 3600);
 			if(preg_match('/(.*?)[#＃](.*)/u', $name, $regs)){
 				$cap = strtr($regs[2], array('&amp;'=>'&'));
@@ -116,7 +124,7 @@ function mod_pushpostSend(o3){
 				if(ALLOW_NONAME) $name = DEFAULT_NONAME;
 				else die(_T('regist_withoutname')); // 不接受匿名
 			}
-			$pushpost = $name.': '.$comm.' ('.$pushtime.')'; // 推文主體
+			$pushpost = "{$name}: {$comm} ({$pushID} {$pushtime})"; // 推文主體
 
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
