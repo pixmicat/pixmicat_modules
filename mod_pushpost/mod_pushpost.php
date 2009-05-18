@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v090318)';
+		return '4th.Release.4-dev (v090516)';
 	}
 
 	/* 生成識別ID */
@@ -137,7 +137,7 @@ function mod_pushpostSend(o3){
 			$flgh = $PIO->getPostStatus($p[0]['status']);
 			if($flgh->exists('TS')) die('[Error] '._T('regist_threadlocked')); // 首篇禁止回應/同時表示禁止推文
 
-			$post[0]['com'] .= ((strpos($post[0]['com'], $this->PUSHPOST_SEPARATOR)===false) ? '<br />'.$this->PUSHPOST_SEPARATOR : '').'<br />'.$pushpost;
+			$post[0]['com'] .= ((strpos($post[0]['com'], $this->PUSHPOST_SEPARATOR)===false) ? '<br />'.$this->PUSHPOST_SEPARATOR : '').'<br /> '.$pushpost;
 			$flgh2 = $PIO->getPostStatus($post[0]['status']);
 			$flgh2->plus('mppCnt'); // 推文次數+1
 			$PIO->updatePost($_GET['no'], array('com'=>$post[0]['com'], 'status'=>$flgh2->toString())); // 更新推文
