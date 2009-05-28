@@ -34,7 +34,7 @@ class mod_captcha{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080806)';
+		return '4th.Release.4-dev (v090524)';
 	}
 
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
@@ -48,7 +48,10 @@ class mod_captcha{
 		global $languages;
 		@session_start();
 		$MD5code = isset($_SESSION['captcha_dcode']) ? $_SESSION['captcha_dcode'] : false;
-		if($MD5code===false || md5(strtoupper($_POST['captchacode'])) !== $MD5code) error(_T('modcaptcha_worderror')); // 大小寫不分檢查
+		if($MD5code===false || !isset($_POST['captchacode']) || md5(strtoupper($_POST['captchacode'])) !== $MD5code){ // 大小寫不分檢查
+			unset($_SESSION['captcha_dcode']);
+			error(_T('modcaptcha_worderror'));
+		}
 	}
 
 	function ModulePage(){
