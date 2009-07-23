@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v090516)';
+		return '4th.Release.4-dev (v090723)';
 	}
 
 	/* 生成識別ID */
@@ -86,7 +86,7 @@ function mod_pushpostSend(o3){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, &$upfileInfo, $accessInfo, $isReply){
+	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $isReply){
 		if(adminAuthenticate('check')) return; // 登入權限允許標籤留存不轉換 (後端登入修改文章後推文仍有效)
 		if(strpos($com, $this->PUSHPOST_SEPARATOR."\r\n") !== false){ // 防止不正常的插入標籤形式
 			$com = str_replace($this->PUSHPOST_SEPARATOR."\r\n", "\r\n", $com);
@@ -120,11 +120,16 @@ function mod_pushpostSend(o3){
 				$salt = strtr(preg_replace('/[^\.-z]/', '.', substr($cap.'H.', 1, 2)), ':;<=>?@[\\]^_`', 'ABCDEFGabcdef');
 				$name = $regs[1]._T('trip_pre').substr(crypt($cap, $salt), -10);
 			}
-			if(!$name || ereg("^[ |　|]*$", $name)){
+			if(!$name || preg_match("/^[ |　|]*$/", $name)){
 				if(ALLOW_NONAME) $name = DEFAULT_NONAME;
 				else die(_T('regist_withoutname')); // 不接受匿名
 			}
-			$pushpost = "{$name}: {$comm} ({$pushID} {$pushtime})"; // 推文主體
+			if(ALLOW_NONAME==2){ // 強制砍名
+				$name = preg_match('/(\\'._T('trip_pre').'.{10})/', $name, $matches) ? $matches[1].':' : '';
+			}else{
+				$name .= ':';
+			}
+			$pushpost = "{$name} {$comm} ({$pushID} {$pushtime})"; // 推文主體
 
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
