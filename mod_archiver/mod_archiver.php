@@ -13,6 +13,7 @@ class mod_archiver{
 
 		$this->ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
 		$this->MULTI_COPY = true; // 容許同一串有多份存檔
+		$this->ADMIN_ONLY = true; // 只容許管理員生成靜態庫存頁面
 	}
 
 	/* Get the name of module */
@@ -22,7 +23,7 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080519)';
+		return '4th.Release.3 (v090728)';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -32,6 +33,11 @@ class mod_archiver{
 	}
 
 	function ModulePage(){
+		if($this->ADMIN_ONLY && !adminAuthenticate('check')) {	// 只容許管理員生成靜態庫存頁面
+			echo 'Access Denied.';
+			return;
+		}
+		
 		$res = isset($_GET['res']) ? $_GET['res'] : 0; // 欲生成靜態庫存頁面之討論串編號
 
 		if(!$res || (!$this->MULTI_COPY && glob($this->ARCHIVE_ROOT.$res.'-*.xml'))){
