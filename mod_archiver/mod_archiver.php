@@ -14,6 +14,9 @@ class mod_archiver{
 		$this->ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
 		$this->MULTI_COPY = true; // 容許同一串有多份存檔
 		$this->ADMIN_ONLY = true; // 只容許管理員生成靜態庫存頁面
+		
+		$this->PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
+		$this->PROCESS_PUSHPOST = 1;	// 處理推文 (是：1 否：0)
 	}
 
 	/* Get the name of module */
@@ -23,7 +26,7 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v090728)';
+		return '4th.Release.3 (v090729)';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -56,7 +59,7 @@ class mod_archiver{
 	/* 取出討論串結構並製成XML結構 */
 	function GenerateArchive($res){
 		global $PIO, $FileIO;
-		$aryNO = $aryNAME = $aryDATE = $arySUBJECT = $aryCOMMENT = $aryCATEGORY = $aryIMAGE = array(); // 討論串結構陣列
+		$aryNO = $aryNAME = $aryDATE = $arySUBJECT = $aryCOMMENT = $aryPUSHPOST = $aryCATEGORY = $aryIMAGE = array(); // 討論串結構陣列
 
 		/* 第一部份：先製成討論串結構陣列 */
 		$tid = $PIO->fetchPostList($res); // 取得特定討論串之編號結構
@@ -71,13 +74,23 @@ class mod_archiver{
 				foreach($ary_category as $c) if($c) $ary_category2[]=$c;
 				$category = implode(', ', $ary_category2);
 			} else $category = '';
-			$aryNO[] = $no; $aryNAME[] = $name; $aryDATE[] = $now; $arySUBJECT[] = $sub; $aryCOMMENT[] = $com; $aryCATEGORY[] = $category; // 置入陣列
+			
+			$push_post = '';
+			if($this->PROCESS_PUSHPOST == 1) {	// 處理推文
+				//echo $com;
+				$comArr = explode($this->PUSHPOST_SEPARATOR.'<br />', $com);
+				if(count($comArr) > 1) {	// 有推文
+					$com = $comArr[0];
+					$push_post = $comArr[1];
+				}
+			}
+			$aryNO[] = $no; $aryNAME[] = $name; $aryDATE[] = $now; $arySUBJECT[] = $sub; $aryCOMMENT[] = $com; $aryPUSHPOST[] = $push_post; $aryCATEGORY[] = $category; // 置入陣列
 			if($FileIO->imageExists($tim.$ext)){ // 有貼圖
 				$size = (int)($FileIO->getImageFilesize($tim.$ext) / 1024);
 				$aryIMAGE[] = array($size, $imgw.'x'.$imgh, $ext, $tim);
 			}else $aryIMAGE[] = '';
 		}
-		$archiveDate = date('Ymdhis');
+		$archiveDate = date('YmdHis');
 
 		/* 第二部份：生成XML結構 */
 		$tmp_c = '<?xml version="1.0" encoding="UTF-8"?>
@@ -88,6 +101,7 @@ class mod_archiver{
 	<date>'.$aryDATE[0].'</date>
 	<subject>'.$arySUBJECT[0].'</subject>
 	<comment>'.$aryCOMMENT[0].'</comment>
+	<pushpost>'.$aryPUSHPOST[0].'</pushpost>
 	<category>'.$aryCATEGORY[0].'</category>
 ';
 		if($aryIMAGE[0]) $tmp_c .= '	<image kbyte="'.$aryIMAGE[0][0].'" scale="'.$aryIMAGE[0][1].'" ext="'.$aryIMAGE[0][2].'">'.$aryIMAGE[0][3].'</image>';
@@ -99,6 +113,7 @@ class mod_archiver{
 		<date>'.$aryDATE[$p].'</date>
 		<subject>'.$arySUBJECT[$p].'</subject>
 		<comment>'.$aryCOMMENT[$p].'</comment>
+		<pushpost>'.$aryPUSHPOST[$p].'</pushpost>
 		<category>'.$aryCATEGORY[$p].'</category>
 ';
 			if($aryIMAGE[$p]) $tmp_c .= '		<image kbyte="'.$aryIMAGE[$p][0].'" scale="'.$aryIMAGE[$p][1].'" ext="'.$aryIMAGE[$p][2].'">'.$aryIMAGE[$p][3].'</image>';

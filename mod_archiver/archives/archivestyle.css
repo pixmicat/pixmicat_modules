@@ -19,6 +19,8 @@
 	.category {font-size: 0.8em; color: gray;} /* 類別標籤 */
 
 	#footer { text-align: center; clear: both; } /* 頁尾樣式 */
+	
+	.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; } /* 推文 */
 }
 
 @media screen{ /* 標準顯示(一般顯示器)模式附加規則 */

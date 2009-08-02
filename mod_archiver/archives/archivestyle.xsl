@@ -53,7 +53,12 @@ if(typeof ActiveXObject!='undefined'){
 	</xsl:if>
 	<span class="title"><xsl:value-of select="subject" /></span>
 	名稱: <span class="name"><xsl:value-of select="name" /></span> [<xsl:value-of select="date" /> <xsl:if test="host"> IP:<xsl:value-of select="host" /></xsl:if>] No.<xsl:value-of select="@no" />
-	<div class="quote"><xsl:apply-templates select="comment" /></div>
+	<div class="quote">
+		<xsl:apply-templates select="comment" />
+		<xsl:if test="pushpost != ''">
+			<div class="pushpost"><xsl:apply-templates select="pushpost" /></div>
+		</xsl:if>
+	</div>
 	</div>
 	<xsl:for-each select="reply">
 		<div class="reply"><xsl:attribute name="id">r<xsl:value-of select="@no" /></xsl:attribute>
@@ -72,7 +77,12 @@ if(typeof ActiveXObject!='undefined'){
 				</img>
 			</a>
 		</xsl:if>
-		<div class="quote"><xsl:apply-templates select="comment" /></div>
+		<div class="quote">
+			<xsl:apply-templates select="comment" />
+			<xsl:if test="pushpost != ''">
+				<div class="pushpost"><xsl:apply-templates select="pushpost" /></div>
+			</xsl:if>
+		</div>
 		<xsl:if test="category != ''"> <!--有類別-->
 		<div class="category">類別: <xsl:value-of select="category" /></div>
 		</xsl:if>
