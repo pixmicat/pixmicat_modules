@@ -7,6 +7,7 @@ class mod_pushpost{
 		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
 		$this->mypage = $PMS->getModulePageURL(__CLASS__);
 		$this->PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
+		$this->PUSHPOST_DEF = 10; // 討論串最多顯示之推文筆數 (超過則自動隱藏，全部隱藏：0)
 		AttachLanguage(array($this, '_loadLanguage')); // 載入語言檔
 	}
 
@@ -17,7 +18,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v090723)';
+		return '4th.Release.4-dev (v090802)';
 	}
 
 	/* 生成識別ID */
@@ -78,7 +79,19 @@ function mod_pushpostSend(o3){
 		}
 		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.$this->mypage.'&amp;no='.$post['no'].'" onclick="return mod_pushpostShow('.$post['no'].')">'.$pushcount._T('modpushpost_pushbutton').'</a>';
 		if(strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />') !== false){
-			$arrLabels['{$COM}'] = str_replace($this->PUSHPOST_SEPARATOR.'<br />', '<div class="pushpost">', $arrLabels['{$COM}']).'</div>';
+			if($isReply || $pushcount <= $this->PUSHPOST_DEF) // 回應模式
+				$arrLabels['{$COM}'] = str_replace($this->PUSHPOST_SEPARATOR.'<br />', '<div class="pushpost">', $arrLabels['{$COM}']).'</div>';
+			else{ // 頁面瀏覽
+				$delimiter = strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />'); // 定位符號位置
+				if($this->PUSHPOST_DEF > 0){
+					$push_array = explode('<br />', substr($arrLabels['{$COM}'], $delimiter + strlen($this->PUSHPOST_SEPARATOR.'<br />')));
+					$pushs = '<div class="pushpost">……<br />'.implode('<br />', array_slice($push_array, 0 - $this->PUSHPOST_DEF)).'</div>';
+				}else{
+					$pushs = '';
+				}
+				$arrLabels['{$COM}'] = substr($arrLabels['{$COM}'], 0, $delimiter).$pushs;
+				$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2">'._T('modpushpost_omitted').'<br /></span>'."\n";
+			}
 		}
 	}
 
@@ -108,6 +121,12 @@ function mod_pushpostSend(o3){
 			echo $dat, '</body></html>';
 		}else{
 			if($_SERVER['REQUEST_METHOD'] != 'POST') die(_T('regist_notpost')); // 傳送方法不正確
+
+			// 查IP
+			$baninfo = '';
+			$ip = getREMOTE_ADDR(); $host = gethostbyaddr($ip);
+			if(BanIPHostDNSBLCheck($ip, $host, $baninfo)) die(_T('regist_ipfiltered', $baninfo));
+
 			$name = CleanStr($_POST['name']); $comm = CleanStr($_POST['comm']);
 			if(strlen($name) > 30) die(_T('modpushpost_maxlength')); // 名稱太長
 			if(strlen($comm) > 160) die(_T('modpushpost_maxlength')); // 太多字
@@ -125,7 +144,7 @@ function mod_pushpostSend(o3){
 				else die(_T('regist_withoutname')); // 不接受匿名
 			}
 			if(ALLOW_NONAME==2){ // 強制砍名
-				$name = preg_match('/(\\'._T('trip_pre').'.{10})/', $name, $matches) ? $matches[1].':' : '';
+				$name = preg_match('/(\\'._T('trip_pre').'.{10})/', $name, $matches) ? $matches[1].':' : DEFAULT_NONAME.':';
 			}else{
 				$name .= ':';
 			}
@@ -169,16 +188,19 @@ function mod_pushpostSend(o3){
 			$language['modpushpost_pushpost'] = '[推文]';
 			$language['modpushpost_pushbutton'] = '推';
 			$language['modpushpost_maxlength'] = '你話太多了';
+			$language['modpushpost_omitted'] = '有部分推文被省略。要閱讀全部推文請按下回應連結。';
 		}elseif($lang=='ja_JP'){
 			$language['modpushpost_nocomment'] = '何か書いて下さい';
 			$language['modpushpost_pushpost'] = '[推文]';
 			$language['modpushpost_pushbutton'] = '推';
 			$language['modpushpost_maxlength'] = 'コメントが長すぎます';
+			$language['modpushpost_omitted'] = '推文省略。全て読むには返信ボタンを押してください。';
 		}elseif($lang=='en_US'){
 			$language['modpushpost_nocomment'] = 'Please type your comment.';
 			$language['modpushpost_pushpost'] = '[Push this post]';
 			$language['modpushpost_pushbutton'] = 'PUSH';
 			$language['modpushpost_maxlength'] = 'You typed too many words';
+			$language['modpushpost_omitted'] = 'Some pushs omitted. Click Reply to view.';
 		}
 	}
 }
