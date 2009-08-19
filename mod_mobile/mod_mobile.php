@@ -23,7 +23,7 @@ class mod_mobile{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '4th.Release.2 (v090819)';
 	}
 
 	/* 自動掛載：頂部連結列 */
@@ -45,7 +45,7 @@ class mod_mobile{
 				case 'l': $ls = ' selected="selected"'; break;
 			}
 			$this->mobileHead($err, TITLE.' - 設定');
-			$err .= '<div>[<a href="'.$this->thisPage.'">回首頁</a>]<br/><form action="'.$this->thisPage.'" method="post">顯示模式:<br/><select name="dm"><option value="s"'.$ss.'>精簡 (無圖,裁字)</option><option value="m"'.$ms.'>一般 (無圖,全字)</option><option value="l"'.$ls.'>完整 (有圖,全字)</option></select><br/><input type="submit" value="儲存"/></form></div><div id="f">-Pixmicat!m-</div></body></html>';
+			$err .= '<div>[<a href="'.$this->thisPage.'">回首頁</a>]<br/><form action="'.(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->thisPage).'" method="post">顯示模式:<br/><select name="dm"><option value="s"'.$ss.'>精簡 (無圖,裁字)</option><option value="m"'.$ms.'>一般 (無圖,全字)</option><option value="l"'.$ls.'>完整 (有圖,全字)</option></select><br/><input type="submit" value="儲存"/></form></div><div id="f">-Pixmicat!m-</div></body></html>';
 		}else{
 			if(isset($_POST['dm'])){ setCookie('dm', ($this->displayMode = $_POST['dm']), time()+604800); }
 			if($res !== 0){
@@ -84,7 +84,6 @@ class mod_mobile{
 		global $PIO, $FileIO;
 		$post_count = count($post);
 		$dat .= '<div id="c">';
-		if($res !== 0){ $dat .= '[<a href="'.(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->thisPage).'">回上頁</a>]<br/>'; }
 		// 逐步取資料
 		for($i = 0; $i < $post_count; $i++){
 			list($no, $sub, $name, $com, $tim, $ext) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['com'], $post[$i]['tim'], $post[$i]['ext']);
