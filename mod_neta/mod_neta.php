@@ -11,15 +11,15 @@ class mod_neta{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071013)';
+		return '4th.Release.2 (v100113)';
 	}
 
 	function autoHookHead(&$dat){
 		$dat .= '<script type="text/javascript">
 // <![CDATA[
 jQuery(function($){
-	$(\'div.threadpost, div.reply\').find(\'span[@id^=neta] > a\').bind(\'click\', function(){
-		$(this).parent().parent().find(\'*[@id^=neta]\')
+	$(\'div.threadpost, div.reply\').find(\'span[id^=neta] > a\').bind(\'click\', function(){
+		$(this).parent().parent().find(\'*[id^=neta]\')
 			.filter(\'span\').hide().end()
 			.filter(\'div\').slideDown();
 		return false;
