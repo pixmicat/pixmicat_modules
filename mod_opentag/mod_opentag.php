@@ -15,11 +15,11 @@ class mod_opentag{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v090123)';
+		return '4th.Release.4-dev (v100113)';
 	}
 
 	function autoHookHead(&$txt, $isReply){
-		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 <script type="text/javascript">
 // <![CDATA[
 jQuery(function($){
