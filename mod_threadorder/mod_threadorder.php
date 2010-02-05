@@ -35,7 +35,7 @@ class mod_threadorder{
 			array_reverse($logs);
 			foreach($logs as $tm) {
 			    $temp = array_search( $tm=trim($tm), $threads );
-			    if($temp !== NULL || $temp !== FALSE) {
+			    if($temp !== NULL && $temp !== FALSE) {
 					array_splice($threads, $temp, 1);
 					array_unshift($threads, $tm);
 				}
@@ -44,7 +44,7 @@ class mod_threadorder{
 		if($logs=@file($this->BOTTOMMOST_LOG)) { // order asc
 			foreach($logs as $bm) {
 			    $temp = array_search( $bm=trim($bm), $threads );
-			    if($temp !== NULL || $temp !== FALSE) {
+			    if($temp !== NULL && $temp !== FALSE) {
 					array_splice($threads, $temp, 1);
 					array_push($threads, $bm);
 				}
