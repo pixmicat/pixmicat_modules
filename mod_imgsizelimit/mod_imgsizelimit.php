@@ -21,10 +21,10 @@ class mod_imgsizelimit{
 	}
 
 	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
-		if( $dest &&
+		if( ($dest !== '') && (
 			($this->MIN_W && $this->MIN_W > $imgWH[2]) ||
 			($this->MIN_H && $this->MIN_H > $imgWH[3]) ||
-			($this->MIN_FILESIZE && $this->MIN_FILESIZE > filesize($dest))
+			($this->MIN_FILESIZE && $this->MIN_FILESIZE > filesize($dest)) )
 			) { 
 				unlink($dest);
 				error('圖像大小小於限制。');
