@@ -15,7 +15,7 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (b090131)';
+		return '5th.Release (v090318)';
 	}
 
 	/* 從資料檔抓出資料 */
@@ -207,6 +207,7 @@ Desc: <input type="text" name="newdesc" size="30" />
 圖檔 MD5 黑名單<br />
 MD5: <input type="text" name="newdata" size="30" />
 Desc: <input type="text" name="newdesc" size="30" />
+<input type="hidden" name="newperiod" value="0" />
 <input type="submit" value="新增" onclick="return add(this.form);" /><br />
 <div class="dos_list_short">
 <table border="0" width="100%">
