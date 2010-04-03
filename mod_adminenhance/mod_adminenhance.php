@@ -15,7 +15,7 @@ class mod_adminenhance{
 	}
 
 	function getModuleVersionInfo(){
-		return '5th.Release (v090318)';
+		return '5th.Release (v100318)';
 	}
 
 	/* 從資料檔抓出資料 */
