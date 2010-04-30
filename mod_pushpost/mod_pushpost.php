@@ -40,7 +40,7 @@ function mod_pushpostShow(pid){
 function mod_pushpostSend(o3){
 	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), pp = $("div#r"+o0.value+">.quote");
 	if(o2.value===""){ alert("'._T('modpushpost_nocomment').'"); return false; }
-	o3.disabled = true;
+	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
 		url: "'.str_replace('&amp;', '&', $this->mypage).'&no="+o0.value,
 		type: "POST",
@@ -51,10 +51,10 @@ function mod_pushpostSend(o3){
 			(pp.find(".pushpost").length===0)
 				? pp.append("<div class=\'pushpost\'>"+rv+"</div>")
 				: pp.children(".pushpost").append("<br />"+rv);
-			o0.value = o1.value = o2.value = ""; o3.disabled = false;
+			o0.value = o1.value = o2.value = ""; o1.disabled = o2.disabled = o3.disabled = false;
 			$("div#mod_pushpostBOX").hide();
 		},
-		error: function(){ alert("Network error."); o3.disabled = false; }
+		error: function(){ alert("Network error."); o1.disabled = o2.disabled = o3.disabled = false; }
 	});
 }
 // ]]>
