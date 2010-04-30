@@ -65,7 +65,7 @@ function mod_pushpostSend(o3){
 		global $language;
 		$foot .= '
 <div id="mod_pushpostBOX" style="display:none">
-<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend(this)" /></li></ul>
+<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" onkeypress="if(event.which==13){event.preventDefault();mod_pushpostSend(this.nextSibling);}" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend(this)" /></li></ul>
 </div>
 ';
 	}
