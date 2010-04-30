@@ -37,8 +37,9 @@ function mod_pushpostShow(pid){
 	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+">.quote")).show();
 	return false;
 }
-function mod_pushpostSend(o3){
-	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), pp = $("div#r"+o0.value+">.quote");
+function mod_pushpostKeyPress(e){if(e.which==13){e.preventDefault();mod_pushpostSend();}}
+function mod_pushpostSend(){
+	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), o3 = $g("mod_pushpostSmb"), pp = $("div#r"+o0.value+">.quote");
 	if(o2.value===""){ alert("'._T('modpushpost_nocomment').'"); return false; }
 	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
@@ -65,7 +66,7 @@ function mod_pushpostSend(o3){
 		global $language;
 		$foot .= '
 <div id="mod_pushpostBOX" style="display:none">
-<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" onkeypress="if(event.which==13){event.preventDefault();mod_pushpostSend(this.nextSibling);}" /><input type="button" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend(this)" /></li></ul>
+<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" onkeypress="mod_pushpostKeyPress(event)" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" onkeypress="mod_pushpostKeyPress(event)" /><input type="button" id="mod_pushpostSmb" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend()" /></li></ul>
 </div>
 ';
 	}
