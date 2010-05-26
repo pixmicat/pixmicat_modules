@@ -1,6 +1,6 @@
 <?php
 class mod_eggpoll{
-	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin;
+	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread;
 
 	function mod_eggpoll(){
 		global $PMS;
@@ -11,6 +11,7 @@ class mod_eggpoll{
 		$this->rankAlphas = array('30','60','100','100','100');
 		$this->rankColors = array('#f00','#a00','','#274','#4b7');
 		$this->rankMin = 3; // 開始評價的最少票數
+		$this->shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival用)
 	}
 
 	/* Get the name of module */
@@ -39,17 +40,16 @@ var postNos = new Array();
 var RankTexts = ["'.implode('","',$this->rankNames).'"];
 var RankAlphas = ["'.implode('","',$this->rankAlphas).'"];
 var RankColors = ["'.implode('","',$this->rankColors).'"];
+var shrinkThread = '.$this->shrinkThread.';
 // <![CDATA[
 function mod_eggpollRank(no,rank){
-	$("span#ep"+no+">.rankup").hide();
-	$("span#ep"+no+">.rankdown").hide();
+	$("span#ep"+no+">.rankup, span#ep"+no+">.rankdown").hide();
 	$.ajax({
 		url: "'.str_replace('&amp;', '&', $this->mypage).'&no="+no+"&rank="+rank,
 		type: "GET",
 		success: function(rv){
 			if(rv.substr(0, 4)!=="+OK "){
-				$("span#ep"+no+">.rankup").css("display","inline");
-				$("span#ep"+no+">.rankdown").css("display","inline");
+				$("span#ep"+no+">.rankup, span#ep"+no+">.rankdown").css("display","inline");
 				alert(rv);
 				return false;
 			}
@@ -57,8 +57,7 @@ function mod_eggpollRank(no,rank){
 			updateAppearance(rv.polls[0].no,rv.polls[0].rank,1);
 		},
 		error: function(){
-			$("span#ep"+no+">.rankup").css("display","inline");
-			$("span#ep"+no+">.rankdown").css("display","inline");
+			$("span#ep"+no+">.rankup, span#ep"+no+">.rankdown").css("display","inline");
 			alert("Network error.");
 		}
 	});
@@ -66,32 +65,31 @@ function mod_eggpollRank(no,rank){
 function mod_eggpollToggle(o,no){
 	if(o.className=="rtoggle") {
 		o.className=="rtoggled";
-		$("div#r"+no+">.quote").slideToggle();
-		if($("div#r"+no+" a>img"))$("div#r"+no+" a>img").slideToggle();
+		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideToggle();
+		if(shrinkThread) $("div#g"+no).height("auto");
 	} else {
 		o.className=="rtoggle";
-		$("div#r"+no+">.quote").slideUp();
-		if($("div#r"+no+" a>img"))$("div#r"+no+" a>img").slideUp();
+		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
+		if(shrinkThread) $("div#g"+no).height("1.25em");
 	}
 }
 function updateAppearance(no,rank,voted) {
 	if(RankAlphas[rank] != "null") {
-		$("div#r"+no).css("opacity",parseInt(RankAlphas[rank])/100);
-		$("div#r"+no).css("filter","alpha(opacity=" + parseInt(RankAlphas[rank])+ ")");
+		$("div#r"+no).fadeTo("fast",parseInt(RankAlphas[rank])/100);
 	}
 	$("span#ep"+no+">.ranktext").html(RankTexts[rank]);
 	$("span#ep"+no+">.ranktext").css("color",RankColors[rank]);
 	if(rank==0) {
 		$("span#ep"+no+">.rtoggle").show();
-		$("div#r"+no+">.quote").slideUp();
-		if($("div#r"+no+" a>img"))$("div#r"+no+" a>img").slideUp();
+		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
+		if(shrinkThread) $("div#g"+no).height("1.25em");
 	}
 	if(voted) {
-		$("span#ep"+no+">.rankup").hide();
-		$("span#ep"+no+">.rankdown").hide();
+		$("span#ep"+no+">.rankup, span#ep"+no+">.rankdown").hide();
 	}
 }
 function getPollValues() {
+	$("#threads").before("<br/>");
 	$.getJSON("'.str_replace('&amp;', '&', $this->mypage).'&get="+postNos,function(data) {
 		$.each(data.polls, function(i,poll){
 			updateAppearance(poll.no,poll.rank,poll.voted);
