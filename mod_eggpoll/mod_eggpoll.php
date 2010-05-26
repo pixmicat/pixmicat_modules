@@ -1,6 +1,6 @@
 <?php
 class mod_eggpoll{
-	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread;
+	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread,$addBR;
 
 	function mod_eggpoll(){
 		global $PMS;
@@ -12,6 +12,7 @@ class mod_eggpoll{
 		$this->rankColors = array('#f00','#a00','','#274','#4b7');
 		$this->rankMin = 3; // 開始評價的最少票數
 		$this->shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival用)
+		$this->addBR = 2; // #postform_main - #threads 之間插入空行? (0=不插入/1=在#postform_main後/2=在#threads前)
 	}
 
 	/* Get the name of module */
@@ -64,13 +65,13 @@ function mod_eggpollRank(no,rank){
 }
 function mod_eggpollToggle(o,no){
 	if(o.className=="rtoggle") {
-		o.className=="rtoggled";
+		o.className="rtoggled";
 		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideToggle();
 		if(shrinkThread) $("div#g"+no).height("auto");
 	} else {
-		o.className=="rtoggle";
+		o.className="rtoggle";
 		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
-		if(shrinkThread) $("div#g"+no).height("1.25em");
+		if(shrinkThread) $("div#g"+no).height("1.3em");
 	}
 }
 function updateAppearance(no,rank,voted) {
@@ -82,14 +83,14 @@ function updateAppearance(no,rank,voted) {
 	if(rank==0) {
 		$("span#ep"+no+">.rtoggle").show();
 		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
-		if(shrinkThread) $("div#g"+no).height("1.25em");
+		if(shrinkThread) $("div#g"+no).height("1.3em");
 	}
 	if(voted) {
 		$("span#ep"+no+">.rankup, span#ep"+no+">.rankdown").hide();
 	}
 }
 function getPollValues() {
-	$("#threads").before("<br/>");
+	'.($this->addBR==1?'$("#postform_main").after("<br/>");':($this->addBR==2?'$("#threads").before("<br/>");':'')).'
 	$.getJSON("'.str_replace('&amp;', '&', $this->mypage).'&get="+postNos,function(data) {
 		$.each(data.polls, function(i,poll){
 			updateAppearance(poll.no,poll.rank,poll.voted);
