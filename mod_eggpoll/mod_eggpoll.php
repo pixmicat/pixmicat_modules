@@ -66,24 +66,24 @@ function mod_eggpollRank(no,rank){
 function mod_eggpollToggle(o,no){
 	if(o.className=="rtoggle") {
 		o.className="rtoggled";
-		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideToggle();
+		$("div#r"+no+">.quote, div#r"+no+"+div.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideToggle();
 		if(shrinkThread) $("div#g"+no).height("auto");
 	} else {
 		o.className="rtoggle";
-		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
-		if(shrinkThread) $("div#g"+no).height("1.3em");
+		$("div#r"+no+">.quote, div#r"+no+"+div.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
+		if(shrinkThread) $("div#g"+no).animate({height:"1.35em"});
 	}
 }
 function updateAppearance(no,rank,voted) {
 	if(RankAlphas[rank] != "null") {
-		$("div#r"+no).fadeTo("fast",parseInt(RankAlphas[rank])/100);
+		$("div#r"+no+", div#r"+no+"+div.quote").fadeTo("fast",parseInt(RankAlphas[rank])/100);
 	}
 	$("span#ep"+no+">.ranktext").html(RankTexts[rank]);
 	$("span#ep"+no+">.ranktext").css("color",RankColors[rank]);
 	if(rank==0) {
 		$("span#ep"+no+">.rtoggle").show();
-		$("div#r"+no+">.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
-		if(shrinkThread) $("div#g"+no).height("1.3em");
+		$("div#r"+no+">.quote, div#r"+no+"+div.quote, div#g"+no+">.quote, div#r"+no+" a>img").slideUp();
+		if(shrinkThread) $("div#g"+no).animate({height:"1.35em"});
 	}
 	if(voted) {
 		$("span#ep"+no+">.rankup, span#ep"+no+">.rankdown").hide();
