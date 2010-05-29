@@ -115,13 +115,6 @@ function getPollValues() {
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $isReply){
-		if(adminAuthenticate('check')) return; // 登入權限允許標籤留存不轉換 (後端登入修改文章後推文仍有效)
-		if(strpos($com, $this->PUSHPOST_SEPARATOR."\r\n") !== false){ // 防止不正常的插入標籤形式
-			$com = str_replace($this->PUSHPOST_SEPARATOR."\r\n", "\r\n", $com);
-		}
-	}
-
 	function _calcRank($up,$down) {
 		$avg=($up+$down)/2;
 		if($up + $down < $this->rankMin) return 2; // too few votes
