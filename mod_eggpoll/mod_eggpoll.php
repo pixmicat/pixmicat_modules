@@ -1,6 +1,6 @@
 <?php
 class mod_eggpoll{
-	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread,$addBR;
+	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread,$addBR,$oneSidedCount;
 
 	function mod_eggpoll(){
 		global $PMS;
@@ -11,7 +11,8 @@ class mod_eggpoll{
 		$this->rankAlphas = array('30','60','100','100','100');
 		$this->rankColors = array('#f00','#a00','','#274','#4b7');
 		$this->rankMin = 3; // 開始評價的最少票數
-		$this->shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival用)
+		$this->oneSidedCount = 5; // 一面倒評價的最少票數
+		$this->shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival.tpl用)
 		$this->addBR = 2; // #postform_main - #threads 之間插入空行? (0=不插入/1=在#postform_main後/2=在#threads前)
 	}
 
@@ -116,23 +117,26 @@ function getPollValues() {
 	}
 
 	function _calcRank($up,$down) {
-		$avg=($up+$down)/2;
-		if($up + $down < $this->rankMin) return 2; // too few votes
-		if($up > $down) {
-			if($avg * 1.05 > $up) return 2; // up < avg*1.05
-			else {
-				if($avg * 1.1 > $up) return 3;// avg*1.05 < up < avg*1.1
-				else if($up - $avg * 1.1 >1) return 4;
-				else return 3;
-			}
-		} else if($up < $down) {
-			if($avg * 1.05 > $down) return 2; // down < avg*1.05
-			else {
-				if($avg * 1.1 > $down) return 1;// avg*1.05 < down < avg*1.1
-				else if($down - $avg * 1.1 >1) return 0;
-				else return 1;
-			}
-		} else return 2;
+		$total = $up+$down;
+		if(!$total) return 2; //prevent divide by zero
+		$u = $up / $total;
+		$d = 1 - $u;
+		
+		if($down == 0) {
+			if($up >= $this->oneSidedCount) return 4;
+			else if($up >= $this->oneSidedCount/2) return 3;
+			else return 2;
+		} else if($up == 0) {
+			if($down >= $this->oneSidedCount) return 0;
+			else if($down >= $this->oneSidedCount/2) return 1;
+			else return 2;
+		} else {
+			if($u >= 0.65) return 4;
+			else if($u >= 0.55) return 3;
+			else if($d >= 0.65) return 0;
+			else if($d >= 0.55) return 1;
+			else return 2;
+		}
 	}
 
 	function _getPollValues($no) {
