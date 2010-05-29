@@ -76,7 +76,7 @@ function mod_eggpollToggle(o,no){
 }
 function updateAppearance(no,rank,voted) {
 	if(RankAlphas[rank] != "null") {
-		$("div#r"+no+", div#r"+no+"+div.quote").fadeTo("fast",parseInt(RankAlphas[rank])/100);
+		$("div#r"+no+", div#r"+no+"+div.quote, div#g"+no+">.quote").fadeTo("fast",parseInt(RankAlphas[rank])/100);
 	}
 	$("span#ep"+no+">.ranktext").html(RankTexts[rank]);
 	$("span#ep"+no+">.ranktext").css("color",RankColors[rank]);
