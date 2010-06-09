@@ -1,6 +1,6 @@
 <?php
 class mod_eggpoll{
-	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread,$addBR,$oneSidedCount;
+	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread,$addBR,$oneSidedCount,$daysThreshold;
 
 	function mod_eggpoll(){
 		global $PMS;
@@ -13,6 +13,7 @@ class mod_eggpoll{
 		$this->rankMin = 3; // 開始評價的最少票數
 		$this->oneSidedCount = 5; // 一面倒評價的最少票數
 		$this->shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival.tpl用)
+		$this->daysThreshold = 14; // 詳細投票記錄保留日數
 		$this->addBR = 2; // #postform_main - #threads 之間插入空行? (0=不插入/1=在#postform_main後/2=在#threads前)
 	}
 
@@ -185,8 +186,8 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			$this->_getPollValues($_GET['get']);
 		}
 		else if(isset($_GET['no'])&&isset($_GET['rank'])){
-//			if($_SERVER['REQUEST_METHOD'] != 'POST') die(_T('regist_notpost')); // 傳送方法不正確
-			$ip = getREMOTE_ADDR(); $datestr = gmdate('Ymd',time()+TIME_ZONE*60*60);
+			$ip = getREMOTE_ADDR(); $tim = time()+TIME_ZONE*60*60;
+			$datestr = gmdate('Ymd',$tim); $deldate = gmdate('Ymd',strtotime('-'.$this->daysThreshold.' days',$tim));
 			$no = intval($_GET['no']); $rank = intval($_GET['rank']);
 
 			// 查IP
@@ -195,11 +196,21 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			if(BanIPHostDNSBLCheck($ip, $host, $baninfo)) die(_T('regist_ipfiltered', $baninfo));
 
 			$post = $PIO->fetchPosts($no);
-			if(!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
+			if(!count($post)) die('[Error] Post does not exist.'); // 被評之文章不存在
 
+			// 檢查是否已經投票
 			$qry = 'SELECT no,ip,date FROM eggpoll_detail WHERE ip = "'.$ip.'" AND date = "'.$datestr.'" AND no ="'.$no.'"';
 			$rs = sqlite_query($this->conn,$qry);
 			if(sqlite_num_rows($rs)) die('[Error] Already voted.');
+
+			// 刐除舊詳細評價
+			$qry = 'SELECT date FROM eggpoll_detail WHERE date < "'.$deldate.'" LIMIT 1';
+			$rs = sqlite_query($this->conn,$qry);
+			if(sqlite_num_rows($rs)) {
+				$str = 'DELETE FROM eggpoll_detail WHERE date < "'.$deldate.'"';
+				sqlite_exec($this->conn,$str,$sqlerr);
+				sqlite_exec($this->conn,'VACUUM',$sqlerr);
+			}
 
 			$str = 'INSERT INTO eggpoll_detail (no,option,ip,date) VALUES ('.$no.','.$rank.',"'.$ip.'","'.$datestr.'")';
 			sqlite_exec($this->conn,$str,$sqlerr);
