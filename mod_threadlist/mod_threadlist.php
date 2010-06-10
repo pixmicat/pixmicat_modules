@@ -5,7 +5,7 @@ By: scribe
 */
 
 class mod_threadlist{
-	var $THREADLIST_NUMBER,$THREADLIST_NUMBER_IN_MAIN,$SHOW_IN_MAIN;
+	var $THREADLIST_NUMBER,$THREADLIST_NUMBER_IN_MAIN,$SHOW_IN_MAIN,$FORCE_SUBJECT;
 
 	function mod_threadlist(){
 		global $PMS;
@@ -14,6 +14,7 @@ class mod_threadlist{
 		$this->THREADLIST_NUMBER = 50; // 一頁顯示列表個數
 		$this->THREADLIST_NUMBER_IN_MAIN = 20; // 在主頁面顯示列表個數
 		$this->SHOW_IN_MAIN = true; // 在主頁面顯示
+		$this->FORCE_SUBJECT = false; // 是否強制開新串要有標題
 	}
 
 	/* Get the name of module */
@@ -23,7 +24,11 @@ class mod_threadlist{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071115)';
+		return '5th.Release (v100610)';
+	}
+
+	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
+		if($this->FORCE_SUBJECT && !$isReply && $sub==DEFAULT_NOTITLE) error('發文不可以沒有標題喔', $dest);
 	}
 
 	/* 自動掛載：頂部連結列 */
