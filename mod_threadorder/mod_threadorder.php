@@ -14,11 +14,15 @@ class mod_threadorder{
 	}
 
 	function getModuleVersionInfo(){
-		return 'v080501';
+		return 'v100619';
 	}
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
 		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$post['no'].'&amp;action=top" title="Top most">TM</a>][<a href="'.$this->mypage.'&amp;no='.$post['no'].'&amp;action=bottom" title="Bottom most">BM</a>]';
+	}
+
+	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false) {
+		if($pageId == 'admin') $link.=' [<a href="'.$this->mypage.'">置頂/置底管理</a>]';
 	}
 
 	function _write($file,$data) {
@@ -32,7 +36,7 @@ class mod_threadorder{
 
 	function autoHookThreadOrder($resno,$page_num,$single_page,&$threads){
 		if($logs=@file($this->TOPMOST_LOG)) { // order asc
-			array_reverse($logs);
+//			$logs = array_reverse($logs);
 			foreach($logs as $tm) {
 			    $temp = array_search( $tm=trim($tm), $threads );
 			    if($temp !== NULL && $temp !== FALSE) {
@@ -59,9 +63,11 @@ class mod_threadorder{
 		if($_SERVER['REQUEST_METHOD']=='POST') {
 
 			if($act=='reorder'){ // 排序
-				$newTop = implode("\n",explode('|',$_POST['newTopmost']));
+				$newTop = explode('|',$_POST['newTopmost']);
+				$newTop = array_reverse($newTop);
+				$newTop = trim(implode("\n",$newTop));
 				$this->_write($this->TOPMOST_LOG,$newTop);
-				$newBottom = implode("\n",explode('|',$_POST['newBottommost']));
+				$newBottom = trim(implode("\n",explode('|',$_POST['newBottommost'])));
 				$this->_write($this->BOTTOMMOST_LOG,$newBottom);
 				die('Done. Please go back.');
 			}
@@ -148,11 +154,15 @@ function placeInHidden(delim, selStr, hidStr){
 <input type="hidden" name="action" value="reorder" />
 <table>
 <tr>
+<td>置頂：</td><td></td><td>置底：</td><td></td>
+</tr>
+<tr>
 <td align="middle">';
-echo '  <select id="topmost" size="8">';
+echo '  <select id="topmost" size="30">';
 $logs=@file($this->TOPMOST_LOG); // order asc
-foreach($logs as $bm) {
-	echo '    <option value="'.$bm.'" >No.'.$bm.'</option>';
+$logs=array_reverse($logs);
+foreach($logs as $tm) {
+	echo '    <option value="'.$tm.'" >'.$tm.'</option>';
 }
 echo '  </select>
 </td>
@@ -165,10 +175,10 @@ onClick="move(\'topmost\',document.getElementById(\'topmost\').selectedIndex,+1)
 onClick="remove(\'topmost\')">
 </td>
 <td align="middle">';
-echo '  <select id="buttommost" size="8">';
+echo '  <select id="buttommost" size="30">';
 $logs=@file($this->BOTTOMMOST_LOG); // order asc
 foreach($logs as $bm) {
-	echo '    <option value="'.$bm.'" >No.'.$bm.'</option>';
+	echo '    <option value="'.$bm.'" >'.$bm.'</option>';
   } 
 echo '  </select>
 </td>
@@ -181,7 +191,7 @@ onClick="move(\'buttommost\',document.getElementById(\'buttommost\').selectedInd
 onClick="remove(\'buttommost\')">
 </td>
 </tr>
-<tr colspan="4"><td><input type="hidden" name="newTopmost" id="ntop" value="" /><input type="hidden" name="newBottommost" id="nbottom" value="" />
+<tr><td colspan="4"><input type="hidden" name="newTopmost" id="ntop" value="" /><input type="hidden" name="newBottommost" id="nbottom" value="" />
   <input type="hidden" name="action" value="reorder">
   <input type="submit">
 </td>
