@@ -21,8 +21,8 @@ class mod_tripcheck{
 	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
 		$trip='';
 		if(($trippos=strpos($name,_T('trip_pre')))!==false) {
-			$trip=substr($name,$trippos+strlen(_T('trip_pre')));
-			if((!$resto && $this->TRIPPOST_THREAD && $this->TRIPPOST_THREAD_REGED)||($resto && $this->TRIPPOST_REPLY && $this->TRIPPOST_REPLY_REGED)) {
+			$trip=substr($name,$trippos+strlen(_T('trip_pre')),10);
+			if((!$isReply && $this->TRIPPOST_THREAD && $this->TRIPPOST_THREAD_REGED)||($isReply && $this->TRIPPOST_REPLY && $this->TRIPPOST_REPLY_REGED)) {
 				$tres=$this->_tripCheck($trip);
 				switch($tres) {
 					case 'OK':
