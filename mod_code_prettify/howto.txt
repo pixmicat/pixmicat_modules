@@ -1,0 +1,20 @@
+﻿License:
+
+google-code-prettify is licensed under Apache License 2.0. http://code.google.com/p/google-code-prettify/
+mod_code_prettify is not a part of Pixmicat! package. So it's not licensed under the Clarified Artistic License. It's in the public domain.
+
+中文安裝指引:
+
+1. 下載 google-code-prettify (http://code.google.com/p/google-code-prettify/) 儲存
+2. 將 mod_code_prettify.php, 1. 解壓後的 prettify 目錄放到 module/ 目錄裡
+3. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_code_prettify';
+4. 如果遇到 XHTML 解析錯誤問題，可將 config.php USE_XHTML 設為 0 取消
+5. 若要修改顯示樣式 (顯示行號、改變背景顏色等)，可修改 prettify 目錄下的 prettify.css 樣式表
+
+English Instruction:
+
+1. Download google-code-prettify from the project page (http://code.google.com/p/google-code-prettify/).
+2. Put the following files into the module/ directory: "mod_code_prettify.php" and "prettify" folders.
+3. Use your favorite editor to open the "config.php" and add one line ($ModuleList[] = 'mod_code_prettify';) into the "Modules to be loaded" block.
+4. You can edit config.php and change the value of USE_XHTML to 0 to avoid display problem in XHTML parsing mode.
+5. You can edit prettify/prettify.css to meet your need such as showing line number or changing background color.
