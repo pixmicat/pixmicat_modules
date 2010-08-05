@@ -57,11 +57,13 @@ class mod_showip{
 					$parthost = '*.'.$parts[0];
 			// netvigator/bbtec/HKBN IP hack
 			} elseif($parts[1] == 'netvigator' || $parts[1] == 'bbtec' || $parts[1] == 'ctinets') {
-				if(preg_match('/^[a-zA-Z]*(\d{3})(\d{3})/',$iphost,$ipparts))
+				if($parts[1] == 'netvigator' && preg_match('/^(pcd\d{3})\d{3}/',$iphost,$ipparts)) // no IP hack for pcd******.netvigator.com
+					$parthost = $ipparts[1].'*.'.$parts[0];
+				elseif(preg_match('/^[a-zA-Z]*(\d{3})(\d{3})/',$iphost,$ipparts))
 					$parthost = intval($ipparts[1]).'.'.intval($ipparts[2]).'.*.'.$parts[0];
 				else
 					$parthost = '*.'.$parts[0];
-			} elseif($parts[1] == 'pldt') { // pldt IP hack
+			} elseif($parts[1] == 'pldt' || $parts[1] == 'quadranet') { // pldt/quadranet IP hack
 				if(preg_match('/^(\d+\.\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[1].'.*.'.$parts[0];
 				else
@@ -162,6 +164,11 @@ class mod_showip{
 								} elseif($parts[1] == 'deloitte') { // deloitte IP hack
 									if(preg_match('/^\w+\-(\d+\-\d+)-\d+/',$iphost,$ipparts))
 										$parthost = $ipparts[1].'-*.'.$parts[0];
+									else
+										$parthost = '*.'.$parts[0];
+								} elseif($parts[1] == 'tm') { // tm.net.my IP hack (partly)
+									if(preg_match('/^\d+\.\d+\.(\d+)\.(\d+)\.\w+\-home/',$iphost,$ipparts))
+										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
 								} elseif($parts[1] == 'dion' || $parts[1] == 'kcn-tv' || $parts[1] == 'janis' || $parts[1] == 'panda-world') { // dion/kcn-tv/janis/panda-world IP hack
