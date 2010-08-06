@@ -6,7 +6,7 @@ class mod_showip{
 	}
 
 	function getModuleVersionInfo(){
-		return 'v100804';
+		return 'v100806';
 	}
 
 	function _isgTLD($last,$add='') {
@@ -41,7 +41,7 @@ class mod_showip{
 
 			// hinet/teksavvy/qwest/mchsi/smartone-vodafone/rr/swbell/sbcglobal/acanac/ameritech/
 			// telus/charter/embarqhsd/comcast/verizon/sparqnet/taiwanmobile/userdns/pacbell/
-			// comcastbusiness/fetnet/cgocable/cox/on/thecloud/suddenlink/psu IP hack
+			// comcastbusiness/fetnet/cgocable/cox/on/psu/thecloud/suddenlink/telstraclear IP hack
 			if($parts[1] == 'hinet' || $parts[1] == 'teksavvy' || $parts[1] == 'qwest'
 			 || $parts[1] == 'mchsi' || $parts[1] == 'smartone-vodafone' || $parts[1] == 'rr'
 			 || $parts[1] == 'swbell' || $parts[1] == 'sbcglobal' || $parts[1] == 'acanac'
@@ -49,8 +49,8 @@ class mod_showip{
 			 || $parts[1] == 'embarqhsd' || $parts[1] == 'comcast' || $parts[1] == 'verizon'
 			 || $parts[1] == 'sparqnet' || $parts[1] == 'taiwanmobile' || $parts[1] == 'userdns'
 			 || $parts[1] == 'pacbell' || $parts[1] == 'comcastbusiness' || $parts[1] == 'fetnet'
-			 || $parts[1] == 'cgocable' || $parts[1] == 'cox' || $parts[1] == 'on'
-			 || $parts[1] == 'thecloud' || $parts[1] == 'suddenlink' || $parts[1] == 'psu') {
+			 || $parts[1] == 'cgocable' || $parts[1] == 'cox' || $parts[1] == 'on' || $parts[1] == 'psu'
+			 || $parts[1] == 'thecloud' || $parts[1] == 'suddenlink' || $parts[1] == 'telstraclear') {
 				if(preg_match('/^[a-zA-Z\-]*(\d+\-\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[1].'-*.'.$parts[0];
 				else
@@ -78,7 +78,7 @@ class mod_showip{
 					$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[0];
 				else
 					$parthost = '*.'.$parts[0];
-			} elseif($parts[1] == 'web-pass') { // web-pass IP hack
+			} elseif($parts[1] == 'web-pass' || $parts[1] == 'windstream') { // web-pass/windstream IP hack
 				if(preg_match('/^\w+\.\d+\.(\d+)\.(\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 				else
@@ -106,11 +106,11 @@ class mod_showip{
 							preg_match('/([\w\-]+)\.([\w\-]+)\.(\w+)$/',$iphost,$parts);
 							$isgtld = $this->_isgTLD($parts[2],array('ac','ad','co','ed','go','gr'.'lg','ne','or','ind','ltd','nic','plc','vet')); // '.co.uk' etc. are common
 							if($isgtld) {
-								// kbronet/seed/so-net.net.tw/tfn/giga/lsc/canvas/tpgi/adam/iinet/tbcnet IP hack
+								// kbronet/seed/so-net.net.tw/tfn/giga/lsc/canvas/tpgi/adam/iinet/tbcnet/xtra IP hack
 								if($parts[1] == 'kbronet' || $parts[1] == 'seed' || $parts[1] == 'so-net'
 								 || $parts[1] == 'tfn' || $parts[1] == 'giga' || $parts[1] == 'lsc'
 								 || $parts[1] == 'canvas' || $parts[1] == 'tpgi' || $parts[1] == 'adam'
-								 || $parts[1] == 'iinet' || $parts[1] == 'tbcnet') {
+								 || $parts[1] == 'iinet' || $parts[1] == 'tbcnet' || $parts[1] == 'xtra') {
 									if(preg_match('/^(\d+\-\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[0].'-*.'.$parts[0];
 									else
@@ -131,14 +131,14 @@ class mod_showip{
 										$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
-								} elseif($parts[1] == 'dongfong') { // dongfong IP hack
-									if(preg_match('/^(\d+)\.(\d+)-(\d+)\-[a-zA-Z]+(\d+)/',$iphost,$ipparts))
-										$parthost = $ipparts[1].'-'.$ipparts[2].'-*.'.$parts[0];
-									else
-										$parthost = '*.'.$parts[0];
 								} elseif($parts[1] == 'totalbb') { // totalbb IP hack
 									if(preg_match('/^[\w\-]+\.(\d+)-(\d+)\-(\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[3].'-'.$ipparts[2].'-*.'.$parts[0];
+									else
+										$parthost = '*.'.$parts[0];
+								} elseif($parts[1] == 'dongfong') { // dongfong IP hack
+									if(preg_match('/^(\d+)\.(\d+)-(\d+)\-[a-zA-Z]+(\d+)/',$iphost,$ipparts))
+										$parthost = $ipparts[1].'-'.$ipparts[2].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
 								} elseif($parts[1] == 'ocn' || $parts[1] == 'nttpc') { // OCN/nttpc hack (no IP hack available)
@@ -168,6 +168,11 @@ class mod_showip{
 										$parthost = '*.'.$parts[0];
 								} elseif($parts[1] == 'tm') { // tm.net.my IP hack (partly)
 									if(preg_match('/^\d+\.\d+\.(\d+)\.(\d+)\.\w+\-home/',$iphost,$ipparts))
+										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
+									else
+										$parthost = '*.'.$parts[0];
+								} elseif($parts[1] == '163data') { // 163data IP hack
+									if(preg_match('/^\d+\.\d+\.(\d+)\.(\d+)\./',$iphost,$ipparts))
 										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
@@ -204,6 +209,12 @@ class mod_showip{
 									if(preg_match('/^(\d+)\.(\d+)\.(\d+)\.(\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[2].'.'.$parts[3];
 									else
+										$parthost = '*.'.$parts[2].'.'.$parts[3];
+								} elseif($parts[2] == 'bell') { // bell IP hack
+									if(preg_match('/^\w+\-\w+\-(\d+)\./',$iphost,$ipparts)) {
+										$ipparts = explode('.',long2ip($ipparts[1]));
+										$parthost = $ipparts[0].'-'.$ipparts[1].'-*.'.$parts[2].'.'.$parts[3];
+									} else
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
 								} elseif($parts[2] == 'club-internet') { // club-internet IP hack
 									if(preg_match('/^\w+\-\d+\-(\d+)\-(\d+)\-(\d+)\-(\d+)/',$iphost,$ipparts))
