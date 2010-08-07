@@ -42,7 +42,7 @@ class mod_showip{
 			// hinet/teksavvy/qwest/mchsi/smartone-vodafone/rr/swbell/sbcglobal/acanac/ameritech/
 			// telus/charter/embarqhsd/comcast/verizon/sparqnet/taiwanmobile/userdns/pacbell/
 			// comcastbusiness/fetnet/cgocable/cox/on/psu/thecloud/suddenlink/telstraclear/
-			// liniacom/elisa-laajakaista/zsttk/bezeqint/arcor-ip IP hack
+			// liniacom/elisa-laajakaista/zsttk/bezeqint/arcor-ip/prtc/linearg/insightbb IP hack
 			if($parts[1] == 'hinet' || $parts[1] == 'teksavvy' || $parts[1] == 'qwest'
 			 || $parts[1] == 'mchsi' || $parts[1] == 'smartone-vodafone' || $parts[1] == 'rr'
 			 || $parts[1] == 'swbell' || $parts[1] == 'sbcglobal' || $parts[1] == 'acanac'
@@ -52,7 +52,8 @@ class mod_showip{
 			 || $parts[1] == 'pacbell' || $parts[1] == 'comcastbusiness' || $parts[1] == 'fetnet'
 			 || $parts[1] == 'cgocable' || $parts[1] == 'cox' || $parts[1] == 'on' || $parts[1] == 'psu'
 			 || $parts[1] == 'thecloud' || $parts[1] == 'suddenlink' || $parts[1] == 'telstraclear'
-			 || $parts[1] == 'liniacom' || $parts[1] == 'elisa-laajakaista' || $parts[1] == 'zsttk' || $parts[1] == 'bezeqint' || $parts[1] == 'arcor-ip') {
+			 || $parts[1] == 'liniacom' || $parts[1] == 'elisa-laajakaista' || $parts[1] == 'zsttk'
+			 || $parts[1] == 'bezeqint' || $parts[1] == 'arcor-ip' || $parts[1] == 'prtc' || $parts[1] == 'linearg' || $parts[1] == 'insightbb') {
 				if(preg_match('/^[a-zA-Z\-]*(\d+\-\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[1].'-*.'.$parts[0];
 				else
@@ -80,7 +81,7 @@ class mod_showip{
 					$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[0];
 				else
 					$parthost = '*.'.$parts[0];
-			} elseif($parts[1] == 'web-pass' || $parts[1] == 'windstream') { // web-pass/windstream IP hack
+			} elseif($parts[1] == 'web-pass' || $parts[1] == 'windstream' || $parts[1] == '1dial') { // web-pass/windstream/1dial IP hack
 				if(preg_match('/^\w+\.\d+\.(\d+)\.(\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 				else
@@ -128,14 +129,16 @@ class mod_showip{
 							preg_match('/([\w\-]+)\.([\w\-]+)\.(\w+)$/',$iphost,$parts);
 							$isgtld = $this->_isgTLD($parts[2],array('ac','ad','co','ed','go','gr'.'lg','ne','or','ind','ltd','nic','plc','vet')); // '.co.uk' etc. are common
 							if($isgtld) {
-								// kbronet/seed/so-net.net.tw/tfn/giga/lsc/canvas/tpgi/adam/iinet/tbcnet/xtra/nkcatv/telesp/netvision IP hack
+								// kbronet/seed/so-net.net.tw/tfn/giga/lsc/canvas/tpgi/adam/iinet/tbcnet/xtra/nkcatv/telesp/netvision/twt1 IP hack
 								if($parts[1] == 'kbronet' || $parts[1] == 'seed' || $parts[1] == 'so-net'
 								 || $parts[1] == 'tfn' || $parts[1] == 'giga' || $parts[1] == 'lsc'
 								 || $parts[1] == 'canvas' || $parts[1] == 'tpgi' || $parts[1] == 'adam'
 								 || $parts[1] == 'iinet' || $parts[1] == 'tbcnet' || $parts[1] == 'xtra'
-								 || $parts[1] == 'nkcatv' || $parts[1] == 'telesp' || $parts[1] == 'netvision') {
+								 || $parts[1] == 'nkcatv' || $parts[1] == 'telesp' || $parts[1] == 'netvision' || $parts[1] == 'twt1') {
 									if(preg_match('/^(\d+\-\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[0].'-*.'.$parts[0];
+									elseif($parts[1] == 'seed' && preg_match('/^\w+\-(\d+\-\d+)-\d+/',$iphost,$ipparts)) // seed h* IP hack
+										$parthost = $ipparts[1].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
 								// i-cable/singnet/optusnet/plala/rosenet/bethere/asianet/home/hidatakayama/apol/pikara/bigpond/netspace/orange.co.il IP hack
@@ -154,8 +157,8 @@ class mod_showip{
 								} elseif($parts[1] == 'infoweb') { // infoweb hack (no IP hack available)
 										preg_match('/([\w\-]+\.){6}(\w+)$/',$iphost,$parts);
 										$parthost = '*.'.$parts[0];
-								// tcol/yournet/m1connect/exetel IP hack
-								} elseif($parts[1] == 'tcol' || $parts[1] == 'yournet' || $parts[1] == 'm1connect' || $parts[1] == 'exetel') {
+								// tcol/yournet/m1connect/exetel/megaegg IP hack
+								} elseif($parts[1] == 'tcol' || $parts[1] == 'yournet' || $parts[1] == 'm1connect' || $parts[1] == 'exetel' || $parts[1] == 'megaegg') {
 									if(preg_match('/^(\d+)\.(\d+)\.(\d+)\.(\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[0];
 									else
@@ -205,7 +208,7 @@ class mod_showip{
 										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
-								} elseif($parts[1] == '163data') { // 163data IP hack
+								} elseif($parts[1] == '163data' || $parts[1] == 'cta') { // 163data/cta IP hack
 									if(preg_match('/^\d+\.\d+\.(\d+)\.(\d+)\./',$iphost,$ipparts))
 										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 									else
@@ -234,7 +237,8 @@ class mod_showip{
 										$parthost = $ipparts[1].'-*.'.$parts[2].'.'.$parts[3];
 									else
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
-								} elseif($parts[2] == 'corbina' || $parts[2] == 'j-cnet' || $parts[2] == 'numericable' || $parts[2] == 'telekom') { // corbina/j-cnet/numericable/telekom.at IP hack
+								// corbina/j-cnet/numericable/telekom.at/tele2.se IP hack
+								} elseif($parts[2] == 'corbina' || $parts[2] == 'j-cnet' || $parts[2] == 'numericable' || $parts[2] == 'telekom' || $parts[2] == 'tele2') {
 									if(preg_match('/^(\d+\-\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[0].'-*.'.$parts[2].'.'.$parts[3];
 									else
@@ -270,6 +274,11 @@ class mod_showip{
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
 								} elseif($parts[2] == 'telecomitalia') { // telecomitalia IP hack
 									if(preg_match('/^[\w\-]+\.(\d+)\-(\d+)\-/',$iphost,$ipparts))
+										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[2].'.'.$parts[3];
+									else
+										$parthost = '*.'.$parts[2].'.'.$parts[3];
+								} elseif($parts[2] == 'belgacom') { // belgacom IP hack
+									if(preg_match('/^\d+\.\d+\-(\d+)\-(\d+)\./',$iphost,$ipparts))
 										$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[2].'.'.$parts[3];
 									else
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
