@@ -42,7 +42,7 @@ class mod_showip{
 			// hinet/teksavvy/qwest/mchsi/smartone-vodafone/rr/swbell/sbcglobal/acanac/ameritech/
 			// telus/charter/embarqhsd/comcast/verizon/sparqnet/taiwanmobile/userdns/pacbell/
 			// comcastbusiness/fetnet/cgocable/cox/on/psu/thecloud/suddenlink/telstraclear/
-			// liniacom/elisa-laajakaista/zsttk/bezeqint/arcor-ip/prtc/linearg/insightbb IP hack
+			// liniacom/elisa-laajakaista/zsttk/bezeqint/arcor-ip/prtc/linearg/insightbb/george24/pipex/amis/eircom/lijbrandt IP hack
 			if($parts[1] == 'hinet' || $parts[1] == 'teksavvy' || $parts[1] == 'qwest'
 			 || $parts[1] == 'mchsi' || $parts[1] == 'smartone-vodafone' || $parts[1] == 'rr'
 			 || $parts[1] == 'swbell' || $parts[1] == 'sbcglobal' || $parts[1] == 'acanac'
@@ -53,7 +53,9 @@ class mod_showip{
 			 || $parts[1] == 'cgocable' || $parts[1] == 'cox' || $parts[1] == 'on' || $parts[1] == 'psu'
 			 || $parts[1] == 'thecloud' || $parts[1] == 'suddenlink' || $parts[1] == 'telstraclear'
 			 || $parts[1] == 'liniacom' || $parts[1] == 'elisa-laajakaista' || $parts[1] == 'zsttk'
-			 || $parts[1] == 'bezeqint' || $parts[1] == 'arcor-ip' || $parts[1] == 'prtc' || $parts[1] == 'linearg' || $parts[1] == 'insightbb') {
+			 || $parts[1] == 'bezeqint' || $parts[1] == 'arcor-ip' || $parts[1] == 'prtc'
+			 || $parts[1] == 'linearg' || $parts[1] == 'insightbb' || $parts[1] == 'george24'
+			 || $parts[1] == 'pipex' || $parts[1] == 'amis' || $parts[1] == 'eircom' || $parts[1] == 'lijbrandt') {
 				if(preg_match('/^[a-zA-Z\-]*(\d+\-\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[1].'-*.'.$parts[0];
 				else
@@ -66,7 +68,7 @@ class mod_showip{
 					$parthost = $ipparts[1].'*.'.$parts[0];
 				else
 					$parthost = '*.'.$parts[0];
-			} elseif($parts[1] == 'pldt' || $parts[1] == 'quadranet' || $parts[1] == 'totbb' || $parts[1] == 'plus') { // pldt/quadranet/totbb/plus IP hack
+			} elseif($parts[1] == 'pldt' || $parts[1] == 'quadranet' || $parts[1] == 'totbb' || $parts[1] == 'plus' || $parts[1] == 'ono') { // pldt/quadranet/totbb/plus/ono IP hack
 				if(preg_match('/^(\d+\.\d+)/',$iphost,$ipparts))
 					$parthost = $ipparts[1].'.*.'.$parts[0];
 				else
@@ -86,12 +88,6 @@ class mod_showip{
 					$parthost = $ipparts[2].'-'.$ipparts[1].'-*.'.$parts[0];
 				else
 					$parthost = '*.'.$parts[0];
-			} elseif($parts[1] == 'theplanet') { // theplanet IP hack
-				if(preg_match('/^[0-9a-fA-F]+\.[0-9a-fA-F]+\.([0-9a-fA-F]{2})([0-9a-fA-F]{2})/',$iphost,$ipparts)) {
-					$ipdec = hexdec($ipparts[1]);
-					$parthost = hexdec($ipparts[2]).'-'.hexdec($ipparts[1]).'-*.'.$parts[0];
-				} else
-					$parthost = '*.'.$parts[0];
 			} elseif($parts[1] == 't-dialin') { // t-dialin IP hack
 				if(preg_match('/^[a-zA-Z]([0-9a-zA-F]{2})([0-9a-zA-F]{2})[0-9a-zA-F]{2}[0-9a-zA-F]{2}\./',$iphost,$ipparts))
 					$parthost =  hexdec($ipparts[1]).'-'.hexdec($ipparts[2]).'-*.'.$parts[0];
@@ -107,10 +103,16 @@ class mod_showip{
 					$parthost =  hexdec($ipparts[1]).'-'.hexdec($ipparts[2]).'-*.'.$parts[0];
 				else
 					$parthost = '*.'.$parts[0];
-			} elseif($parts[1] == 'rima-tde') { // rima-tde IP hack
+			} elseif($parts[1] == 'rima-tde' || $parts[1] == 'myvzw') { // rima-tde/myvzw IP hack
 				if(preg_match('/^\d+\.[a-zA-Z]+\-(\d+\-\d+)\-/',$iphost,$ipparts))
 					$parthost =  $ipparts[1].'-*.'.$parts[0];
 				else
+					$parthost = '*.'.$parts[0];
+			} elseif($parts[1] == 'theplanet') { // theplanet IP hack
+				if(preg_match('/^[0-9a-fA-F]+\.[0-9a-fA-F]+\.([0-9a-fA-F]{2})([0-9a-fA-F]{2})/',$iphost,$ipparts)) {
+					$ipdec = hexdec($ipparts[1]);
+					$parthost = hexdec($ipparts[2]).'-'.hexdec($ipparts[1]).'-*.'.$parts[0];
+				} else
 					$parthost = '*.'.$parts[0];
 			} elseif(preg_match('/on-nets$/',$parts[1])) { // on-nets IP hack
 				if(preg_match('/(\d+)\-(\d+)-on-nets/',$parts[1],$ipparts))
@@ -141,12 +143,12 @@ class mod_showip{
 										$parthost = $ipparts[1].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
-								// i-cable/singnet/optusnet/plala/rosenet/bethere/asianet/home/hidatakayama/apol/pikara/bigpond/netspace/orange.co.il IP hack
+								// i-cable/singnet/optusnet/plala/rosenet/bethere/asianet/home/hidatakayama/apol/pikara/bigpond/netspace/orange.co.il/callplus IP hack
 								} elseif($parts[1] == 'hkcable' || $parts[1] == 'singnet' || $parts[1] == 'optusnet'
 								 || $parts[1] == 'plala' || $parts[1] == 'rosenet' || $parts[1] == 'bethere'
 								 || $parts[1] == 'asianet' || $parts[1] == 'home' || $parts[1] == 'hidatakayama'
 								 || $parts[1] == 'apol' || $parts[1] == 'pikara' || $parts[1] == 'bigpond'
-								 || $parts[1] == 'netspace' || $parts[1] == 'orange') {
+								 || $parts[1] == 'netspace' || $parts[1] == 'orange' || $parts[1] == 'callplus') {
 									if(preg_match('/^[a-zA-Z\-]*(\d+\-\d+)-\d+\-\d+/',$iphost,$ipparts))
 										$parthost = $ipparts[1].'-*.'.$parts[0];
 									else
@@ -243,15 +245,15 @@ class mod_showip{
 										$parthost = $ipparts[0].'-*.'.$parts[2].'.'.$parts[3];
 									else
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
-								// commufa/unitymediagroup/yaroslavl/otenet/scarlet/netcabo/mtu-net/eunet/chello/net-htp IP hack
+								// commufa/unitymediagroup/yaroslavl/otenet/scarlet/netcabo/mtu-net/eunet/chello/net-htp/upc/t3/telfort IP hack
 								} elseif($parts[2] == 'commufa' || $parts[2] == 'unitymediagroup' || $parts[2] == 'yaroslavl'
 								|| $parts[2] == 'otenet' || $parts[2] == 'scarlet' || $parts[2] == 'netcabo' || $parts[2] == 'mtu-net'
-								|| $parts[2] == 'eunet' || $parts[2] == 'chello' || $parts[2] == 'net-htp') {
+								|| $parts[2] == 'eunet' || $parts[2] == 'chello' || $parts[2] == 'net-htp' || $parts[2] == 'upc' || $parts[2] == 't3' || $parts[2] == 'telfort') {
 									if(preg_match('/^[a-zA-Z]*-?(\d+\-\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[1].'-*.'.$parts[2].'.'.$parts[3];
 									else
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
-								} elseif($parts[2] == 'bbexcite') { // bbexcite IP hack
+								} elseif($parts[2] == 'bbexcite' || $parts[2] == 'estpak') { // bbexcite/estpak IP hack
 									if(preg_match('/^(\d+)\.(\d+)\.(\d+)\.(\d+)/',$iphost,$ipparts))
 										$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[2].'.'.$parts[3];
 									else
@@ -292,7 +294,7 @@ class mod_showip{
 										$parthost = hexdec($ipparts[2]).'-'.hexdec($ipparts[1]).'-*.'.$parts[2].'.'.$parts[3];
 									else
 										$parthost = '*.'.$parts[2].'.'.$parts[3];
-								} elseif($parts[2] == 'gavle' || $parts[2] == 't-ipconnect' || $parts[2] == 'telenet') { // gavle/t-ipconnect/telenet IP hack
+								} elseif($parts[2] == 'gavle' || $parts[2] == 't-ipconnect' || $parts[2] == 'telenet' || $parts[2] == 'direct-adsl') { // gavle/t-ipconnect/telenet/direct-adsl IP hack
 									if(preg_match('/^[a-zA-Z]([0-9a-zA-F]{2})([0-9a-zA-F]{2})[0-9a-zA-F]{2}[0-9a-zA-F]{2}\./',$iphost,$ipparts))
 										$parthost = hexdec($ipparts[1]).'-'.hexdec($ipparts[2]).'-*.'.$parts[2].'.'.$parts[3];
 									else
