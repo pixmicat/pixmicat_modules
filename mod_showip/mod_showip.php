@@ -64,9 +64,15 @@ class mod_showip{
 			} elseif($parts[1] == 'netvigator' || $parts[1] == 'bbtec' || $parts[1] == 'ctinets') {
 				if(preg_match('/^[a-z]*(\d{3})(\d{3})\d{3}\d{3}/',$iphost,$ipparts))
 					$parthost = intval($ipparts[1]).'.'.intval($ipparts[2]).'.*.'.$parts[0];
-				elseif($parts[1] == 'netvigator' && preg_match('/^(pcd\d{3})\d{3}/',$iphost,$ipparts)) // no IP hack for pcd******.netvigator.com
-					$parthost = $ipparts[1].'*.'.$parts[0];
-				else
+				elseif($parts[1] == 'netvigator') {
+					if (preg_match('/^(pcd\d{3})\d{3}/',$iphost,$ipparts)) // no IP hack for pcd******.netvigator.com
+						$parthost = $ipparts[1].'*.'.$parts[0];
+					elseif(preg_match('/^[a-z]*(\d{3})(\d{3})/',$iphost,$ipparts)) { // PCCW egg pain (n1164818021)
+						if(intval($ipparts[2]) > 255) $ipparts[2] = substr($ipparts[2],0,-1);
+						$parthost = $ipparts[1].'-'.$ipparts[2].'-*.'.$parts[0];
+					} else
+						$parthost = '*.'.$parts[0];
+				} else
 					$parthost = '*.'.$parts[0];
 			} elseif($parts[1] == 'pldt' || $parts[1] == 'quadranet' || $parts[1] == 'totbb' || $parts[1] == 'plus' || $parts[1] == 'ono') { // pldt/quadranet/totbb/plus/ono IP hack
 				if(preg_match('/^(\d+\.\d+)/',$iphost,$ipparts))
@@ -148,12 +154,12 @@ class mod_showip{
 										$parthost = $ipparts[1].'-*.'.$parts[0];
 									else
 										$parthost = '*.'.$parts[0];
-								// i-cable/singnet/optusnet/plala/rosenet/bethere/asianet/home/hidatakayama/apol/pikara/bigpond/netspace/orange.co.il/callplus IP hack
+								// i-cable/singnet/optusnet/plala/rosenet/bethere/asianet/home/hidatakayama/apol/pikara/bigpond/netspace/orange.co.il/callplus/prod-infinitum IP hack
 								} elseif($parts[1] == 'hkcable' || $parts[1] == 'singnet' || $parts[1] == 'optusnet'
 								 || $parts[1] == 'plala' || $parts[1] == 'rosenet' || $parts[1] == 'bethere'
 								 || $parts[1] == 'asianet' || $parts[1] == 'home' || $parts[1] == 'hidatakayama'
 								 || $parts[1] == 'apol' || $parts[1] == 'pikara' || $parts[1] == 'bigpond'
-								 || $parts[1] == 'netspace' || $parts[1] == 'orange' || $parts[1] == 'callplus') {
+								 || $parts[1] == 'netspace' || $parts[1] == 'orange' || $parts[1] == 'callplus' || $parts[1] == 'prod-infinitum') {
 									if(preg_match('/^[a-z\-]*(\d+\-\d+)-\d+\-\d+/',$iphost,$ipparts))
 										$parthost = $ipparts[1].'-*.'.$parts[0];
 									else
@@ -314,7 +320,15 @@ class mod_showip{
 				} else {
 					$parthost = '*.'.$parts[0];
 				}
-				if(!$iscctld && !$isgtld) $parthost = $iphost; // unresolvable
+				if(!$iscctld && !$isgtld) {
+					if($parts[1] == 'ha' && $parts[2] == 'cnc') { // ha.cnc IP hack
+						if(preg_match('/^(\d+)\.(\d+)\.(\d+)\.(\d+)/',$iphost,$ipparts))
+							$parthost = $ipparts[4].'-'.$ipparts[3].'-*.'.$parts[1].'.'.$parts[2];
+						else
+							$parthost = '*.'.$parts[2].'.'.$parts[3];
+					} else
+						$parthost = $iphost; // unresolvable
+				}
 			}
 
 			$arrLabels['{$NOW}'] .= ' (Host: '.$parthost.')';
