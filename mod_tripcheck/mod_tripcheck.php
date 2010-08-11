@@ -36,8 +36,8 @@ class mod_tripcheck{
 				}
 			}
 		}else{
-			if(!$resto && $this->TRIPPOST_THREAD) error("發文需要Trip",$dest);
-			if($resto && $this->TRIPPOST_REPLY) error("回文需要Trip",$dest);
+			if(!$isReply && $this->TRIPPOST_THREAD) error("發文需要Trip",$dest);
+			if($isReply && $this->TRIPPOST_REPLY) error("回文需要Trip",$dest);
 		}
 	}
 
