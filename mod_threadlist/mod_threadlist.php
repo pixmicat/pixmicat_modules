@@ -81,7 +81,7 @@ $dat .= '</table>
 		$listMax = $PIO->threadCount(); // 討論串總筆數
 		$pageMax = ceil($listMax / $this->THREADLIST_NUMBER) - 1; // 分頁最大編號
 		$page = isset($_GET['page']) ? intval($_GET['page']) : 0; // 目前所在分頁頁數
-		$sort = isset($_GET['sort']) ? $_GET['sort'] : 'datedesc';
+		$sort = isset($_GET['sort']) ? $_GET['sort'] : 'no';
 		if($page < 0 || $page > $pageMax) exit('Page out of range.'); // $page 超過範圍
 		if(strpos($sort, 'post') !== false) {
 			$plist = $PIO->fetchThreadList();
@@ -93,11 +93,10 @@ $dat .= '</table>
 
 			$plist = array_slice($plist, $this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER); //切出需要的大小
 		} else {
-			$plist = $PIO->fetchThreadList($this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER, strpos($sort, 'datenatural') !== false ? false : true); // 編號由大到小排序
+			$plist = $PIO->fetchThreadList($this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER, $sort == 'date' ? false : true); // 編號由大到小排序
 			$PMS->useModuleMethods('ThreadOrder', array(0,$page,0,&$plist)); // "ThreadOrder" Hook Point
 			$pc = $this->_getPostCounts($plist);
 		}
-		if($sort == 'dateasc' || $sort == 'datenaturalasc') $plist = array_reverse($plist);
 		$post = $PIO->fetchPosts($plist); // 取出資料
 		$post_count = count($post);
 
@@ -123,9 +122,11 @@ $dat .= '</table>
 <div class="bar_reply">列表模式</div>
 
 <table align="center" width="97%">
-<tr><th>No.</th><th width="50%">標題</th><th>發文者</th><th><a href="'.$thisPage.'&amp;sort='.($sort == 'postdesc' ? 'postasc' : 'postdesc').'">回應'.($sort == 'postdesc' ? ' ▼' : ($sort == 'postasc' ? ' ▲' : '')).'</a></th>
-<th><a href="'.$thisPage.'&amp;sort='.($sort == 'datedesc' ? 'dateasc' : 'datedesc').'">日期'.($sort == 'datedesc' ? ' ▼' : ($sort == 'dateasc' ? ' ▲' : '')).'</a> 
-<a href="'.$thisPage.'&amp;sort='.($sort == 'datenatural' ? 'datenaturalasc' : 'datenatural').'">N'.($sort == 'datenatural' ? ' ▼' : ($sort == 'datenaturalasc' ? ' ▲' : '')).'</a></th></tr>
+<tr><th><a href="'.$thisPage.'&amp;sort=no">No.'.($sort == 'no' ? ' ▼' : '').'</a></th>
+<th width="50%">標題</th>
+<th>發文者</th>
+<th><a href="'.$thisPage.'&amp;sort='.($sort == 'postdesc' ? 'postasc' : 'postdesc').'">回應'.($sort == 'postdesc' ? ' ▼' : ($sort == 'postasc' ? ' ▲' : '')).'</a></th>
+<th><a href="'.$thisPage.'&amp;sort=date">日期'.($sort == 'date' ? ' ▼' : '').'</a></th></tr>
 ';
 		// 逐步取資料
 		for($i = 0; $i < $post_count; $i++){
