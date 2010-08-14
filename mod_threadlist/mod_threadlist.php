@@ -62,6 +62,16 @@ $dat .= '</table>
 		}
 	}
 
+	function _getPostCounts($posts) {
+		global $PIO;
+
+		$pc = array();
+		foreach($posts as $post)
+			$pc[$post] = $PIO->postCount($post);
+
+		return $pc;
+	}
+
 	/* 模組獨立頁面 */
 	function ModulePage(){
 		global $PMS, $PIO, $FileIO;
@@ -71,11 +81,41 @@ $dat .= '</table>
 		$listMax = $PIO->threadCount(); // 討論串總筆數
 		$pageMax = ceil($listMax / $this->THREADLIST_NUMBER) - 1; // 分頁最大編號
 		$page = isset($_GET['page']) ? intval($_GET['page']) : 0; // 目前所在分頁頁數
+		$sort = isset($_GET['sort']) ? $_GET['sort'] : 'datedesc';
 		if($page < 0 || $page > $pageMax) exit('Page out of range.'); // $page 超過範圍
-		$plist = $PIO->fetchThreadList($this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER, true); // 編號由大到小排序
-		$PMS->useModuleMethods('ThreadOrder', array(0,$page,0,&$plist)); // "ThreadOrder" Hook Point
+		if(strpos($sort, 'post') !== false) {
+			$plist = $PIO->fetchThreadList();
+			$pc = $this->_getPostCounts($plist);
+			asort($pc);
+
+			$plist = array_keys($pc);
+			if($sort == 'postdesc') $plist = array_reverse($plist);
+
+			$plist = array_slice($plist, $this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER); //切出需要的大小
+		} else {
+			$plist = $PIO->fetchThreadList($this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER, strpos($sort, 'datenatural') !== false ? false : true); // 編號由大到小排序
+			$PMS->useModuleMethods('ThreadOrder', array(0,$page,0,&$plist)); // "ThreadOrder" Hook Point
+			$pc = $this->_getPostCounts($plist);
+		}
+		if($sort == 'dateasc' || $sort == 'datenaturalasc') $plist = array_reverse($plist);
 		$post = $PIO->fetchPosts($plist); // 取出資料
 		$post_count = count($post);
+
+		if(strpos($sort, 'post') !== false) { // 要重排次序
+			$mypost = array();
+			
+			foreach($plist as $p) {
+				while (list($k, $v) = each($post)) {
+					if($v['no'] == $p) {
+						$mypost[] = $v;
+					    unset($post[$k]);
+					    break;
+				    }
+				}
+				reset($post);
+			}
+			$post = $mypost;
+		}
 
 		head($dat);
 		$dat .= '<div id="contents">
@@ -83,12 +123,14 @@ $dat .= '</table>
 <div class="bar_reply">列表模式</div>
 
 <table align="center" width="97%">
-<tr><th>No.</th><th width="50%">標題</th><th>發文者</th><th>回應</th><th>日期</th></tr>
+<tr><th>No.</th><th width="50%">標題</th><th>發文者</th><th><a href="'.$thisPage.'&amp;sort='.($sort == 'postdesc' ? 'postasc' : 'postdesc').'">回應'.($sort == 'postdesc' ? ' ▼' : ($sort == 'postasc' ? ' ▲' : '')).'</a></th>
+<th><a href="'.$thisPage.'&amp;sort='.($sort == 'datedesc' ? 'dateasc' : 'datedesc').'">日期'.($sort == 'datedesc' ? ' ▼' : ($sort == 'dateasc' ? ' ▲' : '')).'</a> 
+<a href="'.$thisPage.'&amp;sort='.($sort == 'datenatural' ? 'datenaturalasc' : 'datenatural').'">N'.($sort == 'datenatural' ? ' ▼' : ($sort == 'datenaturalasc' ? ' ▲' : '')).'</a></th></tr>
 ';
 		// 逐步取資料
 		for($i = 0; $i < $post_count; $i++){
 			list($no, $sub, $name, $now) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['now']);
-			$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg"><td>'.$no.'</td><td><a href="'.PHP_SELF.'?res='.$no.'">'.$sub.'</a></td><td>'.$name.'</td><td>'.($PIO->postCount($no) - 1).'</td><td>'.$now.'</td></tr>'."\n";
+			$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg"><td>'.$no.'</td><td><a href="'.PHP_SELF.'?res='.$no.'">'.$sub.'</a></td><td>'.$name.'</td><td>'.($pc[$no] - 1).'</td><td>'.$now.'</td></tr>'."\n";
 		}
 
 		$dat .= '</table>
@@ -99,15 +141,15 @@ $dat .= '</table>
 <div id="page_switch">
 <table border="1" style="float: left;"><tr>
 ';
-		if($page) $dat .= '<td><a href="'.$thisPage.'&amp;page='.($page - 1).'">上一頁</a></td>';
+		if($page) $dat .= '<td><a href="'.$thisPage.'&amp;page='.($page - 1).'&amp;sort='.$sort.'">上一頁</a></td>';
 		else $dat .= '<td style="white-space: nowrap;">第一頁</td>';
 		$dat .= '<td>';
 		for($i = 0; $i <= $pageMax; $i++){
 			if($i==$page) $dat .= '[<b>'.$i.'</b>] ';
-			else $dat .= '[<a href="'.$thisPage.'&amp;page='.$i.'">'.$i.'</a>] ';
+			else $dat .= '[<a href="'.$thisPage.'&amp;page='.$i.'&amp;sort='.$sort.'">'.$i.'</a>] ';
 		}
 		$dat .= '</td>';
-		if($page < $pageMax) $dat .= '<td><a href="'.$thisPage.'&amp;page='.($page + 1).'">下一頁</a></td>';
+		if($page < $pageMax) $dat .= '<td><a href="'.$thisPage.'&amp;page='.($page + 1).'&amp;sort='.$sort.'">下一頁</a></td>';
 		else $dat .= '<td style="white-space: nowrap;">最後一頁</td>';
 		$dat .= '
 </tr></table>
