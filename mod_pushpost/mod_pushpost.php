@@ -31,10 +31,17 @@ class mod_pushpost{
 		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
 <script type="text/javascript">
 // <![CDATA[
+var lastpushpost=0;
 function mod_pushpostShow(pid){
 	$g("mod_pushpostID").value = pid;
 	$g("mod_pushpostName").value = getCookie("namec");
-	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+">.quote")).show();
+	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+">.quote"));
+
+	if(lastpushpost!=pid) {
+		$("div#mod_pushpostBOX").show();
+	} else
+		$("div#mod_pushpostBOX").toggle();
+	lastpushpost = pid;
 	return false;
 }
 function mod_pushpostKeyPress(e){if(e.which==13){e.preventDefault();mod_pushpostSend();}}
@@ -107,9 +114,67 @@ function mod_pushpostSend(){
 		}
 	}
 
+	function autoHookAdminList(&$modFunc, $post, $isres){
+		$modFunc .= '[<a href="'.$this->mypage.'&amp;action=del&amp;no='.$post['no'].'">刪推</a>]';
+	}
+
 	function ModulePage(){
 		global $PIO, $PTE, $language;
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
+		if(isset($_GET['action'])) {
+			if(adminAuthenticate('check')) {
+				$pushcount = ''; $puststart=0;
+				$post = $PIO->fetchPosts($_GET['no']);
+				if(!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
+				extract($post[0]);
+
+				if($status != ''){
+					$f = $PIO->getPostStatus($status);
+					$pushcount = $f->value('mppCnt'); // 被推次數
+				}
+
+				if(($puststart=strpos($com, $this->PUSHPOST_SEPARATOR))===false) die('[Error] No pushpost.');
+
+				$ocom = substr($com,0,$puststart);
+				$pushpost = explode('<br />',substr($com,$puststart+strlen($this->PUSHPOST_SEPARATOR.'<br />')));
+				$com = $ocom;
+
+				if($_GET['action'] == 'del') { // list
+					$p_count = 1;
+					$com .= '<div class="pushpost">';
+					foreach($pushpost as $p)
+						$com .= '<input type="checkbox" name="'.($p_count++).'" value="delete" />'.$p.'<br />';
+					$com .= '</div>';
+
+					$dat = '';
+					head($dat);
+					$dat .= '<div class="bar_reply">'._T('modpushpost_deletepush').'</div>';
+					$dat .= '<form action="'.$this->mypage.'&amp;action=delpush&amp;no='.$_GET['no'].'" method="post">';
+					$dat .= $PTE->ParseBlock('SEARCHRESULT', array('{$NO}'=>$no, '{$SUB}'=>$sub, '{$NAME}'=>$name, '{$NOW}'=>$now, '{$COM}'=>$com, '{$CATEGORY}'=>$category, '{$NAME_TEXT}'=>_T('post_name'), '{$CATEGORY_TEXT}'=>_T('post_category')));
+					echo $dat, '<input type="submit" value="'._T('del_btn').'" /></form></body></html>';
+					return;
+				} elseif($_GET['action'] == 'delpush') { // delete
+					$delno = array();
+					reset($_POST);
+					while($item = each($_POST)){ if($item[1]=='delete' && $item[0] != 'func') array_push($delno, $item[0]); }
+					if(count($delno)) foreach($delno as $d) if(isset($pushpost[$d-1])) unset($pushpost[$d-1]);
+					$pushcount = count($pushpost);
+					if($pushcount) {
+						$f->update('mppCnt',$pushcount); // 更新推文次數
+						$com = $ocom.$this->PUSHPOST_SEPARATOR.'<br />'.implode('<br />',$pushpost);
+					} else {
+						$f->remove('mppCnt'); // 刪除推文次數
+						$com = $ocom;
+					}
+
+					$PIO->updatePost($_GET['no'], array('com'=>$com, 'status'=>$f->toString())); // 更新推文
+					$PIO->dbCommit();
+
+					echo '+OK ';
+					return;
+				} else die('[Error] unknown action.');
+			} else die('[Error] unauthenticated action.');
+		}
 		if(!isset($_POST['comm'])){
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.');
@@ -190,18 +255,21 @@ function mod_pushpostSend(){
 			$language['modpushpost_pushbutton'] = '推';
 			$language['modpushpost_maxlength'] = '你話太多了';
 			$language['modpushpost_omitted'] = '有部分推文被省略。要閱讀全部推文請按下回應連結。';
+			$language['modpushpost_deletepush'] = '刪除推文模式';
 		}elseif($lang=='ja_JP'){
 			$language['modpushpost_nocomment'] = '何か書いて下さい';
 			$language['modpushpost_pushpost'] = '[推文]';
 			$language['modpushpost_pushbutton'] = '推';
 			$language['modpushpost_maxlength'] = 'コメントが長すぎます';
 			$language['modpushpost_omitted'] = '推文省略。全て読むには返信ボタンを押してください。';
+			$language['modpushpost_deletepush'] = '削除推文モード';
 		}elseif($lang=='en_US'){
 			$language['modpushpost_nocomment'] = 'Please type your comment.';
 			$language['modpushpost_pushpost'] = '[Push this post]';
 			$language['modpushpost_pushbutton'] = 'PUSH';
 			$language['modpushpost_maxlength'] = 'You typed too many words';
 			$language['modpushpost_omitted'] = 'Some pushs omitted. Click Reply to view.';
+			$language['modpushpost_deletepush'] = 'Delete Push Post Mode';
 		}
 	}
 }
