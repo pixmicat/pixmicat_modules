@@ -5,7 +5,7 @@ By: scribe
 */
 
 class mod_threadlist{
-	var $THREADLIST_NUMBER,$THREADLIST_NUMBER_IN_MAIN,$SHOW_IN_MAIN,$FORCE_SUBJECT;
+	var $THREADLIST_NUMBER,$THREADLIST_NUMBER_IN_MAIN,$SHOW_IN_MAIN,$FORCE_SUBJECT,$SHOW_FORM;
 
 	function mod_threadlist(){
 		global $PMS;
@@ -15,6 +15,7 @@ class mod_threadlist{
 		$this->THREADLIST_NUMBER_IN_MAIN = 20; // 在主頁面顯示列表個數
 		$this->SHOW_IN_MAIN = true; // 在主頁面顯示
 		$this->FORCE_SUBJECT = false; // 是否強制開新串要有標題
+		$this->SHOW_FORM = true; // 是否顯示刪除表單
 	}
 
 	/* Get the name of module */
@@ -72,9 +73,30 @@ $dat .= '</table>
 		return $pc;
 	}
 
+	function _kasort(&$a,$revkey=false,$revval=false) {
+		$t=$u=array();
+		foreach($a as $k=>&$v) { // flip array
+			if(!isset($t[$v])) $t[$v] = array($k);
+			else $t[$v][] = $k;
+		}
+
+		if($revkey) krsort($t);
+		else ksort($t);
+		
+		foreach($t as $k=>&$vv) {
+			if($revval) rsort($vv);
+			else sort($vv);
+		}
+		foreach($t as $k=>&$vv) { // reconstruct array
+			foreach($vv as &$v)
+				$u[$v] = $k;
+		}
+		$a=$u;
+	}
+
 	/* 模組獨立頁面 */
 	function ModulePage(){
-		global $PMS, $PIO, $FileIO;
+		global $PMS, $PIO, $FileIO, $PTE;
 
 		$thisPage = $PMS->getModulePageURL('mod_threadlist'); // 基底位置
 		$dat = ''; // HTML Buffer
@@ -86,10 +108,9 @@ $dat .= '</table>
 		if(strpos($sort, 'post') !== false) {
 			$plist = $PIO->fetchThreadList();
 			$pc = $this->_getPostCounts($plist);
-			asort($pc);
+			$this->_kasort($pc,$sort == 'postdesc',true);
 
 			$plist = array_keys($pc);
-			if($sort == 'postdesc') $plist = array_reverse($plist);
 
 			$plist = array_slice($plist, $this->THREADLIST_NUMBER * $page, $this->THREADLIST_NUMBER); //切出需要的大小
 		} else {
@@ -119,11 +140,10 @@ $dat .= '</table>
 		head($dat);
 		$dat .= '<div id="contents">
 [<a href="'.PHP_SELF2.'?'.time().'">回到版面</a>]
-<div class="bar_reply">列表模式</div>
-
-<table align="center" width="97%">
-<tr><th><a href="'.$thisPage.'&amp;sort=no">No.'.($sort == 'no' ? ' ▼' : '').'</a></th>
-<th width="50%">標題</th>
+<div class="bar_reply">列表模式</div>'.($this->SHOW_FORM ? '<form action="'.PHP_SELF.'" method="post">' : '').'<table align="center" width="98%"><tr>
+'.($this->SHOW_FORM ? '<th></th>' : '').'
+<th><a href="'.$thisPage.'&amp;sort=no">No.'.($sort == 'no' ? ' ▼' : '').'</a></th>
+<th width="48%">標題</th>
 <th>發文者</th>
 <th><a href="'.$thisPage.'&amp;sort='.($sort == 'postdesc' ? 'postasc' : 'postdesc').'">回應'.($sort == 'postdesc' ? ' ▼' : ($sort == 'postasc' ? ' ▲' : '')).'</a></th>
 <th><a href="'.$thisPage.'&amp;sort=date">日期'.($sort == 'date' ? ' ▼' : '').'</a></th></tr>
@@ -131,12 +151,10 @@ $dat .= '</table>
 		// 逐步取資料
 		for($i = 0; $i < $post_count; $i++){
 			list($no, $sub, $name, $now) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['now']);
-			$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg"><td>'.$no.'</td><td><a href="'.PHP_SELF.'?res='.$no.'">'.$sub.'</a></td><td>'.$name.'</td><td>'.($pc[$no] - 1).'</td><td>'.$now.'</td></tr>'."\n";
+			$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg">'.($this->SHOW_FORM ? '<td><input type="checkbox" name="'.$no.'" value="delete" /></td>' : '').'<td>'.$no.'</td><td><a href="'.PHP_SELF.'?res='.$no.'">'.$sub.'</a></td><td>'.$name.'</td><td>'.($pc[$no] - 1).'</td><td>'.$now.'</td></tr>'."\n";
 		}
 
 		$dat .= '</table>
-</div>
-
 <hr />
 
 <div id="page_switch">
@@ -154,9 +172,18 @@ $dat .= '</table>
 		else $dat .= '<td style="white-space: nowrap;">最後一頁</td>';
 		$dat .= '
 </tr></table>
-</div>
+</div>';
+		if($this->SHOW_FORM) {
+			$pte_vals = array('{$DEL_HEAD_TEXT}' => '<input type="hidden" name="mode" value="usrdel" />'._T('del_head'),
+				'{$DEL_IMG_ONLY_FIELD}' => '<input type="checkbox" name="onlyimgdel" id="onlyimgdel" value="on" />',
+				'{$DEL_IMG_ONLY_TEXT}' => _T('del_img_only'),
+				'{$DEL_PASS_TEXT}' => _T('del_pass'),
+				'{$DEL_PASS_FIELD}' => '<input type="password" name="pwd" size="8" value="" />',
+				'{$DEL_SUBMIT_BTN}' => '<input type="submit" value="'._T('del_btn').'" />');
+			$dat .= $PTE->ParseBlock('DELFORM', $pte_vals).'</form>';
+		}
 
-';
+		$dat .= '</div>';
 		foot($dat);
 		echo $dat;
 	}
