@@ -18,7 +18,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v090802)';
+		return '5th.Release (v100903)';
 	}
 
 	/* 生成識別ID */
@@ -133,7 +133,7 @@ function mod_pushpostSend(){
 					$pushcount = $f->value('mppCnt'); // 被推次數
 				}
 
-				if(($puststart=strpos($com, $this->PUSHPOST_SEPARATOR))===false) die('[Error] No pushpost.');
+				if(($puststart=strpos($com, $this->PUSHPOST_SEPARATOR.'<br />'))===false) die('[Error] No pushpost.');
 
 				$ocom = substr($com,0,$puststart);
 				$pushpost = explode('<br />',substr($com,$puststart+strlen($this->PUSHPOST_SEPARATOR.'<br />')));
@@ -227,7 +227,7 @@ function mod_pushpostSend(){
 			$flgh = $PIO->getPostStatus($p[0]['status']);
 			if($flgh->exists('TS')) die('[Error] '._T('regist_threadlocked')); // 首篇禁止回應/同時表示禁止推文
 
-			$post[0]['com'] .= ((strpos($post[0]['com'], $this->PUSHPOST_SEPARATOR)===false) ? '<br />'.$this->PUSHPOST_SEPARATOR : '').'<br /> '.$pushpost;
+			$post[0]['com'] .= ((strpos($post[0]['com'], $this->PUSHPOST_SEPARATOR.'<br />')===false) ? '<br />'.$this->PUSHPOST_SEPARATOR : '').'<br /> '.$pushpost;
 			$flgh2 = $PIO->getPostStatus($post[0]['status']);
 			$flgh2->plus('mppCnt'); // 推文次數+1
 			$PIO->updatePost($_GET['no'], array('com'=>$post[0]['com'], 'status'=>$flgh2->toString())); // 更新推文
