@@ -1,20 +1,22 @@
 <?php
 /*
 mod_archiver : Pixmicat! Archiver 靜態庫存頁面(精華區)生成
-by: scribe
 */
 
 class mod_archiver{
-	var $ARCHIVE_ROOT,$MULTI_COPY;
+	var $page;
+	var $ARCHIVE_ROOT, $MULTI_COPY, $ADMIN_ONLY;
+	var $PUSHPOST_SEPARATOR, $PROCESS_PUSHPOST;
 
 	function mod_archiver(){
 		global $PMS;
 		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
+		$this->page = $PMS->getModulePageURL(__CLASS__);
 
 		$this->ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
 		$this->MULTI_COPY = true; // 容許同一串有多份存檔
 		$this->ADMIN_ONLY = true; // 只容許管理員生成靜態庫存頁面
-		
+
 		$this->PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
 		$this->PROCESS_PUSHPOST = 1;	// 處理推文 (是：1 否：0)
 	}
@@ -26,13 +28,13 @@ class mod_archiver{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v090729)';
+		return '5th.Release (v100905)';
 	}
 
 	/* 自動掛載：頂部連結列 */
 	function autoHookToplink(&$linkbar, $isReply){
 		global $PMS;
-		$linkbar .= '[<a href="./archives/">精華區</a>]'."\n";
+		$linkbar .= '[<a href="'.$this->ARCHIVE_ROOT.'">精華區</a>]'."\n";
 	}
 
 	function ModulePage(){
@@ -53,7 +55,12 @@ class mod_archiver{
 
 	function autoHookAdminList(&$modFunc, $post, $isres){
 		global $PMS;
-		if(!$isres) $modFunc .= '[<a href="'.$PMS->getModulePageURL(__CLASS__).'&amp;res='.$post['no'].'">存</a>]';
+		if(!$isres) $modFunc .= '[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
+	}
+
+	function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		if($this->ADMIN_ONLY) return; // 只允許管理員生成
+		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
 	}
 
 	/* 取出討論串結構並製成XML結構 */
@@ -125,7 +132,7 @@ class mod_archiver{
 </threads>';
 
 		/* 第三部份：儲存檔案 */
-		$fp = fopen($this->ARCHIVE_ROOT.$res.'-'.$archiveDate.'.xml', 'w');
+		if(!($fp = fopen($this->ARCHIVE_ROOT.$res.'-'.$archiveDate.'.xml', 'w'))) exit('File open error!');
 		stream_set_write_buffer($fp, 0); // 立刻寫入不用緩衝
 		fwrite($fp, $tmp_c); // 寫入XML結構
 		fclose($fp);
