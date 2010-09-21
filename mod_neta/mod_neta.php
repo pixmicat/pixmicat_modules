@@ -11,7 +11,7 @@ class mod_neta{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v100113)';
+		return '5th.Release.2-dev (v100921)';
 	}
 
 	function autoHookHead(&$dat){
@@ -43,24 +43,10 @@ jQuery(function($){
 	}
 
 	function netaCollapse(&$arrLabels, $post, $isReply){
-		if(strpos($arrLabels['{$COM}'], $this->NETA_LABEL.'<br />') !== false){
-			$arrLabels['{$COM}'] = str_replace($this->NETA_LABEL.'<br />', '<div class="hide" id="netacoll'.$arrLabels['{$NO}'].'">', $arrLabels['{$COM}']).'</div>';
-			$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2" id="netabar'.$arrLabels['{$NO}'].'">這篇文章可能含有劇情洩漏，要閱讀全文請按下<a href="#">此處</a>展開。<br /></span>'."\n";
-		}
-	}
-
-	function netaHide(&$arrLabels, $post, $isReply){
+		$tmp_len = strlen($this->NETA_LABEL.'<br />');
 		if(($tmp_pos = strpos($arrLabels['{$COM}'], $this->NETA_LABEL.'<br />')) !== false){
-			if($isReply){
-				$arrLabels['{$COM}'] = str_replace($this->NETA_LABEL.'<br />', '', $arrLabels['{$COM}']);
-			}else{
-				$arrLabels['{$COM}'] = substr($arrLabels['{$COM}'], 0, $tmp_pos);
-			}
-		}
-		if($tmp_pos !==false && !$isReply){
-			$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2">這篇文章可能含有劇情洩漏，要閱讀全文請按下回應連結。</span><br />'."\n";
-		}else{
-			$arrLabels['{$WARN_BEKILL}'] .= '';
+			$arrLabels['{$COM}'] = substr_replace($arrLabels['{$COM}'], '<div class="hide" id="netacoll'.$arrLabels['{$NO}'].'">', $tmp_pos, $tmp_len).'</div>';
+			$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2" id="netabar'.$arrLabels['{$NO}'].'">這篇文章可能含有劇情洩漏，要閱讀全文請按下<a href="#">此處</a>展開。<br /></span>'."\n";
 		}
 	}
 }
