@@ -77,7 +77,7 @@ class mod_archiver{
 			extract($post[$i]);
 			$name = preg_replace('/(◆.{10})/', '<span class="nor">$1</span>', $name); // Trip取消粗體
 			if(USE_CATEGORY) {
-				$ary_category2 = array(); $ary_category = explode('&#44;', $category); $ary_category = array_map('trim', $ary_category);
+				$ary_category2 = array(); $ary_category = explode(',', str_replace('&#44;', ',', $category)); $ary_category = array_map('trim', $ary_category);
 				foreach($ary_category as $c) if($c) $ary_category2[]=$c;
 				$category = implode(', ', $ary_category2);
 			} else $category = '';
