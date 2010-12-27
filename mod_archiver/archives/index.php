@@ -15,37 +15,14 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 ';
 
 /* 取出 XML 檔案討論串資訊 */
-$sub = $name = $tmp = '';
-function startElement($p, $name, $attrs){
-	global $tmp;
-	$tmp = $name;
-}
-
-function endElement($p, $name){
-	global $tmp;
-	$tmp = '';
-}
-
-function characterData($p, $data){
-	global $tmp, $sub, $name;
-	if($sub == '' && $tmp == 'SUBJECT') $sub = $data;
-	if($name == '' && $tmp=='NAME') $name = $data;
-}
-
 function getSubjectAndName($file){
-	global $tmp, $sub, $name;
-	$sub = $name = $tmp = '';
+	if(!$xml = simplexml_load_file($file, NULL, LIBXML_COMPACT))
+		return false;
 
-	$xml_parser = xml_parser_create();
-	xml_set_element_handler($xml_parser, "startElement", "endElement");
-	xml_set_character_data_handler($xml_parser, "characterData");
-	$line = file($file); $countline = count($line);
-	for($i = 0; $i < $countline; $i++){
-		if(!xml_parse($xml_parser, $line[$i], ($i == $countline - 1))) return false;
-		if($sub != '' && $name != '') break;
-	}
-	xml_parser_free($xml_parser);
-	return array('sub' => $sub, 'name' => $name);
+	$name = $xml->name;
+	if($xml->name->span) $name .= $xml->name->span; // for Trip
+	if($xml->name->span->span) $name .= $xml->name->span->span; // for Trip of AdminCap
+	return array('sub' => $xml->subject, 'name' => $name);
 }
 
 /* 取得靜態庫存頁面列表 */
