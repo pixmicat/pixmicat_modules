@@ -5,27 +5,28 @@ By: scribe
 */
 
 class mod_threadlist{
-	var $THREADLIST_NUMBER,$THREADLIST_NUMBER_IN_MAIN,$SHOW_IN_MAIN,$FORCE_SUBJECT,$SHOW_FORM;
+	var $THREADLIST_NUMBER,$THREADLIST_NUMBER_IN_MAIN,$SHOW_IN_MAIN,$FORCE_SUBJECT,$SHOW_FORM,$HIGHLIGHT_COUNT;
 
 	function mod_threadlist(){
 		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_threadlist'); // 向系統登記模組專屬獨立頁面
+		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
 
 		$this->THREADLIST_NUMBER = 50; // 一頁顯示列表個數
 		$this->THREADLIST_NUMBER_IN_MAIN = 20; // 在主頁面顯示列表個數
 		$this->SHOW_IN_MAIN = true; // 在主頁面顯示
 		$this->FORCE_SUBJECT = false; // 是否強制開新串要有標題
 		$this->SHOW_FORM = true; // 是否顯示刪除表單
+		$this->HIGHLIGHT_COUNT = 30; // 熱門回應數，超過這個值回應數會變紅色 (0 為不使用)
 	}
 
 	/* Get the name of module */
 	function getModuleName(){
-		return 'mod_threadlist : 討論串列表';
+		return __CLASS__.' : 討論串列表';
 	}
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '5th.Release (v100610)';
+		return '5th.Release.2 (v110125)';
 	}
 
 	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
@@ -151,7 +152,12 @@ $dat .= '</table>
 		// 逐步取資料
 		for($i = 0; $i < $post_count; $i++){
 			list($no, $sub, $name, $now) = array($post[$i]['no'], $post[$i]['sub'],$post[$i]['name'], $post[$i]['now']);
-			$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg">'.($this->SHOW_FORM ? '<td><input type="checkbox" name="'.$no.'" value="delete" /></td>' : '').'<td>'.$no.'</td><td><a href="'.PHP_SELF.'?res='.$no.'">'.$sub.'</a></td><td>'.$name.'</td><td>'.($pc[$no] - 1).'</td><td>'.$now.'</td></tr>'."\n";
+
+			$rescount = $pc[$no] - 1;
+			if($this->HIGHLIGHT_COUNT > 0 && $rescount > $this->HIGHLIGHT_COUNT){
+				$rescount = '<span style="color:red">'.$rescount.'</span>';
+			}
+			$dat .= '<tr class="ListRow'.($i % 2 + 1).'_bg">'.($this->SHOW_FORM ? '<td><input type="checkbox" name="'.$no.'" value="delete" /></td>' : '').'<td>'.$no.'</td><td><a href="'.PHP_SELF.'?res='.$no.'">'.$sub.'</a></td><td>'.$name.'</td><td>'.$rescount.'</td><td>'.$now.'</td></tr>'."\n";
 		}
 
 		$dat .= '</table>
