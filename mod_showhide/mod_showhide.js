@@ -24,7 +24,7 @@ var TmodShowhide = {
 			if (!this.id) {
 				return;
 			}
-			var outerDiv = jQuery('<div class="threadStructure" id="t' + this.id + '" />');
+			var outerDiv = '<div class="threadStructure" id="t' + this.id + '" />';
 			jQuery(this).wrap(outerDiv).parent().append(jQuery(this.parentNode).nextUntil('hr'));
 		});
 		if (t !== '') {
