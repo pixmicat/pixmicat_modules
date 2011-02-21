@@ -1,55 +1,66 @@
-if(!Array.prototype.indexOf){ // Inplemented in JavaScript 1.6
-	Array.prototype.indexOf = function(item){
-		var len = this.length;
-		for(var i = 0; i < len; i++){ if(this[i] === item){ return i; } }
+if (!Array.prototype.indexOf) { // Inplemented in JavaScript 1.6
+	Array.prototype.indexOf = function (item) {
+		var i, len = this.length;
+		for (i = 0; i < len; i++) {
+			if (this[i] === item) {
+				return i;
+			}
+		}
 		return -1;
 	};
 }
 
 var TmodShowhide = {
-	hideList : [], // 隱藏討論串列表
-	isChange : false, // 是否有更動需回存
+	hideList: [], // 隱藏討論串列表
+	isChange: false, // 是否有更動需回存
 	/* 載入討論串隱藏列表並實行隱藏 */
-	init : function(){
-		var t;
-		if(location.href.indexOf('.php?res=')!==-1){ return; } // 回應模式不動作
-		jQuery('div.threadpost').each(function(){
-			if(!this.id){ return; }
-			var j = jQuery(this).wrap('<div class="threadStructure" id="t'+this.id+'"></div>').parent();
-			var replies = [];
-			while((j = j.next('.reply, br')).size() !== 0){ replies.push(j); }
-			jQuery(replies).appendTo(jQuery(this).parent());
+	init: function () {
+		var t = getCookie('hideList');
+		// 回應模式不動作
+		if (location.href.indexOf('.php?res=') !== -1) {
+			return;
+		}
+		jQuery('div.threadpost').each(function () {
+			if (!this.id) {
+				return;
+			}
+			var outerDiv = jQuery('<div class="threadStructure" id="t' + this.id + '" />');
+			jQuery(this).wrap(outerDiv).parent().append(jQuery(this.parentNode).nextUntil('hr'));
 		});
-		if(t = getCookie('hideList')){
+		if (t !== '') {
 			//alert('getCookie');
 			TmodShowhide.hideList = t.split(',');
-			jQuery('div.threadStructure').each(function(){
+			jQuery('div.threadStructure').each(function () {
 				//alert('loop:'+this.id);
-				if(TmodShowhide.hideList.indexOf(this.id)!==-1){ jQuery(this).hide(); } // 隱藏討論串
+				if (TmodShowhide.hideList.indexOf(this.id) !== -1) {
+					jQuery(this).hide();
+				} // 隱藏討論串
 			});
 		}
 		// 加上控制按鈕
-		jQuery('div.threadStructure').each(function(){
-			jQuery(this).before('[<a href="javascript:void(0);" onclick="TmodShowhide.switchThread(\''+this.id+'\');" title="Hide/Show this thread">+ / -</a>]<br />');
+		jQuery('div.threadStructure').each(function () {
+			jQuery(this).before('[<a href="javascript:void(0);" onclick="TmodShowhide.switchThread(\'' + this.id + '\');" title="Hide/Show this thread">+ / -</a>]<br />');
 		});
 		//alert('OK:'+TmodShowhide.hideList);
 	},
 	/* 切換文章顯示與否 */
-	switchThread : function(no){
-		var t;
+	switchThread: function (no) {
+		var t = TmodShowhide.hideList.indexOf(no);
 		TmodShowhide.isChange = true;
-		if((t = TmodShowhide.hideList.indexOf(no))!==-1){
+		if (t !== -1) {
 			TmodShowhide.hideList.splice(t, 1);
-			jQuery('div.threadStructure#'+no).show('slow');
-		}else{
+			jQuery('div.threadStructure#' + no).show('slow');
+		} else {
 			TmodShowhide.hideList.push(no);
-			jQuery('div.threadStructure#'+no).hide('slow');
+			jQuery('div.threadStructure#' + no).hide('slow');
 		}
 		//alert('s:'+TmodShowhide.hideList);
 	},
 	/* 回存 */
-	unload : function(){
-		if(TmodShowhide.isChange){ setCookie('hideList', TmodShowhide.hideList.join(',')); }
+	unload: function () {
+		if (TmodShowhide.isChange) {
+			setCookie('hideList', TmodShowhide.hideList.join(','));
+		}
 		//alert('bye');
 	}
 };
