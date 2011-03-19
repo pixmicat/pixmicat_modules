@@ -19,7 +19,7 @@
     $.each(options.tags, function(key, value) {
       text += '<a href="#" id="'+key+'" title="'+value.desc+'">';
       if(options.button_image){
-        text += '<img src="'+options.image_url+key+'.png" />';
+        text += '<img src="'+options.image_url+key+'.png" alt="['+key+']" />';
       }else{
         text += '['+key+']';
       }
