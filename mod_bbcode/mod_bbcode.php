@@ -13,6 +13,10 @@ class mod_bbcode{
 		$this->URLTagMode = 1; // [url]標籤行為 (0:不轉換 1:正常)
 		$this->MaxURLCount = 2; // [url]標籤上限 (超過上限時標籤為陷阱標籤[寫入至$URLTrapLog])
 		$this->URLTrapLog = './URLTrap.log'; // [url]陷阱標籤記錄檔
+
+		if(method_exists($PMS,'addCHP')) {
+			$PMS->addCHP('mod_bbbutton_addButtons',array($this,'_addButtons'));
+		}
 	}
 
 	function getModuleName(){
@@ -20,7 +24,7 @@ class mod_bbcode{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.2 (v071109)';
+		return '6th.Release-dev (v110319)';
 	}
 
 	function autoHookPostInfo(&$postinfo){
@@ -29,6 +33,21 @@ class mod_bbcode{
 
 	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
 		$com = $this->_bb2html($com,$dest);
+	}
+
+	function _addButtons($txt) {
+		$txt .= 'bbbuttons.tags = $.extend({
+			 b:{desc:"Bold"},
+			 i:{desc:"Italic"},
+			 u:{desc:"Underline"},
+			 p:{desc:"Paragraph"},
+			 color:{desc:"Color", prompt:{prompt:"Enter Color:",def:""}},
+			 pre:{desc:"Pre-formatted text"},
+			 quote:{desc:"Quotation"},
+			 email:{desc:"Insert e-mail address"},
+			 '.($this->URLTagMode?'url:{desc:"Insert URL"},':'').'
+			 '.($this->ImgTagTagMode?'img:{desc:"Insert Image"},':'').'
+			},bbbuttons.tags);';
 	}
 
 	function _bb2html($string, $dest){
