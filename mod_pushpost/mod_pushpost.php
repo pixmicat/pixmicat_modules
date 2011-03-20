@@ -2,8 +2,7 @@
 class mod_pushpost{
 	var $mypage;
 
-	function mod_pushpost(){
-		global $PMS;
+	function mod_pushpost($PMS){
 		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
 		$this->mypage = $PMS->getModulePageURL(__CLASS__);
 		$this->PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
@@ -18,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '5th.Release (v100903)';
+		return '6th.Release-pre (b110320)';
 	}
 
 	/* 生成識別ID */
@@ -119,7 +118,7 @@ function mod_pushpostSend(){
 	}
 
 	function ModulePage(){
-		global $PIO, $PTE, $language;
+		global $PIO, $PTE, $PMS, $language;
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
 		if(isset($_GET['action'])) {
 			if(adminAuthenticate('check')) {
@@ -232,6 +231,15 @@ function mod_pushpostSend(){
 			$flgh2->plus('mppCnt'); // 推文次數+1
 			$PIO->updatePost($_GET['no'], array('com'=>$post[0]['com'], 'status'=>$flgh2->toString())); // 更新推文
 			$PIO->dbCommit();
+			// logcat
+			$PMS->callCHP('mod_audit_logcat',
+				array(sprintf('[%s] No.%d %s (%s)',
+					__CLASS__,
+					$_GET['no'],
+					str_cut($comm, 50),
+					$pushID)
+				)
+			);
 			if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
 

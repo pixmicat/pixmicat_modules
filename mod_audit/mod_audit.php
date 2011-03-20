@@ -2,7 +2,7 @@
 class mod_audit{
 	var $logname, $logLevel;
 
-	function mod_audit(){
+	function mod_audit($PMS){
 		$this->logname = '.audit'; // 稽核紀錄檔檔名
 		$this->logLevel = array( // 監察等級
 			'Add' => false, // 記錄發文
@@ -10,6 +10,7 @@ class mod_audit{
 			'Delete' => true, // 記錄刪除文章
 			'AdminFunc' => true // 記錄後端操作
 		);
+		$PMS->addCHP('mod_audit_logcat', array(&$this, '_log'));
 	}
 
 	function getModuleName(){
@@ -17,7 +18,7 @@ class mod_audit{
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Anniversary';
+		return '6th.Release-pre (b110320)';
 	}
 
 	function _log($info){
