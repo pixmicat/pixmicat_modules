@@ -7,6 +7,19 @@ class mod_code_prettify{
 	// 簡單說就是硬/軟轉換並行，這樣硬轉換的好處沒有辦法完全表現出來
 	var $MOD_CODE_COMPATIBLE = true;
 
+	function mod_code_prettify() {
+		global $PMS;
+		if(method_exists($PMS,'addCHP')) {
+			$PMS->addCHP('mod_bbbutton_addButtons',array($this,'_addButtons'));
+		}
+	}
+
+	function _addButtons($txt) {
+		$txt .= 'bbbuttons.tags = $.extend({
+			 code:{desc:"Insert Code block"},
+			},bbbuttons.tags);';
+	}
+
 	function getModuleName(){
 		return 'mod_code_prettify : google-code-prettify Syntax Highlighting';
 	}

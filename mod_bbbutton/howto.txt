@@ -1,6 +1,7 @@
 ﻿License:
 
 jquery.bbcode.js is forked from part of BBCode editor (http://www.webcheatsheet.com/javascript/bbcode_editor.php).
+mod_bbbutton is not a part of Pixmicat! package. So it's not licensed under the Clarified Artistic License. It's in the public domain.
 
 中文安裝指引:
 
@@ -8,8 +9,15 @@ jquery.bbcode.js is forked from part of BBCode editor (http://www.webcheatsheet.
 2. 將 jquery.bbcode.js 放到跟 pixmicat.php 同一目錄
 2. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_bbbutton';
 
+* 此模組需求 JQuery 版本 1.3.2 或以上。請確保有其中一個模組有載入 JQuery 或修改 mod_bbbutton.php 把載入 JQuery 的一行的註解符號去除。
+* 較後載入的模組的按鈕會從按鈕列的起始位置加入。
+
 English Instruction:
 
 1. Put mod_bbbutton.php into the module/ directory.
 1. Put jquery.bbcode.js into the directory that pixmicat.php sits.
 2. Use your favorite editor to open the "config.php" and add one line ($ModuleList[] = 'mod_bbbutton';) into the "Modules to be loaded" block.
+
+
+* The module requires JQuery version 1.3.2 or later. Please make sure any module loads JQuery first, or edit mod_bbbutton.php to uncomment JQuery line.
+* The order of buttons form later added modules will be added in front.
