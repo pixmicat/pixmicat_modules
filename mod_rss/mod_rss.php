@@ -18,9 +18,9 @@ class mod_rss{
 		$this->BASEDIR = fullURL(); // 基底 URL
 		switch($this->FEED_UPDATETYPE){
 			case 1: // MODULEPAGE
-				$PMS->hookModuleMethod('ModulePage', 'mod_rss'); // 註冊獨立頁面
-				$this->SELF = $this->BASEDIR.$PMS->getModulePageURL('mod_rss'); // RSS 連結
-				$this->FEED_STATUSFILE = 'mod_rss.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
+				$PMS->hookModuleMethod('ModulePage', __CLASS__); // 註冊獨立頁面
+				$this->SELF = $this->BASEDIR.$PMS->getModulePageURL(__CLASS__); // RSS 連結
+				$this->FEED_STATUSFILE = __CLASS__.'.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
 				break;
 			case 2: // Update on RegistAfterCommit
 				$this->SELF = $this->BASEDIR.$this->FEED_CACHEFILE; // RSS 連結
@@ -29,11 +29,11 @@ class mod_rss{
 	}
 
 	function getModuleName(){
-		return 'mod_rss : 提供RSS Feed訂閱服務';
+		return __CLASS__.' : 提供RSS Feed訂閱服務';
 	}
 
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080408)';
+		return '4th.Release.3 (v110330)';
 	}
 
 	/* 在頁面加入指向 RSS 的 <link> 標籤*/
@@ -94,7 +94,9 @@ class mod_rss{
 				$plist_count = count($plist);
 				// 為何這樣取？避免 SQL-like 自動排序喪失時間順序
 				$post = array();
-				for($p = 0; $p < $plist_count; $p++) $post[] = array_pop($PIO->fetchPosts($plist[$p])); // 取出編號文章資料
+				for($p = 0; $p < $plist_count; $p++){
+					$post[] = current($PIO->fetchPosts($plist[$p])); // 取出編號文章資料
+				}
 				break;
 			case 'P':
 				$plist = $PIO->fetchPostList(0, 0, $this->FEED_COUNT); // 取出前n筆文章編號
