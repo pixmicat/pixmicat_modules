@@ -17,7 +17,7 @@ class mod_pushpost{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '6th.Release-pre (b110320)';
+		return '6th.Release-pre (b110416)';
 	}
 
 	/* 生成識別ID */
@@ -34,7 +34,7 @@ var lastpushpost=0;
 function mod_pushpostShow(pid){
 	$g("mod_pushpostID").value = pid;
 	$g("mod_pushpostName").value = getCookie("namec");
-	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+">.quote"));
+	$("div#mod_pushpostBOX").insertBefore($("div#r"+pid+" .quote"));
 
 	if(lastpushpost!=pid) {
 		$("div#mod_pushpostBOX").show();
@@ -45,7 +45,7 @@ function mod_pushpostShow(pid){
 }
 function mod_pushpostKeyPress(e){if(e.which==13){e.preventDefault();mod_pushpostSend();}}
 function mod_pushpostSend(){
-	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), o3 = $g("mod_pushpostSmb"), pp = $("div#r"+o0.value+">.quote");
+	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), o3 = $g("mod_pushpostSmb"), pp = $("div#r"+o0.value+" .quote");
 	if(o2.value===""){ alert("'._T('modpushpost_nocomment').'"); return false; }
 	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
