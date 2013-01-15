@@ -15,9 +15,6 @@ class mod_dummyNext extends ModuleHelper {
 		parent::__construct($PMS);
 
 		// 此處已不須手動註冊模組頁面，由父類別代勞
-
-		// 註冊自訂掛載點: mod_dummy_append
-		$this->addCHP(__CLASS__.'_append', array($this, 'append'));
 	}
 
 	/**
