@@ -72,7 +72,7 @@ class mod_dummyNext extends ModuleHelper {
 	 * 你可以在此印出屬於模組自己的內容，比如說設定項目，列表等等。
 	 */
 	public function ModulePage() {
-		$name = @$_GET['name'] ?: 'Anonymous';
+		$name = isset($_GET['name']) ? $_GET['name'] : 'Anonymous';
 		$greetings = "Welcome to my world, {$name}.";
 		// 嘗試呼叫 mod_dummy 自訂的 mod_dummy_append 掛載點，對 $greetings 做出更動
 		// 需要 mod_dummy 有載入
