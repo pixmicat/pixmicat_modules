@@ -6,7 +6,7 @@
  * @since 7th.Release
  */
 
-class mod_dummy {
+class mod_dummy implements IModule {
 	private static $PMS;
 	private static $SELF;
 
