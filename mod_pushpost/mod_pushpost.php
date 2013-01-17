@@ -1,32 +1,33 @@
 <?php
-class mod_pushpost{
-	var $mypage;
+class mod_pushpost extends ModuleHelper {
+	// 推文判斷起始標籤
+	private $PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
+	// 討論串最多顯示之推文筆數 (超過則自動隱藏，全部隱藏：0)
+	private $PUSHPOST_DEF = 10;
 
-	function mod_pushpost($PMS){
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL(__CLASS__);
-		$this->PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
-		$this->PUSHPOST_DEF = 10; // 討論串最多顯示之推文筆數 (超過則自動隱藏，全部隱藏：0)
-		AttachLanguage(array($this, '_loadLanguage')); // 載入語言檔
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->loadLanguage(); // 載入語言檔
 	}
 
-	/* Get the name of module */
-	function getModuleName(){
-		return 'mod_pushpost : 文章推文機制';
+	public function getModuleName() {
+		return $this->moduleNameBuilder('文章推文機制');
 	}
 
-	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return '6th.Release-pre (b110416)';
+	public function getModuleVersionInfo() {
+		return '7th.Release (v130117)';
 	}
 
-	/* 生成識別ID */
-	function _getID(){
+	/**
+	 * 生成識別ID
+	 *
+	 * @return string 長度8識別ID
+	 */
+	private function getID() {
 		return substr(crypt(md5(getREMOTE_ADDR().IDSEED.gmdate('Ymd', time() + TIME_ZONE * 3600)), 'id'), -8);
 	}
 
-	function autoHookHead(&$txt, $isReply){
-		global $language;
+	public function autoHookHead(&$txt, $isReply) {
 		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
 <script type="text/javascript">
 // <![CDATA[
@@ -49,7 +50,7 @@ function mod_pushpostSend(){
 	if(o2.value===""){ alert("'._T('modpushpost_nocomment').'"); return false; }
 	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
-		url: "'.str_replace('&amp;', '&', $this->mypage).'&no="+o0.value,
+		url: "'.str_replace('&amp;', '&', $this->getModulePageURL()).'&no="+o0.value,
 		type: "POST",
 		data: {ajaxmode: true, name: o1.value, comm: o2.value},
 		success: function(rv){
@@ -68,8 +69,7 @@ function mod_pushpostSend(){
 </script>';
 	}
 
-	function autoHookFoot(&$foot){
-		global $language;
+	public function autoHookFoot(&$foot) {
 		$foot .= '
 <div id="mod_pushpostBOX" style="display:none">
 <input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" onkeypress="mod_pushpostKeyPress(event)" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" onkeypress="mod_pushpostKeyPress(event)" /><input type="button" id="mod_pushpostSmb" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend()" /></li></ul>
@@ -77,23 +77,32 @@ function mod_pushpostSend(){
 ';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		global $language, $PIO;
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply) {
+		$PIO = PMCLibrary::getPIOInstance();
 		$pushcount = '';
-		if($post['status'] != ''){
+		if ($post['status'] != '') {
 			$f = $PIO->getPostStatus($post['status']);
 			$pushcount = $f->value('mppCnt'); // 被推次數
 		}
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.$this->mypage.'&amp;no='.$post['no'].'" onclick="return mod_pushpostShow('.$post['no'].')">'.$pushcount._T('modpushpost_pushbutton').'</a>';
-		if(strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />') !== false){
-			if($isReply || $pushcount <= $this->PUSHPOST_DEF) // 回應模式
-				$arrLabels['{$COM}'] = str_replace($this->PUSHPOST_SEPARATOR.'<br />', '<div class="pushpost">', $arrLabels['{$COM}']).'</div>';
-			else{ // 頁面瀏覽
-				$delimiter = strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />'); // 定位符號位置
-				if($this->PUSHPOST_DEF > 0){
+
+		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.
+			$this->getModulePageURL(array('no'=> $post['no'])).
+			'" onclick="return mod_pushpostShow('.$post['no'].')">'.
+			$pushcount._T('modpushpost_pushbutton').'</a>';
+		if (strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />') !== false) {
+			// 回應模式
+			if ($isReply || $pushcount <= $this->PUSHPOST_DEF) {
+				$arrLabels['{$COM}'] = str_replace($this->PUSHPOST_SEPARATOR.
+					'<br />', '<div class="pushpost">', $arrLabels['{$COM}']).
+					'</div>';
+			} else {
+			// 頁面瀏覽
+				// 定位符號位置
+				$delimiter = strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />');
+				if ($this->PUSHPOST_DEF > 0) {
 					$push_array = explode('<br />', substr($arrLabels['{$COM}'], $delimiter + strlen($this->PUSHPOST_SEPARATOR.'<br />')));
 					$pushs = '<div class="pushpost">……<br />'.implode('<br />', array_slice($push_array, 0 - $this->PUSHPOST_DEF)).'</div>';
-				}else{
+				} else {
 					$pushs = '';
 				}
 				$arrLabels['{$COM}'] = substr($arrLabels['{$COM}'], 0, $delimiter).$pushs;
@@ -102,121 +111,156 @@ function mod_pushpostSend(){
 		}
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply) {
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $isReply){
-		if(adminAuthenticate('check')) return; // 登入權限允許標籤留存不轉換 (後端登入修改文章後推文仍有效)
-		if(strpos($com, $this->PUSHPOST_SEPARATOR."\r\n") !== false){ // 防止不正常的插入標籤形式
+	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $isReply) {
+		// 登入權限允許標籤留存不轉換 (後端登入修改文章後推文仍有效)
+		if (adminAuthenticate('check')) return;
+
+		// 防止手動插入標籤
+		if (strpos($com, $this->PUSHPOST_SEPARATOR."\r\n") !== false) {
 			$com = str_replace($this->PUSHPOST_SEPARATOR."\r\n", "\r\n", $com);
 		}
 	}
 
-	function autoHookAdminList(&$modFunc, $post, $isres){
-		$modFunc .= '[<a href="'.$this->mypage.'&amp;action=del&amp;no='.$post['no'].'">刪推</a>]';
+	public function autoHookAdminList(&$modFunc, $post, $isres) {
+		$modFunc .= '[<a href="'.$this->getModulePageURL(
+				array(
+					'action' => 'del',
+					'no' => $post[no]
+				)
+			).'">刪推</a>]';
 	}
 
-	function ModulePage(){
-		global $PIO, $PTE, $PMS, $language;
-		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
-		if(isset($_GET['action'])) {
-			if(adminAuthenticate('check')) {
+	public function ModulePage() {
+		$PIO = PMCLibrary::getPIOInstance();
+
+		if (!isset($_GET['no'])) die('[Error] not enough parameter.');
+		if (isset($_GET['action'])) {
+			if (adminAuthenticate('check')) {
 				$pushcount = ''; $puststart=0;
 				$post = $PIO->fetchPosts($_GET['no']);
-				if(!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
+				if (!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
 				extract($post[0]);
 
-				if($status != ''){
+				if ($status != ''){
 					$f = $PIO->getPostStatus($status);
 					$pushcount = $f->value('mppCnt'); // 被推次數
 				}
 
-				if(($puststart=strpos($com, $this->PUSHPOST_SEPARATOR.'<br />'))===false) die('[Error] No pushpost.');
+				if (($puststart=strpos($com, $this->PUSHPOST_SEPARATOR.'<br />'))===false) die('[Error] No pushpost.');
 
 				$ocom = substr($com,0,$puststart);
 				$pushpost = explode('<br />',substr($com,$puststart+strlen($this->PUSHPOST_SEPARATOR.'<br />')));
 				$com = $ocom;
 
-				if($_GET['action'] == 'del') { // list
+				if ($_GET['action'] == 'del') { // list
 					$p_count = 1;
 					$com .= '<div class="pushpost">';
-					foreach($pushpost as $p)
+					foreach($pushpost as $p) {
 						$com .= '<input type="checkbox" name="'.($p_count++).'" value="delete" />'.$p.'<br />';
+					}
 					$com .= '</div>';
 
 					$dat = '';
 					head($dat);
 					$dat .= '<div class="bar_reply">'._T('modpushpost_deletepush').'</div>';
-					$dat .= '<form action="'.$this->mypage.'&amp;action=delpush&amp;no='.$_GET['no'].'" method="post">';
-					$dat .= $PTE->ParseBlock('SEARCHRESULT', array('{$NO}'=>$no, '{$SUB}'=>$sub, '{$NAME}'=>$name, '{$NOW}'=>$now, '{$COM}'=>$com, '{$CATEGORY}'=>$category, '{$NAME_TEXT}'=>_T('post_name'), '{$CATEGORY_TEXT}'=>_T('post_category')));
+					$dat .= '<form action="'.$this->getModulePageURL(
+						array(
+							'action'=>'delpush',
+							'no' => $_GET['no']
+						)
+					).'" method="post">';
+					$dat .= PMCLibrary::getPTEInstance()->ParseBlock('SEARCHRESULT',
+						array(
+							'{$NO}'=>$no, '{$SUB}'=>$sub, '{$NAME}'=>$name,
+							'{$NOW}'=>$now, '{$COM}'=>$com, '{$CATEGORY}'=>$category,
+							'{$NAME_TEXT}'=>_T('post_name'), '{$CATEGORY_TEXT}'=>_T('post_category')
+						)
+					);
 					echo $dat, '<input type="submit" value="'._T('del_btn').'" /></form></body></html>';
 					return;
-				} elseif($_GET['action'] == 'delpush') { // delete
+				} else if($_GET['action'] == 'delpush') { // delete
 					$delno = array();
 					reset($_POST);
-					while($item = each($_POST)){ if($item[1]=='delete' && $item[0] != 'func') array_push($delno, $item[0]); }
-					if(count($delno)) foreach($delno as $d) if(isset($pushpost[$d-1])) unset($pushpost[$d-1]);
+					while ($item = each($_POST)) {
+						if ($item[1]=='delete' && $item[0] != 'func')
+							array_push($delno, $item[0]);
+					}
+					if (count($delno)) {
+						foreach($delno as $d) {
+							if(isset($pushpost[$d-1])) unset($pushpost[$d-1]);
+						}
+					}
 					$pushcount = count($pushpost);
-					if($pushcount) {
-						$f->update('mppCnt',$pushcount); // 更新推文次數
-						$com = $ocom.$this->PUSHPOST_SEPARATOR.'<br />'.implode('<br />',$pushpost);
+					if ($pushcount) {
+						$f->update('mppCnt', $pushcount); // 更新推文次數
+						$com = $ocom.$this->PUSHPOST_SEPARATOR.'<br />'.implode('<br />', $pushpost);
 					} else {
 						$f->remove('mppCnt'); // 刪除推文次數
 						$com = $ocom;
 					}
 
-					$PIO->updatePost($_GET['no'], array('com'=>$com, 'status'=>$f->toString())); // 更新推文
+					$PIO->updatePost($_GET['no'], array('com' => $com, 'status' => $f->toString())); // 更新推文
 					$PIO->dbCommit();
 
-					echo '+OK ';
+					header('HTTP/1.1 302 Moved Temporarily');
+					header('Location: '.fullURL().PHP_SELF.'?page_num=0');
 					return;
 				} else die('[Error] unknown action.');
 			} else die('[Error] unauthenticated action.');
 		}
-		if(!isset($_POST['comm'])){
-			$post = $PIO->fetchPosts($_GET['no']);
-			if(!count($post)) die('[Error] Post does not exist.');
-
-			$dat = $PTE->ParseBlock('HEADER', array('{$TITLE}'=>TITLE, '{$RESTO}'=>''));
-			$dat .= '</head><body id="main">';
-			$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="post">
-'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
-</form>';
-			echo $dat, '</body></html>';
-		}else{
-			if($_SERVER['REQUEST_METHOD'] != 'POST') die(_T('regist_notpost')); // 傳送方法不正確
+		// 非 AJAX 推文，產出表單供填寫
+		if (!isset($_POST['comm'])) {
+			echo $this->printStaticForm(intval($_GET['no']));
+		} else {
+		// 處理推文
+			// 傳送方法不正確
+			if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+				die(_T('regist_notpost'));
+			}
 
 			// 查IP
 			$baninfo = '';
-			$ip = getREMOTE_ADDR(); $host = gethostbyaddr($ip);
-			if(BanIPHostDNSBLCheck($ip, $host, $baninfo)) die(_T('regist_ipfiltered', $baninfo));
+			$ip = getREMOTE_ADDR();
+			$host = gethostbyaddr($ip);
+			if (BanIPHostDNSBLCheck($ip, $host, $baninfo)) {
+				die(_T('regist_ipfiltered', $baninfo));
+			}
 
-			$name = CleanStr($_POST['name']); $comm = CleanStr($_POST['comm']);
-			if(strlen($name) > 30) die(_T('modpushpost_maxlength')); // 名稱太長
-			if(strlen($comm) > 160) die(_T('modpushpost_maxlength')); // 太多字
-			if(strlen($comm) == 0) die(_T('modpushpost_nocomment')); // 沒打字
-			$name = str_replace(array(_T('trip_pre'), _T('admin'), _T('deletor')), array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'), $name);
-			$pushID = $this->_getID();
+			$name = CleanStr($_POST['name']);
+			$comm = CleanStr($_POST['comm']);
+			if (strlen($name) > 30) die(_T('modpushpost_maxlength')); // 名稱太長
+			if (strlen($comm) > 160) die(_T('modpushpost_maxlength')); // 太多字
+			if (strlen($comm) == 0) die(_T('modpushpost_nocomment')); // 沒打字
+			$name = str_replace(
+				array(_T('trip_pre'), _T('admin'), _T('deletor')),
+				array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'),
+				$name
+			);
+			// 生成ID, Trip 等識別資訊
+			$pushID = $this->getID();
 			$pushtime = gmdate('y/m/d H:i', time() + intval(TIME_ZONE) * 3600);
-			if(preg_match('/(.*?)[#＃](.*)/u', $name, $regs)){
+			if (preg_match('/(.*?)[#＃](.*)/u', $name, $regs)) {
 				$cap = strtr($regs[2], array('&amp;'=>'&'));
 				$salt = strtr(preg_replace('/[^\.-z]/', '.', substr($cap.'H.', 1, 2)), ':;<=>?@[\\]^_`', 'ABCDEFGabcdef');
 				$name = $regs[1]._T('trip_pre').substr(crypt($cap, $salt), -10);
 			}
-			if(!$name || preg_match("/^[ |　|]*$/", $name)){
-				if(ALLOW_NONAME) $name = DEFAULT_NONAME;
+			if (!$name || preg_match("/^[ |　|]*$/", $name)) {
+				if (ALLOW_NONAME) $name = DEFAULT_NONAME;
 				else die(_T('regist_withoutname')); // 不接受匿名
 			}
-			if(ALLOW_NONAME==2){ // 強制砍名
+			if (ALLOW_NONAME == 2) { // 強制砍名
 				$name = preg_match('/(\\'._T('trip_pre').'.{10})/', $name, $matches) ? $matches[1].':' : DEFAULT_NONAME.':';
-			}else{
+			} else {
 				$name .= ':';
 			}
 			$pushpost = "{$name} {$comm} ({$pushID} {$pushtime})"; // 推文主體
 
 			$post = $PIO->fetchPosts($_GET['no']);
-			if(!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
+			if (!count($post)) die('[Error] Post does not exist.'); // 被推之文章不存在
 
 			$parentNo = $post[0]['resto'] ? $post[0]['resto'] : $post[0]['no'];
 			$threads = array_flip($PIO->fetchThreadList());
@@ -224,61 +268,91 @@ function mod_pushpostSend(){
 
 			$p = ($parentNo==$post[0]['no']) ? $post : $PIO->fetchPosts($parentNo); // 取出首篇
 			$flgh = $PIO->getPostStatus($p[0]['status']);
-			if($flgh->exists('TS')) die('[Error] '._T('regist_threadlocked')); // 首篇禁止回應/同時表示禁止推文
+			if ($flgh->exists('TS')) die('[Error] '._T('regist_threadlocked')); // 首篇禁止回應/同時表示禁止推文
 
 			$post[0]['com'] .= ((strpos($post[0]['com'], $this->PUSHPOST_SEPARATOR.'<br />')===false) ? '<br />'.$this->PUSHPOST_SEPARATOR : '').'<br /> '.$pushpost;
 			$flgh2 = $PIO->getPostStatus($post[0]['status']);
 			$flgh2->plus('mppCnt'); // 推文次數+1
 			$PIO->updatePost($_GET['no'], array('com'=>$post[0]['com'], 'status'=>$flgh2->toString())); // 更新推文
 			$PIO->dbCommit();
-			// logcat
-			$PMS->callCHP('mod_audit_logcat',
+
+			// mod_audit logcat
+			$this->callCHP('mod_audit_logcat',
 				array(sprintf('[%s] No.%d %s (%s)',
 					__CLASS__,
 					$_GET['no'],
-					str_cut($comm, 50),
+					$comm,
 					$pushID)
 				)
 			);
-			if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
+
+			if (STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) {
+				// 僅更新討論串出現那頁
+				updatelog(0, $threadPage, true);
+			}
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
 
-			if(isset($_POST['ajaxmode'])){
+			if (isset($_POST['ajaxmode'])) {
 				echo '+OK ', $pushpost;
-			}else{
+			} else {
 				header('HTTP/1.1 302 Moved Temporarily');
 				header('Location: '.fullURL().PHP_SELF2.'?'.time());
 			}
 		}
 	}
 
-	function _loadLanguage(){
-		global $language;
-		if(PIXMICAT_LANGUAGE != 'zh_TW' && PIXMICAT_LANGUAGE != 'ja_JP' && PIXMICAT_LANGUAGE != 'en_US') $lang = 'en_US';
-		else $lang = PIXMICAT_LANGUAGE;
+	/**
+	 * 產出靜態推文表單
+	 *
+	 * @param  int $targetPost 推文對象文章編號
+	 * @return string             表單頁面 HTML
+	 */
+	private function printStaticForm($targetPost) {
+		$PIO = PMCLibrary::getPIOInstance();
+		$PTE = PMCLibrary::getPTEInstance();
 
-		if($lang=='zh_TW'){
-			$language['modpushpost_nocomment'] = '請輸入內文';
-			$language['modpushpost_pushpost'] = '[推文]';
-			$language['modpushpost_pushbutton'] = '推';
-			$language['modpushpost_maxlength'] = '你話太多了';
-			$language['modpushpost_omitted'] = '有部分推文被省略。要閱讀全部推文請按下回應連結。';
-			$language['modpushpost_deletepush'] = '刪除推文模式';
-		}elseif($lang=='ja_JP'){
-			$language['modpushpost_nocomment'] = '何か書いて下さい';
-			$language['modpushpost_pushpost'] = '[推文]';
-			$language['modpushpost_pushbutton'] = '推';
-			$language['modpushpost_maxlength'] = 'コメントが長すぎます';
-			$language['modpushpost_omitted'] = '推文省略。全て読むには返信ボタンを押してください。';
-			$language['modpushpost_deletepush'] = '削除推文モード';
-		}elseif($lang=='en_US'){
-			$language['modpushpost_nocomment'] = 'Please type your comment.';
-			$language['modpushpost_pushpost'] = '[Push this post]';
-			$language['modpushpost_pushbutton'] = 'PUSH';
-			$language['modpushpost_maxlength'] = 'You typed too many words';
-			$language['modpushpost_omitted'] = 'Some pushs omitted. Click Reply to view.';
-			$language['modpushpost_deletepush'] = 'Delete Push Post Mode';
-		}
+		$post = $PIO->fetchPosts($targetPost);
+		if (!count($post)) die('[Error] Post does not exist.');
+
+		$dat = $PTE->ParseBlock('HEADER', array('{$TITLE}'=>TITLE, '{$RESTO}'=>''));
+		$dat .= '</head><body id="main">';
+		$dat .= '<form action="'.$this->getModulePageURL(array('no' => $targetPost)).'" method="post">
+'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
+</form>';
+		$dat .= '</body></html>';
+		return $dat;
+	}
+
+	/**
+	 * 動態加入語言資源
+	 */
+	private function loadLanguage() {
+		$language = array(
+			'zh_TW' => array(
+				'modpushpost_nocomment' => '請輸入內文',
+				'modpushpost_pushpost' => '[推文]',
+				'modpushpost_pushbutton' => '推',
+				'modpushpost_maxlength' => '你話太多了',
+				'modpushpost_omitted' => '有部分推文被省略。要閱讀全部推文請按下回應連結。',
+				'modpushpost_deletepush' => '刪除推文模式'
+			),
+			'ja_JP' => array(
+				'modpushpost_nocomment' => '何か書いて下さい',
+				'modpushpost_pushpost' => '[推文]',
+				'modpushpost_pushbutton' => '推',
+				'modpushpost_maxlength' => 'コメントが長すぎます',
+				'modpushpost_omitted' => '推文省略。全て読むには返信ボタンを押してください。',
+				'modpushpost_deletepush' => '削除推文モード'
+			),
+			'en_US' => array(
+				'modpushpost_nocomment' => 'Please type your comment.',
+				'modpushpost_pushpost' => '[Push this post]',
+				'modpushpost_pushbutton' => 'PUSH',
+				'modpushpost_maxlength' => 'You typed too many words',
+				'modpushpost_omitted' => 'Some pushs omitted. Click Reply to view.',
+				'modpushpost_deletepush' => 'Delete Push Post Mode'
+			)
+		);
+		$this->attachLanguage($language[PIXMICAT_LANGUAGE]);
 	}
 }
-?>
