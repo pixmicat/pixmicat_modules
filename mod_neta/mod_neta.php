@@ -2,8 +2,28 @@
 class mod_neta extends ModuleHelper {
 	private $NETA_LABEL = '[NETABARE_ARI]';
 
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+
+		$lang = array(
+			'zh_TW' => array(
+				'modulename' => '劇情洩漏隱藏',
+				'neta_notice_label' => '這篇文章可能含有劇情洩漏，要閱讀全文請按下<a href="#">此處</a>展開。',
+				'postinfo_usage' => '<li><b>要捏他，請在內文使用<span style="color:blue;">%s</span>標籤註明劇情洩漏！</b></li>'
+			),
+			'en_US' => array(
+				'modulename' => 'Hidden Spoilers',
+				'neta_notice_label' => 'The content may contain spoilers. To view the full article, press <a href="#">HERE</a> to expand.',
+				'postinfo_usage' => '<li><b>Use <span style="color:blue;">%s</span> tag in content for spoiler alert!</b></li>'
+			),
+		);
+		$this->attachLanguage($lang[
+			array_key_exists(PIXMICAT_LANGUAGE, $lang) ? PIXMICAT_LANGUAGE : 'en_US'
+		]);
+	}
+
 	public function getModuleName() {
-		return $this->moduleBuilder('劇情洩漏隱藏');
+		return $this->moduleNameBuilder($this->_T('modulename'));
 	}
 
 	public function getModuleVersionInfo() {
@@ -27,8 +47,7 @@ jQuery(function($){
 	}
 
 	public function autoHookPostInfo(&$postinfo) {
-		$postinfo .= '<li><b>要捏他，請在內文使用<span style="color:blue;">'.
-			$this->NETA_LABEL.'</span>標籤註明劇情洩漏！</b></li>'."\n";
+		$postinfo .= $this->_T('postinfo_usage', $this->NETA_LABEL)."\n";
 	}
 
 	public function autoHookThreadPost(&$arrLabels, $post, $isReply) {
@@ -57,7 +76,7 @@ jQuery(function($){
 				$labelLength
 			).'</div>';
 			$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2" id="netabar'.
-				$arrLabels['{$NO}'].'">這篇文章可能含有劇情洩漏，要閱讀全文請按下<a href="#">此處</a>展開。<br /></span>'."\n";
+				$arrLabels['{$NO}'].'">'.$this->_T('neta_notice_label').'<br /></span>'."\n";
 		}
 	}
 }
