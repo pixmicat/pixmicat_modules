@@ -15,6 +15,9 @@ class mod_dummyNext extends ModuleHelper {
 		parent::__construct($PMS);
 
 		// 此處已不須手動註冊模組頁面，由父類別代勞
+
+		// 加入語言資源
+		$this->loadLanguage();
 	}
 
 	/**
@@ -70,10 +73,30 @@ class mod_dummyNext extends ModuleHelper {
 	 */
 	public function ModulePage() {
 		$name = isset($_GET['name']) ? $_GET['name'] : 'Anonymous';
-		$greetings = "Welcome to my world, {$name}.";
+		$greetings = $this->_T('greeting', $name);
 		// 嘗試呼叫 mod_dummy 自訂的 mod_dummy_append 掛載點，對 $greetings 做出更動
 		// 需要 mod_dummy 有載入
 		$this->callCHP('mod_dummy_append', array(&$greetings));
 		echo $greetings;
+	}
+
+	/**
+	 * 載入語言資源。
+	 */
+	private function loadLanguage() {
+		$lang = array(
+			'en_US' => array(
+				'greeting' => 'Welcome to my world, %s.'
+			),
+			'zh_TW' => array(
+				'greeting' => '%s，歡迎來到我的世界。'
+			),
+			'ja_JP' => array(
+				'greeting' => '%s、私の世界へようこそ。'
+			)
+		);
+		$this->attachLanguage($lang[
+			array_key_exists(PIXMICAT_LANGUAGE, $lang) ? PIXMICAT_LANGUAGE : 'en_US'
+		]);
 	}
 }
