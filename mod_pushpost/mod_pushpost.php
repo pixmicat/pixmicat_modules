@@ -47,7 +47,7 @@ function mod_pushpostShow(pid){
 function mod_pushpostKeyPress(e){if(e.which==13){e.preventDefault();mod_pushpostSend();}}
 function mod_pushpostSend(){
 	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), o3 = $g("mod_pushpostSmb"), pp = $("div#r"+o0.value+" .quote");
-	if(o2.value===""){ alert("'._T('modpushpost_nocomment').'"); return false; }
+	if(o2.value===""){ alert("'.$this->_T('nocomment').'"); return false; }
 	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
 		url: "'.str_replace('&amp;', '&', $this->getModulePageURL()).'&no="+o0.value,
@@ -72,7 +72,7 @@ function mod_pushpostSend(){
 	public function autoHookFoot(&$foot) {
 		$foot .= '
 <div id="mod_pushpostBOX" style="display:none">
-<input type="hidden" id="mod_pushpostID" />'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" onkeypress="mod_pushpostKeyPress(event)" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" onkeypress="mod_pushpostKeyPress(event)" /><input type="button" id="mod_pushpostSmb" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend()" /></li></ul>
+<input type="hidden" id="mod_pushpostID" />'.$this->_T('pushpost').' <ul><li>'._T('form_name').' <input type="text" id="mod_pushpostName" maxlength="20" onkeypress="mod_pushpostKeyPress(event)" /></li><li>'._T('form_comment').' <input type="text" id="mod_pushpostComm" size="50" maxlength="50" onkeypress="mod_pushpostKeyPress(event)" /><input type="button" id="mod_pushpostSmb" value="'._T('form_submit_btn').'" onclick="mod_pushpostSend()" /></li></ul>
 </div>
 ';
 	}
@@ -88,7 +88,7 @@ function mod_pushpostSend(){
 		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.
 			$this->getModulePageURL(array('no'=> $post['no'])).
 			'" onclick="return mod_pushpostShow('.$post['no'].')">'.
-			$pushcount._T('modpushpost_pushbutton').'</a>';
+			$pushcount.$this->_T('pushbutton').'</a>';
 		if (strpos($arrLabels['{$COM}'], $this->PUSHPOST_SEPARATOR.'<br />') !== false) {
 			// 回應模式
 			if ($isReply || $pushcount <= $this->PUSHPOST_DEF) {
@@ -106,7 +106,7 @@ function mod_pushpostSend(){
 					$pushs = '';
 				}
 				$arrLabels['{$COM}'] = substr($arrLabels['{$COM}'], 0, $delimiter).$pushs;
-				$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2">'._T('modpushpost_omitted').'<br /></span>'."\n";
+				$arrLabels['{$WARN_BEKILL}'] .= '<span class="warn_txt2">'.$this->_T('omitted').'<br /></span>'."\n";
 			}
 		}
 	}
@@ -166,7 +166,7 @@ function mod_pushpostSend(){
 
 					$dat = '';
 					head($dat);
-					$dat .= '<div class="bar_reply">'._T('modpushpost_deletepush').'</div>';
+					$dat .= '<div class="bar_reply">'.$this->_T('deletepush').'</div>';
 					$dat .= '<form action="'.$this->getModulePageURL(
 						array(
 							'action'=>'delpush',
@@ -232,9 +232,9 @@ function mod_pushpostSend(){
 
 			$name = CleanStr($_POST['name']);
 			$comm = CleanStr($_POST['comm']);
-			if (strlen($name) > 30) die(_T('modpushpost_maxlength')); // 名稱太長
-			if (strlen($comm) > 160) die(_T('modpushpost_maxlength')); // 太多字
-			if (strlen($comm) == 0) die(_T('modpushpost_nocomment')); // 沒打字
+			if (strlen($name) > 30) die($this->_T('maxlength')); // 名稱太長
+			if (strlen($comm) > 160) die($this->_T('maxlength')); // 太多字
+			if (strlen($comm) == 0) die($this->_T('nocomment')); // 沒打字
 			$name = str_replace(
 				array(_T('trip_pre'), _T('admin'), _T('deletor')),
 				array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'),
@@ -317,7 +317,7 @@ function mod_pushpostSend(){
 		$dat = $PTE->ParseBlock('HEADER', array('{$TITLE}'=>TITLE, '{$RESTO}'=>''));
 		$dat .= '</head><body id="main">';
 		$dat .= '<form action="'.$this->getModulePageURL(array('no' => $targetPost)).'" method="post">
-'._T('modpushpost_pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
+'.$this->_T('pushpost').' <ul><li>'._T('form_name').' <input type="text" name="name" maxlength="20" /></li><li>'._T('form_comment').' <input type="text" name="comm" size="50" maxlength="50" /><input type="submit" value="'._T('form_submit_btn').'" /></li></ul>
 </form>';
 		$dat .= '</body></html>';
 		return $dat;
@@ -327,32 +327,34 @@ function mod_pushpostSend(){
 	 * 動態加入語言資源
 	 */
 	private function loadLanguage() {
-		$language = array(
+		$lang = array(
 			'zh_TW' => array(
-				'modpushpost_nocomment' => '請輸入內文',
-				'modpushpost_pushpost' => '[推文]',
-				'modpushpost_pushbutton' => '推',
-				'modpushpost_maxlength' => '你話太多了',
-				'modpushpost_omitted' => '有部分推文被省略。要閱讀全部推文請按下回應連結。',
-				'modpushpost_deletepush' => '刪除推文模式'
+				'nocomment' => '請輸入內文',
+				'pushpost' => '[推文]',
+				'pushbutton' => '推',
+				'maxlength' => '你話太多了',
+				'omitted' => '有部分推文被省略。要閱讀全部推文請按下回應連結。',
+				'deletepush' => '刪除推文模式'
 			),
 			'ja_JP' => array(
-				'modpushpost_nocomment' => '何か書いて下さい',
-				'modpushpost_pushpost' => '[推文]',
-				'modpushpost_pushbutton' => '推',
-				'modpushpost_maxlength' => 'コメントが長すぎます',
-				'modpushpost_omitted' => '推文省略。全て読むには返信ボタンを押してください。',
-				'modpushpost_deletepush' => '削除推文モード'
+				'nocomment' => '何か書いて下さい',
+				'pushpost' => '[推文]',
+				'pushbutton' => '推',
+				'maxlength' => 'コメントが長すぎます',
+				'omitted' => '推文省略。全て読むには返信ボタンを押してください。',
+				'deletepush' => '削除推文モード'
 			),
 			'en_US' => array(
-				'modpushpost_nocomment' => 'Please type your comment.',
-				'modpushpost_pushpost' => '[Push this post]',
-				'modpushpost_pushbutton' => 'PUSH',
-				'modpushpost_maxlength' => 'You typed too many words',
-				'modpushpost_omitted' => 'Some pushs omitted. Click Reply to view.',
-				'modpushpost_deletepush' => 'Delete Push Post Mode'
+				'nocomment' => 'Please type your comment.',
+				'pushpost' => '[Push this post]',
+				'pushbutton' => 'PUSH',
+				'maxlength' => 'You typed too many words',
+				'omitted' => 'Some pushs omitted. Click Reply to view.',
+				'deletepush' => 'Delete Push Post Mode'
 			)
 		);
-		$this->attachLanguage($language[PIXMICAT_LANGUAGE]);
+		$this->attachLanguage($lang[
+			array_key_exists(PIXMICAT_LANGUAGE, $lang) ? PIXMICAT_LANGUAGE : 'en_US'
+		]);
 	}
 }
