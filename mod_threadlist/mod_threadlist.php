@@ -18,6 +18,7 @@ class mod_threadlist extends ModuleHelper {
 
 		$lang = array(
 			'zh_TW' => array(
+				'modulename' => '討論串列表',
 				'no_title' => '發文不可以沒有標題喔',
 				'link' => '主題列表',
 				'main_title' => '主題一覽',
@@ -25,6 +26,7 @@ class mod_threadlist extends ModuleHelper {
 				'date' => '日期'
 			),
 			'en_US' => array(
+				'modulename' => 'Thread list',
 				'no_title' => 'We do NOT accept a post which is no title.',
 				'link' => 'Thread List',
 				'main_title' => 'Thread overview',
@@ -39,7 +41,7 @@ class mod_threadlist extends ModuleHelper {
 	}
 
 	public function getModuleName() {
-		return $this->moduleNameBuilder('討論串列表');
+		return $this->moduleNameBuilder($this->_T('modulename'));
 	}
 
 	public function getModuleVersionInfo() {
@@ -71,7 +73,7 @@ class mod_threadlist extends ModuleHelper {
 ';
 			$post_count = ceil(count($post) / 2);
 			for ($i = 0; $i < $post_count; $i++) {
-				$leftStr = sprintf('%d.: <a href="%s">%s (%d)</a>',
+				$leftStr = sprintf('%d: <a href="%s">%s (%d)</a>',
 					$post[$i]['no'],
 					PHP_SELF.'?res='.$post[$i]['no'],
 					$post[$i]['sub'],
@@ -79,7 +81,7 @@ class mod_threadlist extends ModuleHelper {
 				);
 
 				if (isset($post[$i + $post_count])) {
-					$rightStr = sprintf('%d.: <a href="%s">%s (%d)</a>',
+					$rightStr = sprintf('%d: <a href="%s">%s (%d)</a>',
 						$post[$i + $post_count]['no'],
 						PHP_SELF.'?res='.$post[$i + $post_count]['no'],
 						$post[$i + $post_count]['sub'],
