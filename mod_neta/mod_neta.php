@@ -17,9 +17,7 @@ class mod_neta extends ModuleHelper {
 				'postinfo_usage' => '<li><b>Use <span style="color:blue;">%s</span> tag in content for spoiler alert!</b></li>'
 			),
 		);
-		$this->attachLanguage($lang[
-			array_key_exists(PIXMICAT_LANGUAGE, $lang) ? PIXMICAT_LANGUAGE : 'en_US'
-		]);
+		$this->attachLanguage($lang, 'en_US');
 	}
 
 	public function getModuleName() {

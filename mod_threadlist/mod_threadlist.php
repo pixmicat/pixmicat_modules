@@ -16,7 +16,7 @@ class mod_threadlist extends ModuleHelper {
 	public function __construct($PMS) {
 		parent::__construct($PMS);
 
-		$lang = array(
+		$this->attachLanguage(array(
 			'zh_TW' => array(
 				'modulename' => '討論串列表',
 				'no_title' => '發文不可以沒有標題喔',
@@ -33,11 +33,7 @@ class mod_threadlist extends ModuleHelper {
 				'page_title' => 'List mode',
 				'date' => 'Date'
 			)
-		);
-
-		$this->attachLanguage($lang[
-			array_key_exists(PIXMICAT_LANGUAGE, $lang) ? PIXMICAT_LANGUAGE : 'en_US'
-		]);
+		), 'en_US');
 	}
 
 	public function getModuleName() {

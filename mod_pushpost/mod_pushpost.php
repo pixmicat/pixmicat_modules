@@ -353,8 +353,6 @@ function mod_pushpostSend(){
 				'deletepush' => 'Delete Push Post Mode'
 			)
 		);
-		$this->attachLanguage($lang[
-			array_key_exists(PIXMICAT_LANGUAGE, $lang) ? PIXMICAT_LANGUAGE : 'en_US'
-		]);
+		$this->attachLanguage($lang, 'en_US');
 	}
 }
