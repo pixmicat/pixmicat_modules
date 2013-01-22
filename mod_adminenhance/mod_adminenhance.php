@@ -1,48 +1,59 @@
 <?php
-class mod_adminenhance{
-	var $mypage;
-	var $ipfile, $imgfile;
+class mod_adminenhance extends ModuleHelper {
+	private $mypage;
+	private $ipfile = '.ht_blacklist';
+	private $imgfile = '.ht_md5list';
 
-	function mod_adminenhance(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__);
-		$this->mypage = $PMS->getModulePageURL(__CLASS__);
-		$this->ipfile = '.ht_blacklist'; $this->imgfile = '.ht_md5list';
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+
+		$this->mypage = $this->getModulePageURL();
 	}
 
-	function getModuleName(){
-		return 'mod_adminenhance : 管理工具增強組合包';
+	public function getModuleName() {
+		return $this->moduleNameBuilder('管理工具增強組合包');
 	}
 
-	function getModuleVersionInfo(){
-		return '5th.Release (v100318)';
+	public function getModuleVersionInfo() {
+		return '7th.Release (v130122)';
 	}
 
 	/* 從資料檔抓出資料 */
-	function _parseBlackListFile($fname, $only1st=false){
-		if(!is_file($fname)) return array();
+	private function _parseBlackListFile($fname, $only1st = false) {
+		if (!is_file($fname))
+			return array();
+
 		$l = file($fname);
-		$r = array(); $autodelno = array();
+		$r = array();
+		$autodelno = array();
 		$tmp = '';
 		$now = time();
-		for($i = 0, $len = count($l); $i < $len; $i++){
+		for ($i = 0, $len = count($l); $i < $len; $i++) {
 			$tmp = explode("\t", rtrim($l[$i]));
-			if(isset($tmp[3]) && $tmp[3] != '0'){ // 封鎖時段已過
-				if($tmp[2] + intval($tmp[3]) * 86400 < $now){
+			// 封鎖時段已過
+			if (isset($tmp[3]) && $tmp[3] != '0') {
+				if ($tmp[2] + intval($tmp[3]) * 86400 < $now) {
 					$autodelno[] = $i;
 					continue;
 				}
 			}
 			$r[] = $only1st ? $tmp[0] : $tmp;
 		}
-		if(count($autodelno)) $this->_arrangeRecord($this->ipfile, $autodelno, ''); // 進行清除動作
+		if (count($autodelno)) {
+			// 進行清除動作
+			$this->_arrangeRecord($this->ipfile, $autodelno, '');
+		}
 		return $r;
 	}
 
 	/* 重新整理記錄檔內容 (同步進行刪除及新增動作) */
-	function _arrangeRecord($fname, $arrDel, $newline){
+	private function _arrangeRecord($fname, $arrDel, $newline) {
 		$line = is_file($fname) ? file($fname) : array();
-		if(is_array($arrDel)) foreach($arrDel as $delid) unset($line[$delid]); // 刪除
+		if (is_array($arrDel)) {
+			foreach($arrDel as $delid)
+				// 刪除
+				unset($line[$delid]);
+		}
 		$line = implode('', $line).$newline;
 		$fp = fopen($fname, 'w');
 		fwrite($fp, $line);
@@ -50,12 +61,12 @@ class mod_adminenhance{
 	}
 
 	/* 在前端管理顯示 Hostname */
-	function _showHostString(&$arrLabels, $post, $isReply){
+	public function _showHostString(&$arrLabels, $post, $isReply) {
 		$arrLabels['{$NOW}'] .= " <u>{$post['host']}</u>";
 	}
 
 	/* 封鎖黑名單管理頁面插入CSS & JS */
-	function _hookHeadCSS(&$style, $isReply){
+	public function _hookHeadCSS(&$style, $isReply) {
 		$style .= '<style type="text/css">
 .dos_list_short {
 	height: 150px;
@@ -81,19 +92,24 @@ function add(form){
 ';
 	}
 
-	function autoHookRegistBegin(){
+	public function autoHookRegistBegin() {
 		global $BANPATTERN, $BAD_FILEMD5;
 		// 載入封鎖黑名單定義檔
-		if(is_file($this->ipfile)) $BANPATTERN = array_merge($BANPATTERN, array_map('rtrim', $this->_parseBlackListFile($this->ipfile, true)));
-		if(is_file($this->imgfile)) $BAD_FILEMD5 = array_merge($BAD_FILEMD5, array_map('rtrim', $this->_parseBlackListFile($this->imgfile, true)));
+		if (is_file($this->ipfile))
+			$BANPATTERN = array_merge($BANPATTERN, array_map('rtrim',
+				$this->_parseBlackListFile($this->ipfile, true)
+			));
+		if (is_file($this->imgfile))
+			$BAD_FILEMD5 = array_merge($BAD_FILEMD5, array_map('rtrim',
+				$this->_parseBlackListFile($this->imgfile, true)
+			));
 	}
 
-	function autoHookAdminFunction($action, &$param, $funcLabel, &$message){
-		global $PIO, $PMS;
-		if($action=='add'){
+	public function autoHookAdminFunction($action, &$param, $funcLabel, &$message) {
+		if ($action=='add'){
 			// Manual hook: showing hostname of users
-			$PMS->hookModuleMethod('ThreadPost', array(&$this, '_showHostString'));
-			$PMS->hookModuleMethod('ThreadReply', array(&$this, '_showHostString'));
+			$this->hookModuleMethod('ThreadPost', array(&$this, '_showHostString'));
+			$this->hookModuleMethod('ThreadReply', array(&$this, '_showHostString'));
 
 			$param[] = array('mod_adminenhance_thstop', 'AE: 停止/恢復討論串');
 			$param[] = array('mod_adminenhance_banip', 'AE: IP 加到黑名單 (鎖 Class C)');
@@ -101,11 +117,12 @@ function add(form){
 			return;
 		}
 
-		switch($funcLabel){
+		$PIO = PMCLibrary::getPIOInstance();
+		switch ($funcLabel) {
 			case 'mod_adminenhance_thstop':
 				$infectThreads = array();
-				foreach($PIO->fetchPosts($param) as $th){
-					if($th['resto']) continue; // 是回應
+				foreach ($PIO->fetchPosts($param) as $th) {
+					if ($th['resto']) continue; // 是回應
 					$infectThreads[] = $th['no'];
 					$flgh = $PIO->getPostStatus($th['status']);
 					$flgh->toggle('TS');
@@ -116,8 +133,9 @@ function add(form){
 				break;
 			case 'mod_adminenhance_banip':
 				$fp = fopen($this->ipfile, 'a');
-				foreach($PIO->fetchPosts($param) as $th){
-					if(($IPaddr = gethostbyname($th['host'])) != $th['host']) $IPaddr .= '/24';
+				foreach ($PIO->fetchPosts($param) as $th) {
+					if (($IPaddr = gethostbyname($th['host'])) != $th['host'])
+						$IPaddr .= '/24';
 					fwrite($fp, $IPaddr."\t\t".time()."\t0\n");
 				}
 				fclose($fp);
@@ -125,8 +143,9 @@ function add(form){
 				break;
 			case 'mod_adminenhance_banimg':
 				$fp = fopen($this->imgfile, 'a');
-				foreach($PIO->fetchPosts($param) as $th){
-					if($th['md5chksum']) fwrite($fp, $th['md5chksum']."\n");
+				foreach ($PIO->fetchPosts($param) as $th) {
+					if ($th['md5chksum'])
+						fwrite($fp, $th['md5chksum']."\n");
 				}
 				fclose($fp);
 				$message .= '圖檔黑名單更新完成<br />';
@@ -135,48 +154,61 @@ function add(form){
 		}
 	}
 
-	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false){
-		if($pageId == 'admin' && $addinfo == true)
+	public function autoHookLinksAboveBar(&$link, $pageId, $addinfo = false) {
+		if ($pageId == 'admin' && $addinfo == true)
 			$link .= '[<a href="'.$this->mypage.'">封鎖黑名單管理</a>]';
 	}
 
-	function ModulePage(){
-		global $PMS;
-		if(!adminAuthenticate('check')) die('[Error] Access Denied.');
+	public function ModulePage() {
+		if(!adminAuthenticate('check'))
+			die('[Error] Access Denied.');
 
 		// 進行新增、刪除等動作
-		if(isset($_POST['operate'])){
+		if (isset($_POST['operate'])) {
 			$op = $_POST['operate'];
 			// 新增資料
-			$ndata = isset($_POST['newdata']) ? (get_magic_quotes_gpc() ? stripslashes($_POST['newdata']) : $_POST['newdata']) : ''; // 資料內容
-			$nperiod = isset($_POST['newperiod']) ? intval($_POST['newperiod']) : 0; // 封鎖天數
-			$ndesc = isset($_POST['newdesc']) ? CleanStr($_POST['newdesc']) : ''; // 註解
+			// 資料內容
+			$ndata = isset($_POST['newdata']) ?
+				(get_magic_quotes_gpc() ? stripslashes($_POST['newdata']) :
+					$_POST['newdata']) : '';
+			// 封鎖天數
+			$nperiod = isset($_POST['newperiod']) ? intval($_POST['newperiod']) : 0;
+			// 註解
+			$ndesc = isset($_POST['newdesc']) ? CleanStr($_POST['newdesc']) : '';
 			// 刪除資料
 			$del = isset($_POST['del']) ? $_POST['del'] : null;
 			$newline = '';
-			$ismodified = ($ndata != '' || $del != null); // 是否需要修改檔案內容
-			if($ismodified){
-				switch($op){
+			// 是否需要修改檔案內容
+			$ismodified = ($ndata != '' || $del != null);
+			if ($ismodified) {
+				switch ($op) {
 					case 'ip':
 						$file = $this->ipfile;
-						if($ndata != '') $newline = $ndata."\t".$ndesc."\t".time()."\t".$nperiod."\n";
+						if ($ndata != '')
+							$newline = $ndata."\t".$ndesc."\t".time()."\t".$nperiod."\n";
 						break;
 					case 'img':
 						$file = $this->imgfile;
-						if($ndata != '') $newline = $ndata."\t".$ndesc."\n";
+						if ($ndata != '')
+							$newline = $ndata."\t".$ndesc."\n";
 						break;
 				}
-				$this->_arrangeRecord($file, $del, $newline); // 同步進行刪除及更新
+				// 同步進行刪除及更新
+				$this->_arrangeRecord($file, $del, $newline);
 			}
-			if(isset($_POST['ajax'])){ // AJAX 要求在此即停止，一般要求則繼續印出頁面
-				$extend = ($op=='ip') ? '<td>'.date('Y/m/d H:m:s', time())." ($nperiod)</td>" : ''; // IP黑名單資訊比圖檔多
-				echo '<tr><td>'.htmlspecialchars($ndata).'</td><td>'.$ndesc.'</td>'.$extend.'<td><input type="checkbox" name="del[]" value="#NO#" /></td></tr>';
+			// AJAX 要求在此即停止，一般要求則繼續印出頁面
+			if (isset($_POST['ajax'])) {
+				// IP黑名單資訊比圖檔多
+				$extend = ($op=='ip') ?
+					'<td>'.date('Y/m/d H:m:s', time())." ($nperiod)</td>" : '';
+				echo '<tr><td>'.htmlspecialchars($ndata).'</td><td>'.$ndesc.
+					'</td>'.$extend.'<td><input type="checkbox" name="del[]" value="#NO#" /></td></tr>';
 				return;
 			}
 		}
 
 		$dat = '';
-		$PMS->hookModuleMethod('Head', array(&$this, '_hookHeadCSS'));
+		$this->hookModuleMethod('Head', array(&$this, '_hookHeadCSS'));
 		head($dat);
 		$dat .= '<div class="bar_admin">封鎖黑名單管理</div>
 <div id="content">
@@ -191,7 +223,7 @@ Desc: <input type="text" name="newdesc" size="30" />
 <table border="0" width="100%">
 <tr><td>Pattern</td><td>Description</td><td>Add Date (Period)</td><td>Delete</td></tr>
 ';
-		foreach($this->_parseBlackListFile($this->ipfile) as $i => $l){
+		foreach ($this->_parseBlackListFile($this->ipfile) as $i => $l) {
 			$dat .= '<tr><td>'.htmlspecialchars($l[0]).'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td>'.
 			'<td>'.(isset($l[2]) ? date('Y/m/d H:m:s', $l[2]) : '-').(isset($l[3]) ? ' ('.$l[3].')' : ' (0)').'</td>'.
 			'<td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
@@ -213,8 +245,9 @@ Desc: <input type="text" name="newdesc" size="30" />
 <table border="0" width="100%">
 <tr><td>MD5</td><td>Description</td><td>Delete</td></tr>
 ';
-		foreach($this->_parseBlackListFile($this->imgfile) as $i => $l){
-			$dat .= '<tr><td>'.htmlspecialchars($l[0]).'</td><td>'.(isset($l[1]) ? $l[1] : '').'</td><td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
+		foreach ($this->_parseBlackListFile($this->imgfile) as $i => $l) {
+			$dat .= '<tr><td>'.htmlspecialchars($l[0]).'</td><td>'.
+				(isset($l[1]) ? $l[1] : '').'</td><td><input type="checkbox" name="del[]" value="'.$i.'" /></td></tr>'."\n";
 		}
 		$dat .= '</table>
 </div>
@@ -263,4 +296,3 @@ Period:
 		echo $dat;
 	}
 }
-?>
