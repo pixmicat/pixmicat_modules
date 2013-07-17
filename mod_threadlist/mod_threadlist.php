@@ -41,7 +41,7 @@ class mod_threadlist extends ModuleHelper {
 	}
 
 	public function getModuleVersionInfo() {
-		return '7th.Release (v130120)';
+		return '7th.Release.2 (v130717)';
 	}
 
 	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com,
@@ -156,7 +156,7 @@ class mod_threadlist extends ModuleHelper {
 		$post = $PIO->fetchPosts($plist); // 取出資料
 		$post_count = count($post);
 
-		if(strpos($sort, 'post') !== false) { // 要重排次序
+		if($sort=='date' || strpos($sort, 'post') !== false) { // 要重排次序
 			$mypost = array();
 
 			foreach($plist as $p) {
@@ -173,10 +173,22 @@ class mod_threadlist extends ModuleHelper {
 		}
 
 		head($dat);
+		$dat .= '<script>
+var selectall = "";
+function checkall(){
+	selectall = selectall ? "" : "checked";
+	var inputs = document.getElementsByTagName("input");
+	for(x=0; x < inputs.length; x++){
+		if(inputs[x].type == "checkbox" && parseInt(inputs[x].name)) {
+			inputs[x].checked = selectall;
+		}
+	}
+}
+</script>';
 		$dat .= '<div id="contents">
 [<a href="'.PHP_SELF2.'?'.time().'">'._T('return').'</a>]
 <div class="bar_reply">'.$this->_T('page_title').'</div>'.($this->SHOW_FORM ? '<form action="'.PHP_SELF.'" method="post">' : '').'<table align="center" width="98%"><tr>
-'.($this->SHOW_FORM ? '<th></th>' : '').'
+'.($this->SHOW_FORM ? '<th><a href="javascript:checkall()">↓</a></th>' : '').'
 <th><a href="'.$thisPage.'&amp;sort=no">No.'.($sort == 'no' ? ' ▼' : '').'</a></th>
 <th width="48%">'._T('form_topic').'</th>
 <th>'._T('form_name').'</th>
@@ -223,10 +235,21 @@ class mod_threadlist extends ModuleHelper {
 </tr></table>
 </div>';
 		if ($this->SHOW_FORM) {
+			$adminMode = adminAuthenticate('check'); // 前端管理模式
+			$adminFunc = ''; // 前端管理選擇
+			if($adminMode){
+				$adminFunc = '<select name="func"><option value="delete">'._T('admin_delete').'</option>';
+				$funclist = array();
+				$dummy = '';
+				$PMS->useModuleMethods('AdminFunction', array('add', &$funclist, null, &$dummy)); // "AdminFunction" Hook Point
+				foreach($funclist as $f) $adminFunc .= '<option value="'.$f[0].'">'.$f[1].'</option>'."\n";
+				$adminFunc .= '</select>';
+			}
+
 			$pte_vals = array('{$DEL_HEAD_TEXT}' => '<input type="hidden" name="mode" value="usrdel" />'._T('del_head'),
 				'{$DEL_IMG_ONLY_FIELD}' => '<input type="checkbox" name="onlyimgdel" id="onlyimgdel" value="on" />',
 				'{$DEL_IMG_ONLY_TEXT}' => _T('del_img_only'),
-				'{$DEL_PASS_TEXT}' => _T('del_pass'),
+				'{$DEL_PASS_TEXT}' => ($adminMode ? $adminFunc : '')._T('del_pass'),
 				'{$DEL_PASS_FIELD}' => '<input type="password" name="pwd" size="8" value="" />',
 				'{$DEL_SUBMIT_BTN}' => '<input type="submit" value="'._T('del_btn').'" />');
 			$dat .= PMCLibrary::getPTEInstance()->ParseBlock('DELFORM', $pte_vals).'</form>';
