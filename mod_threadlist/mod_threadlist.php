@@ -41,7 +41,7 @@ class mod_threadlist extends ModuleHelper {
 	}
 
 	public function getModuleVersionInfo() {
-		return '7th.Release.2 (v130717)';
+		return '7th.Release.3 (v140528)';
 	}
 
 	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com,
@@ -241,7 +241,7 @@ function checkall(){
 				$adminFunc = '<select name="func"><option value="delete">'._T('admin_delete').'</option>';
 				$funclist = array();
 				$dummy = '';
-				$PMS->useModuleMethods('AdminFunction', array('add', &$funclist, null, &$dummy)); // "AdminFunction" Hook Point
+				self::$PMS->useModuleMethods('AdminFunction', array('add', &$funclist, null, &$dummy)); // "AdminFunction" Hook Point
 				foreach($funclist as $f) $adminFunc .= '<option value="'.$f[0].'">'.$f[1].'</option>'."\n";
 				$adminFunc .= '</select>';
 			}
