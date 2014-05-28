@@ -41,7 +41,7 @@ class mod_threadlist extends ModuleHelper {
 	}
 
 	public function getModuleVersionInfo() {
-		return 'pre 8th.Release (v140528)';
+		return '7th.Release.3 (v140528)';
 	}
 
 	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com,
