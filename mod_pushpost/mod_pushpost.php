@@ -29,6 +29,16 @@ class mod_pushpost extends ModuleHelper {
 
 	public function autoHookHead(&$txt, $isReply) {
 		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
+<script type="text/javascript"> 
+// <![CDATA[
+if (!window.$) {
+  var jq = document.createElement("script"); jq.type = "text/javascript";
+  // Path to jquery.js file, eg. Google hosted version
+  jq.src = "//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js";
+  document.getElementsByTagName("head")[0].appendChild(jq);
+}
+// ]]>
+</script>
 <script type="text/javascript">
 // <![CDATA[
 var lastpushpost=0;
