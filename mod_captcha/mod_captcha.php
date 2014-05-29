@@ -9,57 +9,75 @@ http://jmhoule314.blogspot.com/2006/05/easy-php-captcha-tutorial-today-im.html
 加上回應的Kris Knigga修改的成果。
 */
 
-class mod_captcha{
-	var $SELF, $CAPTCHA_TMPDIR, $CAPTCHA_WIDTH, $CAPTCHA_HEIGHT, $CAPTCHA_LENGTH, $CAPTCHA_GAP, $CAPTCHA_TEXTY, $CAPTCHA_FONTMETHOD, $CAPTCHA_FONTFACE, $CAPTCHA_ECOUNT;
+class mod_captcha extends ModuleHelper {
+	private $CAPTCHA_WIDTH = 150; // 圖片寬
+	private $CAPTCHA_HEIGHT = 25; // 圖片高
+	private $CAPTCHA_LENGTH = 6; // 明碼字數
+	private $CAPTCHA_GAP = 20; // 明碼字元間隔
+	private $CAPTCHA_TEXTY = 20; // 字元直向位置
+	private $CAPTCHA_FONTMETHOD = 0; // 字體使用種類 (0: GDF (*.gdf) 1: TrueType Font (*.ttf))
+	private $CAPTCHA_FONTFACE = array('./module/font1.gdf'); // 使用之字型 (可隨機挑選，惟字型種類需要相同不可混用)
+	private $CAPTCHA_ECOUNT = 2;
+	private $LANGUAGE=array(
+			'zh_TW' => array(
+				'modcaptcha_captcha' => '發文驗證碼',
+				'modcaptcha_reload' => '看不懂？重讀',
+				'modcaptcha_enterword' => '<small>(請輸入你在圖中看到的文字 大小寫不分)</small>',
+				'modcaptcha_captcha_alt' => 'CAPTCHA 驗證碼圖像',
+				'modcaptcha_worderror' => '您輸入的驗證碼錯誤！'
+			),
+			'ja_JP' => array(
+				'modcaptcha_captcha' => '画像認証',
+				'modcaptcha_reload' => 'リロード',
+				'modcaptcha_enterword' => '<br /><small>(画像に表示されている文字を入力してください。大文字と小文字は区別されません。)</small>',
+				'modcaptcha_captcha_alt' => 'CAPTCHA画像',
+				'modcaptcha_worderror' => '画像認証に失敗しました!'
+			),
+			'en_US' => array(
+				'modcaptcha_captcha' => 'Captcha',
+				'modcaptcha_reload' => 'Can\'t read? Reload',
+				'modcaptcha_enterword' => '<small>(Please enter the words you saw. Case-insensitive.)</small>',
+				'modcaptcha_captcha_alt' => 'CAPTCHA Image',
+				'modcaptcha_worderror' => 'The words you sent are error!'
+			)
+		);
 
-	function mod_captcha(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_captcha'); // Register ModulePage
-		$this->SELF = $PMS->getModulePageURL('mod_captcha'); // Self Location
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 
-		$this->CAPTCHA_WIDTH = 150; // 圖片寬
-		$this->CAPTCHA_HEIGHT = 25; // 圖片高
-		$this->CAPTCHA_LENGTH = 6; // 明碼字數
-		$this->CAPTCHA_GAP = 20; // 明碼字元間隔
-		$this->CAPTCHA_TEXTY = 20; // 字元直向位置
-		$this->CAPTCHA_FONTMETHOD = 0; // 字體使用種類 (0: GDF (*.gdf) 1: TrueType Font (*.ttf))
-		$this->CAPTCHA_FONTFACE = array('./module/font1.gdf'); // 使用之字型 (可隨機挑選，惟字型種類需要相同不可混用)
-		$this->CAPTCHA_ECOUNT = 2; // 圖片混淆用橢圓個數
-
-		AttachLanguage(array($this, '_loadLanguage')); // 載入語言檔
+		$this->mypage = $this->getModulePageURL(); 
+		$this->attachLanguage($this->LANGUAGE);// 載入語言檔
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_captcha : CAPTCHA 驗證圖像機制';
 	}
 
-	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v090524)';
+	public function getModuleVersionInfo(){
+		return '7th.Release (v140528)';
 	}
 
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
-	function autoHookPostForm(&$form){
-		global $languages;
-		$form .= '<tr><td class="Form_bg"><b>'._T('modcaptcha_captcha').'</b></td><td><img src="'.$this->SELF.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&amp;\';})();">'._T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" />'._T('modcaptcha_enterword').'</td></tr>'."\n";
+	public function autoHookPostForm(&$form){ 
+		$form .= '<tr><td class="Form_bg"><b>'.$this->_T('modcaptcha_captcha').'</b></td><td><img src="'.$this->mypage.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&amp;\';})();">'.$this->_T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" />'.$this->_T('modcaptcha_enterword').'</td></tr>'."\n";
 	}
 
 	/* 在接收到送出要求後馬上檢查明暗碼是否符合 */
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
-		global $languages;
+	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){ 
 		@session_start();
 		$MD5code = isset($_SESSION['captcha_dcode']) ? $_SESSION['captcha_dcode'] : false;
 		if($MD5code===false || !isset($_POST['captchacode']) || md5(strtoupper($_POST['captchacode'])) !== $MD5code){ // 大小寫不分檢查
 			unset($_SESSION['captcha_dcode']);
-			error(_T('modcaptcha_worderror'));
+			error($this->_T('modcaptcha_worderror'));
 		}
 	}
 
-	function ModulePage(){
+	public function ModulePage(){
 		$this->OutputCAPTCHA(); // 生成暗碼、CAPTCHA圖像
 	}
 
 	/* 生成CAPTCHA圖像、明碼、暗碼及內嵌用Script */
-	function OutputCAPTCHA(){
+	private function OutputCAPTCHA(){
 		@session_start();
 
 		// 隨機生成明碼、暗碼
@@ -104,31 +122,4 @@ class mod_captcha{
 		ImagePNG($captcha);
 		ImageDestroy($captcha);
 	}
-
-	function _loadLanguage(){
-		global $language;
-		if(PIXMICAT_LANGUAGE != 'zh_TW' && PIXMICAT_LANGUAGE != 'ja_JP' && PIXMICAT_LANGUAGE != 'en_US') $lang = 'en_US';
-		else $lang = PIXMICAT_LANGUAGE;
-
-		if($lang=='zh_TW'){
-			$language['modcaptcha_captcha'] = '發文驗證碼';
-			$language['modcaptcha_reload'] = '看不懂？重讀';
-			$language['modcaptcha_enterword'] = '<small>(請輸入你在圖中看到的文字 大小寫不分)</small>';
-			$language['modcaptcha_captcha_alt'] = 'CAPTCHA 驗證碼圖像';
-			$language['modcaptcha_worderror'] = '您輸入的驗證碼錯誤！';
-		}elseif($lang=='ja_JP'){
-			$language['modcaptcha_captcha'] = '画像認証';
-			$language['modcaptcha_reload'] = 'リロード';
-			$language['modcaptcha_enterword'] = '<br /><small>(画像に表示されている文字を入力してください。大文字と小文字は区別されません。)</small>';
-			$language['modcaptcha_captcha_alt'] = 'CAPTCHA画像';
-			$language['modcaptcha_worderror'] = '画像認証に失敗しました';
-		}elseif($lang=='en_US'){
-			$language['modcaptcha_captcha'] = 'Captcha';
-			$language['modcaptcha_reload'] = 'Can\'t read? Reload';
-			$language['modcaptcha_enterword'] = '<small>(Please enter the words you saw. Case-insensitive.)</small>';
-			$language['modcaptcha_captcha_alt'] = 'CAPTCHA Image';
-			$language['modcaptcha_worderror'] = 'The words you sent are error!'; 
-		}
-	}
 }
-?>

@@ -1,53 +1,61 @@
 <?php
-class mod_edit{
-	var $mypage;
-	var $shown_in_page;
+class mod_edit extends ModuleHelper {
+	private $mypage;
+	private $shown_in_page = false;
 
-	function mod_edit(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL(__CLASS__);
-		$this->shown_in_page = false; // 是否顯示編輯功能於前端頁面供使用者自行修改
-	}
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+
+		$this->mypage = $this->getModulePageURL();
+		$this->url =  fullURL().PHP_SELF.'?res=';
+	} 
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_edit : 文章編輯功能';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080519)';
+	public function getModuleVersionInfo(){
+		return '7th.Release (v140529)';
 	}
 
-	function autoHookAdminList(&$modFunc, $post, $isres){
+	public function autoHookAdminList(&$modFunc, $post, $isres){
 		$modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$post['no'].'" title="Edit">E</a>]';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		if($this->shown_in_page) $arrLabels['{$REPLYBTN}'] .= ' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		if($this->shown_in_page) $arrLabels['{$QUOTEBTN}'] .= ' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
 	}
 
-	function _EditPostInfo(&$txt){
+	private function _EditPostInfo(&$txt){
 		$txt = '<li><span style="font-size:110%;font-weight:bold;">不用更換的欄位請留空。</span></li>'.$txt;
 	}
 
-	function ModulePage(){
-		global $PIO, $FileIO, $PMS, $language, $BAD_STRING, $BAD_FILEMD5, $BAD_IPADDR, $LIMIT_SENSOR;
+	public function ModulePage(){
+		global $language, $BAD_STRING, $BAD_FILEMD5, $BAD_IPADDR, $LIMIT_SENSOR;
+		$PMS = PMCLibrary::getPMSInstance();
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();; 
 
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
 		if(!isset($_POST['mode'])){ // 顯示表單
 			if(!$this->shown_in_page && !adminAuthenticate('check')) die('[Error] Access Denied.');
-
+			
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.');
 			extract($post[0]);
-			$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
-			if($bbcode=$PMS->getModuleInstance('mod_bbcode')) $bbcode->_html2bb($com);
+			if($PMS->onlyLoad('mod_bbcode')){ //check bbcode exists
+				//$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
+				if($bbcode=$PMS->getModuleInstance('mod_bbcode')){
+					$bbcode->_html2bb($com);
+				}
+			}
+
 			$name=preg_replace('|<span.*?>(.*?)</span>|','\1',$name);
 			$dat='';
 			head($dat);
@@ -174,8 +182,7 @@ class mod_edit{
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
 
 			header('HTTP/1.1 302 Moved Temporarily');
-			header('Location: '.fullURL().PHP_SELF2.'?'.time());
+			header('Location: '.fullURL().PHP_SELF.'?page_num=0&ts='.time() );
 		}
 	}
 }
-?>
