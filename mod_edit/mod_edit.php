@@ -182,7 +182,7 @@ class mod_edit extends ModuleHelper {
 			deleteCache(array($parentNo)); // 刪除討論串舊快取
 
 			header('HTTP/1.1 302 Moved Temporarily');
-			header('Location: '.fullURL().PHP_SELF2.'?'.time());
+			header('Location: '.fullURL().PHP_SELF.'?page_num=0&ts='.time() );
 		}
 	}
 }
