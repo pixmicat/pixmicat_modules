@@ -43,7 +43,7 @@ div.list .tools-expend { position: absolute; overflow:hidden; width:auto; }
 	/* 模組獨立頁面 */
 	function ModulePage(){
 		$PTE = PMCLibrary::getPTEInstance();
-		$PMS = PMCLibrary::$getPMSInstance();
+		$PMS = PMCLibrary::getPMSInstance();
 		$PIO = PMCLibrary::getPIOInstance();
 		$FileIO = PMCLibrary::getFileIOInstance();; 
 		$dat = ''; // HTML Buffer
