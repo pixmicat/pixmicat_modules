@@ -4,37 +4,35 @@ mod_mobile : 行動版頁面顯示 (唯讀)
 By: scribe
 */
 
-class mod_mobile{
-	var $THREADLIST_NUMBER, $thisPage, $displayMode;
+class mod_mobile extends ModuleHelper{
+	var $THREADLIST_NUMBER =10;// 一頁顯示列表個數
+	var $thisPage;
+	var $displayMode;
 
-	function mod_mobile(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_mobile'); // 向系統登記模組專屬獨立頁面
-
-		$this->THREADLIST_NUMBER = 10; // 一頁顯示列表個數
-		$this->thisPage = $PMS->getModulePageURL('mod_mobile'); // 基底位置
+	public function __construct($PMS) {
+		parent::__construct($PMS); 
+		$this->thisPage = $this->getModulePageURL(); // 基底位置
 		$this->displayMode = isset($_COOKIE['dm']) ? $_COOKIE['dm'] : 's'; // 顯示模式 (s/m/l)
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_mobile : 行動版頁面顯示 (唯讀)';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return '4th.Release.2 (v090819)';
+	public function getModuleVersionInfo(){
+		return '7th.Release (v140529)';
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar, $isReply){
+	public function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->thisPage.'">行動版</a>]'."\n";
 	}
 
 	/* 模組獨立頁面 */
-	function ModulePage(){
-		global $PIO;
-
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
 		$err = ''; // 錯誤資訊
 		$res = isset($_GET['r']) ? intval($_GET['r']) : 0; // 回應編號
 		if(isset($_GET['dm'])){ // 是否進入設定模式
@@ -70,7 +68,7 @@ class mod_mobile{
 	}
 
 	/* 行動版頁首 */
-	function mobileHead(&$dat, $title){
+	private function mobileHead(&$dat, $title){
 		$dat .= '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.1//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -80,8 +78,10 @@ class mod_mobile{
 	}
 
 	/* 行動版內容 */
-	function mobileBody(&$dat, $pageMax, $page, $res, $post){
-		global $PIO, $FileIO;
+	private function mobileBody(&$dat, $pageMax, $page, $res, $post){
+		$PIO = PMCLibrary::getPIOInstance(); //7th寫法
+		$FileIO = PMCLibrary::getFileIOInstance(); //7th寫法
+
 		$post_count = count($post);
 		$dat .= '<div id="c">';
 		// 逐步取資料
@@ -109,8 +109,7 @@ class mod_mobile{
 	}
 
 	/* 行動版頁尾 */
-	function mobileFoot(&$dat){
+	private function mobileFoot(&$dat){
 		$dat .= '<div id="f">-Pixmicat!m-<br/><a href="'.$this->thisPage.'&amp;dm=set">顯示模式</a></div></body></html>';
 	}
 }
-?>
