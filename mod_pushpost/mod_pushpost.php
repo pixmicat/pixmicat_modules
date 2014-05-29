@@ -15,7 +15,7 @@ class mod_pushpost extends ModuleHelper {
 	}
 
 	public function getModuleVersionInfo() {
-		return '7th.Release (v130117)';
+		return '7th.Release (v140529)';
 	}
 
 	/**
