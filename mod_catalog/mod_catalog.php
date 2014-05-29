@@ -4,15 +4,14 @@ mod_catalog : 以相簿模式列出圖檔方便瀏覽及抓取
 By: scribe (Adopted from Pixmicat!-Festival)
 */
 
-class mod_catalog{
-	var $CATALOG_NUMBER, $USE_SEARCH_CODE;
+class mod_catalog extends ModuleHelper {
+	var $CATALOG_NUMBER = 20; // 相簿模式一頁最多顯示個數 (視文章是否有貼圖而有實際變動)
+	var $USE_SEARCH_CODE = true; // 使用搜尋程序來建立相簿?
+	var $myPage;
 
-	function mod_catalog(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', 'mod_catalog'); // 向系統登記模組專屬獨立頁面
-
-		$this->CATALOG_NUMBER = 20; // 相簿模式一頁最多顯示個數 (視文章是否有貼圖而有實際變動)
-		$this->USE_SEARCH_CODE = true; // 使用搜尋程序來建立相簿?
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->myPage = $this->getModulePageURL();// 基底位置
 	}
 
 	/* Get the name of module */
@@ -22,13 +21,12 @@ class mod_catalog{
 
 	/* Get the module version infomation */
 	function getModuleVersionInfo(){
-		return '4th.Release.3 (v130717)';
+		return '7th.Release (v140529)';
 	}
 
 	/* 自動掛載：頂部連結列 */
 	function autoHookToplink(&$linkbar, $isReply){
-		global $PMS;
-		$linkbar .= '[<a href="'.$PMS->getModulePageURL('mod_catalog').'">相簿模式</a>]'."\n";
+		$linkbar .= '[<a href="'.$this->myPage.'">相簿模式</a>]'."\n";
 	}
 
 	/* 掛載樣式表 */
@@ -44,9 +42,10 @@ div.list .tools-expend { position: absolute; overflow:hidden; width:auto; }
 
 	/* 模組獨立頁面 */
 	function ModulePage(){
-		global $PTE, $PMS, $PIO, $FileIO;
-
-		$thisPage = $PMS->getModulePageURL('mod_catalog'); // 基底位置
+		$PTE = PMCLibrary::getPTEInstance();
+		$PMS = PMCLibrary::$getPMSInstance();
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();; 
 		$dat = ''; // HTML Buffer
 		$listMax = $PIO->postCount(); // 文章總筆數
 		$pageMax = ceil($listMax / $this->CATALOG_NUMBER) - 1; // 分頁最大編號
@@ -66,7 +65,7 @@ div.list .tools-expend { position: absolute; overflow:hidden; width:auto; }
 		head($dat);
 		$dat .= '<div id="contents">
 [<a href="'.PHP_SELF2.'?'.time().'">回到版面</a>]
-<div class="bar_reply">相簿模式'.(@$_GET['style']=='detail'?' <a href="'.$thisPage.($page?'&amp;page='.$page:'').(isset($_GET['search'])?'&amp;search':'').'&amp;style=simple">■</a>':' <a href="'.$thisPage.($page?'&amp;page='.$page:'').(isset($_GET['search'])?'&amp;search':'').'&amp;style=detail">≡</a>').'</div>
+<div class="bar_reply">相簿模式'.(@$_GET['style']=='detail'?' <a href="'.$this->myPage.($page?'&amp;page='.$page:'').(isset($_GET['search'])?'&amp;search':'').'&amp;style=simple">■</a>':' <a href="'.$this->myPage.($page?'&amp;page='.$page:'').(isset($_GET['search'])?'&amp;search':'').'&amp;style=detail">≡</a>').'</div>
 ';
 		if($_GET['style']=='detail'){
 			$dat .= '<script>
@@ -114,15 +113,15 @@ else obj.className="tools";
 <div id="page_switch">
 <table border="1" style="float: left;"><tr>
 ';
-		if($page) $dat .= '<td><a href="'.$thisPage.'&amp;page='.($page - 1).(@$_GET['style']=='detail'?'&amp;style=detail':'').(isset($_GET['search'])?'&amp;search':'').'">上一頁</a></td>';
+		if($page) $dat .= '<td><a href="'.$this->myPage.'&amp;page='.($page - 1).(@$_GET['style']=='detail'?'&amp;style=detail':'').(isset($_GET['search'])?'&amp;search':'').'">上一頁</a></td>';
 		else $dat .= '<td style="white-space: nowrap;">第一頁</td>';
 		$dat .= '<td>';
 		for($i = 0; $i <= $pageMax; $i++){
 			if($i==$page) $dat .= '[<b>'.$i.'</b>] ';
-			else $dat .= '[<a href="'.$thisPage.'&amp;page='.$i.(@$_GET['style']=='detail'?'&amp;style=detail':'').(isset($_GET['search'])?'&amp;search':'').'">'.$i.'</a>] ';
+			else $dat .= '[<a href="'.$this->myPage.'&amp;page='.$i.(@$_GET['style']=='detail'?'&amp;style=detail':'').(isset($_GET['search'])?'&amp;search':'').'">'.$i.'</a>] ';
 		}
 		$dat .= '</td>';
-		if($page < $pageMax) $dat .= '<td><a href="'.$thisPage.'&amp;page='.($page + 1).(@$_GET['style']=='detail'?'&amp;style=detail':'').(isset($_GET['search'])?'&amp;search':'').'">下一頁</a></td>';
+		if($page < $pageMax) $dat .= '<td><a href="'.$this->myPage.'&amp;page='.($page + 1).(@$_GET['style']=='detail'?'&amp;style=detail':'').(isset($_GET['search'])?'&amp;search':'').'">下一頁</a></td>';
 		else $dat .= '<td style="white-space: nowrap;">最後一頁</td>';
 		$dat .= '
 </tr></table>
@@ -143,4 +142,3 @@ else obj.className="tools";
 		return 'width: '.$w.'px; height: '.$h.'px;';
 	}
 }
-?>
