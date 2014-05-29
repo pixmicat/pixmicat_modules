@@ -45,12 +45,17 @@ class mod_edit extends ModuleHelper {
 		if(!isset($_GET['no'])) die('[Error] not enough parameter.');
 		if(!isset($_POST['mode'])){ // 顯示表單
 			if(!$this->shown_in_page && !adminAuthenticate('check')) die('[Error] Access Denied.');
-
+			
 			$post = $PIO->fetchPosts($_GET['no']);
 			if(!count($post)) die('[Error] Post does not exist.');
 			extract($post[0]);
-			$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
-			if($bbcode=$PMS->getModuleInstance('mod_bbcode')) $bbcode->_html2bb($com);
+			if($PMS->onlyLoad('mod_bbcode')){ //check bbcode exists
+				//$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
+				if($bbcode=$PMS->getModuleInstance('mod_bbcode')){
+					$bbcode->_html2bb($com);
+				}
+			}
+
 			$name=preg_replace('|<span.*?>(.*?)</span>|','\1',$name);
 			$dat='';
 			head($dat);
