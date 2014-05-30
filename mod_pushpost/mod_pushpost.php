@@ -4,6 +4,7 @@ class mod_pushpost extends ModuleHelper {
 	private $PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
 	// 討論串最多顯示之推文筆數 (超過則自動隱藏，全部隱藏：0)
 	private $PUSHPOST_DEF = 10;
+	private $includeJQuery =true;
 
 	public function __construct($PMS) {
 		parent::__construct($PMS);
@@ -29,7 +30,7 @@ class mod_pushpost extends ModuleHelper {
 
 	public function autoHookHead(&$txt, $isReply) {
 		//fast check if jquery exists
-		if (strpos($txt, 'jquery')===false){
+		if (strpos($txt, 'jquery')===false && includeJQuery){
 			$txt .=  '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>';
 		}
 
