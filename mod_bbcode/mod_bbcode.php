@@ -1,46 +1,43 @@
 <?php
-class mod_bbcode{
-	var $ImgTagTagMode, $URLTagMode, $MaxURLCount, $URLTrapLog;
-	var $myPage, $urlcount;
+class mod_bbcode extends ModuleHelper { 
+	private $myPage;
+	private $urlcount;
+	private	$ImgTagTagMode = 1; // [img]標籤行為 (0:不轉換 1:無貼圖時轉換 2:常時轉換)
+	private	$URLTagMode = 1; // [url]標籤行為 (0:不轉換 1:正常)
+	private	$MaxURLCount = 2; // [url]標籤上限 (超過上限時標籤為陷阱標籤[寫入至$URLTrapLog])
+	private	$URLTrapLog = './URLTrap.log'; // [url]陷阱標籤記錄檔
 
-	function mod_bbcode(){
-		global $PMS;
-
-		$PMS->hookModuleMethod('ModulePage', 'mod_bbcode'); // 向系統登記模組專屬獨立頁面
-		$this->myPage = $PMS->getModulePageURL('mod_bbcode'); // 基底位置
-
-		$this->ImgTagTagMode = 1; // [img]標籤行為 (0:不轉換 1:無貼圖時轉換 2:常時轉換)
-		$this->URLTagMode = 1; // [url]標籤行為 (0:不轉換 1:正常)
-		$this->MaxURLCount = 2; // [url]標籤上限 (超過上限時標籤為陷阱標籤[寫入至$URLTrapLog])
-		$this->URLTrapLog = './URLTrap.log'; // [url]陷阱標籤記錄檔
-
-		if(method_exists($PMS,'addCHP')) {
-			$PMS->addCHP('mod_bbbutton_addButtons',array($this,'_addButtons'));
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->myPage = $this->getModulePageURL();// 基底位置
+		if(method_exists(self::$PMS,'addCHP')) {
+			self::$PMS->addCHP('mod_bbbutton_addButtons',array($this,'_addButtons'));
 		}
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_bbcode : 內文BBCode轉換';
 	}
 
-	function getModuleVersionInfo(){
-		return '6th.Release-dev (v110319)';
+	public function getModuleVersionInfo(){
+		return '7th.Release-dev (v140530)';
 	}
 
-	function autoHookPostInfo(&$postinfo){
+	public function autoHookPostInfo(&$postinfo){
 		$postinfo .= "<li>可使用 <a href='".$this->myPage."' rel='_blank'>BBCode</a></li>\n";
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
+	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
 		$com = $this->_bb2html($com,$dest);
 	}
 
-	function _addButtons($txt) {
+	private function _addButtons($txt) {
 		$txt .= 'bbbuttons.tags = $.extend({
 			 b:{desc:"Bold"},
 			 i:{desc:"Italic"},
 			 u:{desc:"Underline"},
 			 p:{desc:"Paragraph"},
+			 del:{desc:"Deleted"},
 			 color:{desc:"Color", prompt:{prompt:"Enter Color:",def:""}},
 			 pre:{desc:"Pre-formatted text"},
 			 quote:{desc:"Quotation"},
@@ -50,12 +47,13 @@ class mod_bbcode{
 			},bbbuttons.tags);';
 	}
 
-	function _bb2html($string, $dest){
+	private function _bb2html($string, $dest){
 		$this->urlcount=0; // Reset counter
 		$string = preg_replace('#\[b\](.*?)\[/b\]#si', '<b>\1</b>', $string);
 		$string = preg_replace('#\[i\](.*?)\[/i\]#si', '<i>\1</i>', $string);
 		$string = preg_replace('#\[u\](.*?)\[/u\]#si', '<u>\1</u>', $string);
 		$string = preg_replace('#\[p\](.*?)\[/p\]#si', '<p>\1</p>', $string);
+		$string = preg_replace('#\[del\](.*?)\[/del\]#si', '<del>\1</del>', $string);
 
 		$string = preg_replace('#\[color=(\S+?)\](.*?)\[/color\]#si', '<font color="\1">\2</font>', $string);
 
@@ -82,27 +80,27 @@ class mod_bbcode{
 		return $string;
 	}
 
-	function _URLConv1($m){
+	private function _URLConv1($m){
 		++$this->urlcount;
 		return "<a href=\"$m[1]$m[2]\" rel=\"_blank\">$m[1]$m[2]</a>";
 	}
 
-	function _URLConv2($m){
+	private function _URLConv2($m){
 		++$this->urlcount;
 		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[1]</a>";
 	}
 
-	function _URLConv3($m){
+	private function _URLConv3($m){
 		++$this->urlcount;
 		return "<a href=\"$m[1]$m[2]\" rel=\"_blank\">$m[3]</a>";
 	}
 
-	function _URLConv4($m){
+	private function _URLConv4($m){
 		++$this->urlcount;
 		return "<a href=\"http://$m[1]\" rel=\"_blank\">$m[2]</a>";
 	}
 
-	function _URLRevConv($m){
+	private function _URLRevConv($m){
 		if($m[1]=='http' && $m[2]=='://'.$m[3]) {
 			return '[url]'.$m[3].'[/url]';
 		} elseif(($m[1].$m[2])==$m[3]) {
@@ -115,16 +113,17 @@ class mod_bbcode{
 		}
 	}
 
-	function _EMailRevConv($m){
+	private function _EMailRevConv($m){
 		if($m[1]==$m[2]) return '[email]'.$m[1].'[/email]';
 		else return '[email='.$m[1].']'.$m[2].'[/email]';
 	}
 
-	function _html2bb(&$string){
+	private function _html2bb(&$string){
 		$string = preg_replace('#<b>(.*?)</b>#si', '[b]\1[/b]', $string);
 		$string = preg_replace('#<i>(.*?)</i>#si', '[i]\1[/i]', $string);
 		$string = preg_replace('#<u>(.*?)</u>#si', '[u]\1[/u]', $string);
 		$string = preg_replace('#<p>(.*?)</p>#si', '[p]\1[/p]', $string);
+		$string = preg_replace('#<del>(.*?)</del>#si', '[del]\1[/del]', $string);
 
 		$string = preg_replace('#<font color="(\S+?)">(.*?)</font>#si', '[color=\1]\2[/color]', $string);
 
@@ -140,7 +139,7 @@ class mod_bbcode{
 	}
 
 
-	function _URLExcced(){
+	private function _URLExcced(){
 		if($this->urlcount > $this->MaxURLCount) {
 		  	  $fh = fopen($this->URLTrapLog, 'a+b');
 		  	  fwrite($fh, time()."\t$_SERVER[REMOTE_ADDR]\t$cnt\n");
@@ -149,7 +148,7 @@ class mod_bbcode{
 		}
 	}
 
-	function ModulePage(){
+	public function ModulePage(){
 		$dat='';$status='現時BBCode設定:<ul><li>[url]標籤行為 (0:不轉換 1:正常) - '.$this->URLTagMode.'</li><li>[url]標籤上限 (超過上限時標籤為陷阱標籤並寫入至記錄檔中) - '.$this->MaxURLCount.'</li><li>'._T('info_basic_urllinking').' '._T('info_0no1yes').' - '.AUTO_LINK.'</li><li>[img]標籤行為 (0:不轉換 1:無貼圖時轉換 2:常時轉換) - '.$this->ImgTagTagMode.'</li></ul>';
 		head($dat);
 		$dat.=<<<EOH
@@ -157,7 +156,8 @@ $status
 BBCode 代碼包含一些標籤方便您快速的更改文字的基本形式. 這些可以分述如下: 
 <ul><li>要製作一份粗體文字可使用 <b>[b][/b]</b>, 例如: <br/><br/><b>[b]</b>哈囉<b>[/b]</b><br/><br/>會變成<b>哈囉</b><br/><br/></li>
 <li>要使用底線時, 可使用<b>[u][/u]</b>, 例如:<br/><br/><b>[u]</b>早安<b>[/u]</b><br/><br/>會變成<u>早安</u><br/><br/></li>
-<li>要斜體顯示時, 可使用 <b>[i][/i]</b>, 例如:<br/><br/>這個真是 <b>[i]</b>棒呆了!<b>[/i]</b><br/><br/>將會變成 這個真是 <i>棒呆了!</i></li></ul>
+<li>要斜體顯示時, 可使用 <b>[i][/i]</b>, 例如:<br/><br/>這個真是 <b>[i]</b>棒呆了!<b>[/i]</b><br/><br/>將會變成 這個真是 <i>棒呆了!</i></li>
+<li>要刪除線顯示時, 可使用 <b>[del][/del]</b>, 例如:<br/><br/>這個真是 <b>[del]</b>太可惜!<b>[/del]</b><br/><br/>將會變成 這個真是 <del>太可惜!</del></li></ul>
 
 要在您的文章中修改文字顏色及大小需要使用以下的標籤. 請注意, 顯示的效果視您的瀏覽器和系統而定: 
 <ul><li>更改文字色彩時, 可使用 <b>[color=][/color]</b>. 您可以指定一個可被辨識的顏色名稱(例如. red, blue, yellow, 等等.) 或是使用顏色編碼, 例如: #FFFFFF, #000000. 舉例來說, 要製作一份紅色文字您必須使用:<br/><br/><b>[color=red]</b>哈囉!<b>[/color]</b><br/><br/>或是<br/><br/><b>[color=#FF0000]</b>哈囉!<b>[/color]</b><br/><br/>都將顯示:<font color="red">哈囉!</font><br/><br/></li>
@@ -190,4 +190,3 @@ EOH;
 		echo $dat;
 	}
 }
-?>
