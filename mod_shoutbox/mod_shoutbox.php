@@ -246,7 +246,7 @@ setInterval("getLatestMessage()",30000);
 	}
 
 	private function _deleteMessage($no,$pass) {
-		if($pass!=ADMIN_PASS) return;
+		if(passwordVerify($pass)===false) return;
 		$found=false;
 		if($logs=@file($this->MESG_LOG)) { // mesgno,date,emo,mesg,ip = each $logs, order desc
 			$countlogs=count($logs);
