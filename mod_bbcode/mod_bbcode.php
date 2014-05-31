@@ -47,7 +47,7 @@ class mod_bbcode extends ModuleHelper {
 			},bbbuttons.tags);';
 	}
 
-	private function _bb2html($string, $dest){
+	public function _bb2html($string, $dest){
 		$this->urlcount=0; // Reset counter
 		$string = preg_replace('#\[b\](.*?)\[/b\]#si', '<b>\1</b>', $string);
 		$string = preg_replace('#\[i\](.*?)\[/i\]#si', '<i>\1</i>', $string);
@@ -118,7 +118,7 @@ class mod_bbcode extends ModuleHelper {
 		else return '[email='.$m[1].']'.$m[2].'[/email]';
 	}
 
-	private function _html2bb(&$string){
+	public function _html2bb(&$string){
 		$string = preg_replace('#<b>(.*?)</b>#si', '[b]\1[/b]', $string);
 		$string = preg_replace('#<i>(.*?)</i>#si', '[i]\1[/i]', $string);
 		$string = preg_replace('#<u>(.*?)</u>#si', '[u]\1[/u]', $string);
