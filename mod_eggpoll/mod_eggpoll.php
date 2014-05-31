@@ -240,9 +240,9 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			if($rs->fetchColumn()!==false) die('[Error] Already voted.');
 			unset($rs);
 			// 刐除舊詳細評價
-			$qry = 'SELECT COUNT(*) FROM eggpoll_detail WHERE date < "'.$deldate.'" LIMIT 1';
+			$qry = 'SELECT 1 FROM eggpoll_detail WHERE date < "'.$deldate.'" LIMIT 1';
 			$rs = $file_db->query($qry);
-			if($rs->fetchColumn()>0) {
+			if($rs->fetchColumn()!==false) {
 				$str = 'DELETE FROM eggpoll_detail WHERE date < "'.$deldate.'"';
 				$affected_row = $file_db->exec($str);
 				if ($affected_row > 0){
@@ -257,17 +257,17 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 				}
 			} 
 			$str = 'INSERT INTO eggpoll_detail (no,option,ip,date) VALUES ('.$no.','.$rank.',"'.$ip.'","'.$datestr.'")';
-			$affected_row= $file_db->exec($str);
-			if($affected_row < 1) {
-				echo "db error:";
+			$rs= $file_db->query($str);
+			if($rs->rowCount() < 1) { 
 				print_r($file_db->errorInfo()); 
 				unset($file_db);
-				return ;
+				unset($rs)
+				die("db error:");
 			} 
 
 			$qry = 'SELECT COUNT(*) FROM eggpoll_votes WHERE no ='.$no;
 			$rs = $file_db->query($qry); 
-			if( ( $rs->fetchColumn() ) == 0) {
+			if( $rs->fetchColumn() !== false) {
 				$str = 'INSERT INTO eggpoll_votes (no,up,down) VALUES ('.$no.($rank?',1,0)':',0,1)');
 			} else {
 				if($rank)
@@ -277,14 +277,15 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			}
 			unset($rs);
 
-			$stmt=$file_db->prepare($str);
-			$stmt->execute();
-			if($stmt->rowCount() <= 0) {
+			$rs=$file_db->query($str); 
+			if($rs->rowCount() <= 0) {
 				echo "db error:";
 				print_r($file_db->errorInfo()); 
 				unset($file_db);
+				unset($rs);
+				die( "db error:");
 			} 
-			unset($stmt);
+			unset($rs);
 			echo '+OK ';
 			$this->_getPollValuesPDO($no,$file_db);
 			unset($file_db);
