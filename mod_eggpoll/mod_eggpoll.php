@@ -247,15 +247,22 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 				$affected_row = $file_db->exec($str);
 				if ($affected_row > 0){
 					$file_db->exec('VACUUM');
+					unset($rs);
 				}else{
+					echo "db error:";
 					print_r($file_db->errorInfo());
+					unset($rs);
+					unset($file_db);
+					return ;
 				}
 			} 
-			unset($rs);
 			$str = 'INSERT INTO eggpoll_detail (no,option,ip,date) VALUES ('.$no.','.$rank.',"'.$ip.'","'.$datestr.'")';
 			$affected_row= $file_db->exec($str);
 			if($affected_row < 1) {
-				print_r($file_db->errorInfo());
+				echo "db error:";
+				print_r($file_db->errorInfo()); 
+				unset($file_db);
+				return ;
 			} 
 
 			$qry = 'SELECT COUNT(*) FROM eggpoll_votes WHERE no ='.$no;
@@ -273,11 +280,14 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			$stmt=$file_db->prepare($str);
 			$stmt->execute();
 			if($stmt->rowCount() <= 0) {
+				echo "db error:";
 				print_r($file_db->errorInfo()); 
+				unset($file_db);
 			} 
 			unset($stmt);
 			echo '+OK ';
 			$this->_getPollValuesPDO($no,$file_db);
+			unset($file_db);
 		}
 	}
 
