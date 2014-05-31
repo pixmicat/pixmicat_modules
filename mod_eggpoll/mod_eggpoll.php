@@ -261,8 +261,8 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			if($rs->rowCount() < 1) { 
 				print_r($file_db->errorInfo()); 
 				unset($file_db);
-				unset($rs)
-				die("db error:");
+				unset($rs);
+				die( "db error:"); 
 			} 
 
 			$qry = 'SELECT COUNT(*) FROM eggpoll_votes WHERE no ='.$no;
@@ -283,7 +283,7 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 				print_r($file_db->errorInfo()); 
 				unset($file_db);
 				unset($rs);
-				die( "db error:");
+				die("db error:");
 			} 
 			unset($rs);
 			echo '+OK ';
