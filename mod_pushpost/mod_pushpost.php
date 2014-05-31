@@ -53,7 +53,7 @@ function mod_pushpostShow(pid){
 function mod_pushpostKeyPress(e){if(e.which==13){e.preventDefault();mod_pushpostSend();}}
 function mod_pushpostSend(){
 	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), o3 = $g("mod_pushpostSmb"), pp = $("div#r"+o0.value+" .quote");
-	if(o2.value===""){ alert("'.$this->_T('nocomment').'"); return false; }
+	if(o2.value===""){ alert("'._T('nocomment').'"); return false; }
 	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
 		url: "'.str_replace('&amp;', '&', $this->getModulePageURL()).'&no="+o0.value,
@@ -225,7 +225,7 @@ function mod_pushpostSend(){
 		// 處理推文
 			// 傳送方法不正確
 			if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-				die(_T('regist_notpost'));
+				die($this->_T('regist_notpost'));
 			}
 
 			// 查IP
@@ -233,14 +233,14 @@ function mod_pushpostSend(){
 			$ip = getREMOTE_ADDR();
 			$host = gethostbyaddr($ip);
 			if (BanIPHostDNSBLCheck($ip, $host, $baninfo)) {
-				die(_T('regist_ipfiltered', $baninfo));
+				die($this->_T('regist_ipfiltered', $baninfo));
 			}
 
 			$name = CleanStr($_POST['name']);
 			$comm = CleanStr($_POST['comm']);
 			if (strlen($name) > 30) die($this->_T('maxlength')); // 名稱太長
 			if (strlen($comm) > 160) die($this->_T('maxlength')); // 太多字
-			if (strlen($comm) == 0) die($this->_T('nocomment')); // 沒打字
+			if (strlen($comm) == 0) die(_T('nocomment')); // 沒打字
 			$name = str_replace(
 				array(_T('trip_pre'), _T('admin'), _T('deletor')),
 				array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'),
