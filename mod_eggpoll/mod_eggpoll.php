@@ -143,16 +143,11 @@ function getPollValues() {
 	private function _getPollValuesPDO($no,&$file_db) {
 		$ip = getREMOTE_ADDR(); $datestr = gmdate('Ymd',time()+TIME_ZONE*60*60); $voted = array(); $first = true;
 		$qry = 'SELECT no FROM eggpoll_detail WHERE ip = "'.$ip.'" AND date = "'.$datestr.'" AND no IN('.$no.')';
-		$stmt=$file_db->prepare($qry); 
-		//while($row = sqlite_fetch_array($rs)) { $voted[$row['no']]=1; }
-		if ($stmt->execute()){
-	    	while( ($number = $stmt->fetchColumn())!==false ){
-	    		$voted[$number]=1;
-	    	}
-	    }else{
-    		print_r($file_db->errorInfo());
+		$rs=$file_db->query($qry);  	
+    	while( ($number = $rs->fetchColumn())!==false ){
+    		$voted[$number]=1;
     	}
-    	unset($stmt);
+    	unset($rs);
 
 		$qry = 'SELECT no,up,down FROM eggpoll_votes WHERE no IN('.$no.')';
 		$rs = $file_db->query($qry);
