@@ -60,7 +60,7 @@ class mod_archiver{
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		if($this->ADMIN_ONLY) return; // 只允許管理員生成
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
+		$arrLabels['{$QUOTEBTN}'] .= '&#xA0;[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
 	}
 
 	/* 取出討論串結構並製成XML結構 */

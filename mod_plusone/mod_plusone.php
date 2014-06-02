@@ -44,7 +44,7 @@ _HERE_;
 
 
 	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		$arrLabels['{$REPLYBTN}'] .= '&nbsp;<div class="g-plusone" data-size="small" data-href="'.$this->url.$post['no'].'"></div>';
+		$arrLabels['{$REPLYBTN}'] .= '&#xA0;<div class="g-plusone" data-size="small" data-href="'.$this->url.$post['no'].'"></div>';
 	}
 }
 ?>

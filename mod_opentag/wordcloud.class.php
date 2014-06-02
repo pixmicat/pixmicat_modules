@@ -341,7 +341,7 @@
 					if ($returnType == 'array') {
 						$return [$word] = $arrayInfo;
 					} elseif ($returnType == 'html') {
-						$return .= "<span class='word size{$sizeRange}'> &nbsp; {$arrayInfo['word']} &nbsp; </span>";
+						$return .= "<span class='word size{$sizeRange}'> &#xA0; {$arrayInfo['word']} &#xA0; </span>";
 					}
 				}
 				return $return;
