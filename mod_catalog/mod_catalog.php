@@ -5,9 +5,9 @@ By: scribe (Adopted from Pixmicat!-Festival)
 */
 
 class mod_catalog extends ModuleHelper {
-	var $CATALOG_NUMBER = 20; // 相簿模式一頁最多顯示個數 (視文章是否有貼圖而有實際變動)
-	var $USE_SEARCH_CODE = true; // 使用搜尋程序來建立相簿?
-	var $myPage;
+	private $CATALOG_NUMBER = 20; // 相簿模式一頁最多顯示個數 (視文章是否有貼圖而有實際變動)
+	private $USE_SEARCH_CODE = true; // 使用搜尋程序來建立相簿?
+	private $myPage;
 
 	public function __construct($PMS) {
 		parent::__construct($PMS);
@@ -15,22 +15,22 @@ class mod_catalog extends ModuleHelper {
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_catalog : 以相簿模式列出圖檔';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
+	public function getModuleVersionInfo(){
 		return '7th.Release (v140529)';
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar, $isReply){
+	public function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->myPage.'">相簿模式</a>]'."\n";
 	}
 
 	/* 掛載樣式表 */
-	function hookHeadCSS(&$style, $isReply){
+	public function hookHeadCSS(&$style, $isReply){
 		$style .= '<style type="text/css">
 div.list { float: left; margin: 5px; width: '.MAX_RW.'px; height: '.MAX_RH.'px; } /* (相簿模式) div 框格設定 */
 div.list input { width:14px; height:14px; }
@@ -41,7 +41,7 @@ div.list .tools-expend { position: absolute; overflow:hidden; width:auto; }
 	}
 
 	/* 模組獨立頁面 */
-	function ModulePage(){
+	public function ModulePage(){
 		$PTE = PMCLibrary::getPTEInstance();
 		$PMS = PMCLibrary::getPMSInstance();
 		$PIO = PMCLibrary::getPIOInstance();
@@ -68,7 +68,7 @@ div.list .tools-expend { position: absolute; overflow:hidden; width:auto; }
 <div class="bar_reply">相簿模式'.(@$_GET['style']=='detail'?' <a href="'.$this->myPage.($page?'&amp;page='.$page:'').(isset($_GET['search'])?'&amp;search':'').'&amp;style=simple">■</a>':' <a href="'.$this->myPage.($page?'&amp;page='.$page:'').(isset($_GET['search'])?'&amp;search':'').'&amp;style=detail">≡</a>').'</div>
 ';
 		if($_GET['style']=='detail'){
-			$dat .= '<script>
+			$dat .= '<script type="text/javascript">
 function hover(obj,ishover){
 if(ishover) obj.className="tools-expend";
 else obj.className="tools";
@@ -133,7 +133,7 @@ else obj.className="tools";
 	}
 
 	/* 最佳化圖顯示尺寸 */
-	function OptimizeImageWH($w, $h){
+	private function OptimizeImageWH($w, $h){
 		if($w > MAX_RW || $h > MAX_RH){
 			$W2 = MAX_RW / $w; $H2 = MAX_RH / $h;
 			$tkey = ($W2 < $H2) ? $W2 : $H2;
