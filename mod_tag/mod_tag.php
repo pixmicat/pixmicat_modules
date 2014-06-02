@@ -105,7 +105,7 @@ jQuery(function($){
 				$pte_vals = array('{$TITLE}'=>TITLE, '{$RESTO}'=>'');
 				$dat = $PTE->ParseBlock('HEADER', $pte_vals);
 				$dat .= '</head><body id="main">';
-				$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="POST">Tag: <input type="text" name="tag" value="'.htmlentities(substr(str_replace('&#44;', ',', $post[0]['category']),1,-1), ENT_QUOTES, 'UTF-8').'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
+				$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="post">Tag: <input type="text" name="tag" value="'.htmlentities(substr(str_replace('&#44;', ',', $post[0]['category']),1,-1), ENT_QUOTES, 'UTF-8').'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
 				echo $dat."</body></html>";
 			} else {
 				$Tag = CleanStr($_POST['tag']);

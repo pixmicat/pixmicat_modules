@@ -84,7 +84,7 @@ HTML;
 function check_login($forcelogin=1) {
 	if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
 		$logged_in=0;
-		if($forcelogin) SysError("ユーザーの認証が必要です。<br /><form action=\"".$_SERVER['PHP_SELF']."?action=login\" method=\"POST\">ユーザー：<INPUT type=\"text\" name=\"username\"><br />パスワード：<INPUT type=\"password\" name=\"password\"><INPUT type=\"submit\" value=\"認証\"></form>");
+		if($forcelogin) SysError("ユーザーの認証が必要です。<br /><form action=\"".$_SERVER['PHP_SELF']."?action=login\" method=\"post\">ユーザー：<INPUT type=\"text\" name=\"username\"><br />パスワード：<INPUT type=\"password\" name=\"password\"><INPUT type=\"submit\" value=\"認証\"></form>");
 		else return $logged_in;
 	} else {
 		if($_SESSION['username']!=CAP_NAME || $_SESSION['password']!=CAP_PASS) {
@@ -92,7 +92,7 @@ function check_login($forcelogin=1) {
 			unset($_SESSION['username']);
 			unset($_SESSION['password']);
 			// kill incorrect session variables.
-			if($forcelogin) SysError("ユーザーの認証が必要です。<br /><form action=\"".$_SERVER['PHP_SELF']."?action=login\" method=\"POST\">ユーザー：<INPUT type=\"text\" name=\"username\"><br />パスワード：<INPUT type=\"password\" name=\"password\"><INPUT type=\"submit\" value=\"認証\"></form>");
+			if($forcelogin) SysError("ユーザーの認証が必要です。<br /><form action=\"".$_SERVER['PHP_SELF']."?action=login\" method=\"post\">ユーザー：<INPUT type=\"text\" name=\"username\"><br />パスワード：<INPUT type=\"password\" name=\"password\"><INPUT type=\"submit\" value=\"認証\"></form>");
 			else return $logged_in;
 		}else { 
 			// valid password for username
@@ -199,7 +199,7 @@ $goto=0;
 		HtmlHeader();
 		echo <<<HTML
 <P>全てのトリップを削除します。<BR>よろしいですか？</P>
-<FORM method="POST" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
+<FORM method="post" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
 <INPUT type="hidden" name="action" value="alldel">
 <INPUT type="submit" value="全削除">
 </FORM>
@@ -217,7 +217,7 @@ HTML;
 		HtmlHeader();
 		if(ALLOW_TRIP_REG||check_login(0)) echo <<<HTML
 <P>トリップ追加</P>
-<FORM method="POST" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
+<FORM method="post" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
 <INPUT type="hidden" name="action" value="add">
 <TABLE border="0" cellpadding="0" cellspacing="0">
 <TBODY>
@@ -237,13 +237,13 @@ HTML;
 			echo <<<HTML
 <HR size="1" noshade>
 <P>トリップ全削除</P>
-<FORM method="POST" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
+<FORM method="post" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
 <INPUT type="hidden" name="action" value="alldelview">
 <INPUT type="submit" value="全削除">
 </FORM>
 <HR size="1" noshade>
 <P>トリップ管理</P>
-<FORM method="POST" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
+<FORM method="post" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
 <INPUT type="hidden" name="action" value="manage">
 <table border=1>
 <tr><th>削除</th><th>トリップ</th><th>日時</th><th>IP</th><th>有効</th><th>禁止</th><th>削除人</th></tr>
@@ -272,13 +272,13 @@ HTML;
 			echo <<<HTML
 <INPUT type="submit" value="送信">
 </FORM>
-<FORM method="POST" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
+<FORM method="post" action="$_SERVER[PHP_SELF]" ENCTYPE="multipart/form-data">
 <INPUT type="hidden" name="action" value="logout">
 <INPUT type="submit" value="ログアウト">
 </FORM>
 HTML;
 		} else {
-			echo "<HR size=\"1\" noshade><P>ログイン</P><form action=\"".$_SERVER['PHP_SELF']."?action=login\" method=\"POST\">ユーザー：<INPUT type=\"text\" name=\"username\"><br />パスワード：<INPUT type=\"password\" name=\"password\"><INPUT type=\"submit\" value=\"認証\"></form>";
+			echo "<HR size=\"1\" noshade><P>ログイン</P><form action=\"".$_SERVER['PHP_SELF']."?action=login\" method=\"post\">ユーザー：<INPUT type=\"text\" name=\"username\"><br />パスワード：<INPUT type=\"password\" name=\"password\"><INPUT type=\"submit\" value=\"認証\"></form>";
 		}
 		break;
 	}

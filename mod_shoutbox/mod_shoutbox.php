@@ -38,7 +38,7 @@ class mod_shoutbox extends ModuleHelper {
 		$mypage='http://'.$_SERVER['HTTP_HOST'].preg_replace('/'.basename($_SERVER['PHP_SELF']).'$/', '', $_SERVER['PHP_SELF']).str_replace('&amp;','&',$this->myPage);
 		$ifheight=($this->MES_PER_PAGE+11)."em";
 		$dat .= <<< _EOF_
-<style type="text/css"><!--/*--><![CDATA[/*><!--*/
+<style type="text/css">/* <![CDATA[ */
 #shoutboxform form {display:inline;}
 #shoutbox.show {display:block;position:absolute;top:3em;left:0; border: 2px #F0E0D6 solid; width: 65%;height: $ifheight; overflow:auto; margin:0; padding:0;}
 #shoutbox.hide {display:none;}
@@ -48,8 +48,9 @@ class mod_shoutbox extends ModuleHelper {
 .shout {font-size:9pt}
 .shout .e {font-weight:bold}
 .shout .d {color:gray}
-/*]]>*/--></style>
-<script type="text/javascript"><!--//--><![CDATA[//><!--
+/* ]]> */</style>
+<script type="text/javascript">
+//<![CDATA[
 function gID(s) { return document.getElementById(s); }
 /* 建立XMLHttpRequest物件 */
 function JSONXMLHttpReq(){
@@ -107,21 +108,21 @@ function realsubmit() {
 	}
 	return false;
 }
-//--><!]]></script>
+//]]></script>
 _EOF_;
 	}
 
 	/* 自動掛載：頂部連結列 */
 	public function autoHookToplink(&$linkbar, $isReply){
 		$linkbar = '<div class="shout" style="float:left;" id="latestshout"></div>
-<script type="text/javascript"><!--//--><![CDATA[//><!--
+<script type="text/javascript">//<!--//--><![CDATA[//><!--
 getLatestMessage();
 setInterval("getLatestMessage()",30000);
 //--><!]]></script>
 
 <iframe id="shoutbox" class="hide" name="shoutbox" frameborder="0"></iframe>
-<form action="'.$this->myPage.'" method="POST" id="realshoutboxform" style="display:none" target="shoutbox"><input type="hidden" name="action" value="shout"/><input type="hidden" name="emotion" id="real_shout_emo" value=""/><input type="hidden" name="message" id="real_shout_mesg" value=""/></form>
-<span id="shoutboxform">[<a href="javascript:ToggleShoutBox();">Shoutbox</a> <form action="'.$this->myPage.'" method="POST" id="shoutboxform" target="shoutbox" onsubmit="return realsubmit();"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>]</span>'."\n".$linkbar;
+<form action="'.$this->myPage.'" method="post" id="realshoutboxform" style="display:none" target="shoutbox"><input type="hidden" name="action" value="shout"/><input type="hidden" name="emotion" id="real_shout_emo" value=""/><input type="hidden" name="message" id="real_shout_mesg" value=""/></form>
+<span id="shoutboxform">[<a href="javascript:ToggleShoutBox();">Shoutbox</a> <form action="'.$this->myPage.'" method="post" id="shoutboxform" target="shoutbox" onsubmit="return realsubmit();"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>]</span>'."\n".$linkbar;
 	}
 
 	private function _getEmotionHTML() {
@@ -219,14 +220,14 @@ setInterval("getLatestMessage()",30000);
 		$PTE = PMCLibrary::getPTEInstance();
 		$dat='';$pagebar='';$gotmesg=false;
 		
-		$dat .= $PTE->ParseBlock('REALSEPARATE',array()).'<div class="shout"><form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" />';
+		$dat .= $PTE->ParseBlock('REALSEPARATE',array()).'<div class="shout"><form action="'.$this->myPage.'" method="post"><input type="hidden" name="action" value="delete" />';
 		if($logs=@file($this->MESG_LOG)) { // mesgno,date,emo,mesg,ip = each $logs, order desc
 			$mcnt=count($logs);
 			for($i=$from;$i<$to;$i++) {
 				if(!isset($logs[$i])) continue;
 				$gotmesg=true;
 				list($mno,$date,$emo,$mesg,)=explode(',',$logs[$i]);
-					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" />';
+					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="post"><input type="hidden" name="action" value="delete" />';
 					$dat.="<input type='checkbox' name='$mno' value='delete' /><span class='e'>$emo</span>&gt; <span class='m'>$mesg</span> <span class='d'>(".gmdate("Y-m-d H:i:s",$date+TIME_ZONE*3600).')</span><br/>';
 			}
 
@@ -288,7 +289,7 @@ setInterval("getLatestMessage()",30000);
 		$dat = $PTE->ParseBlock('HEADER',$pte_vals);
 		$this->autoHookHead($dat,0); // add my headers
 		$dat .= "</head><body id='shoutbox_main'>";
-		$dat.='Shoutbox<br/><form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>';
+		$dat.='Shoutbox<br/><form action="'.$this->myPage.'" method="post"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="喊" class="shoutBtn"/></form>';
 		$dat.=$this->_showMessages($page * $this->MES_PER_PAGE,($page+1) * $this->MES_PER_PAGE);
 		echo $dat."</body></html>";
 	}
