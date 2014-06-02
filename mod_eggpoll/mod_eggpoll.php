@@ -17,7 +17,6 @@ class mod_eggpoll extends ModuleHelper {
 		$this->mypage = $this->getModulePageURL();
 	}
  
-
 	/* Get the name of module */
 	public function getModuleName(){
 		return 'mod_eggpoll : 文章評分機制';
@@ -30,7 +29,12 @@ class mod_eggpoll extends ModuleHelper {
 
 	public function autoHookHead(&$txt, $isReply){
 		//global $language;
-		$txt .= '<!--script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script-->
+		//client side include jquery if not include.
+		$txt.='<script type="text/javascript">
+// <![CDATA[
+	window.jQuery || document.write("<script src=\\"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\\"><\\/script>");
+// ]]>
+</script> 
 <style type="text/css">
 .eggpoll {font-size: 0.8em;}
 .eggpoll .rankup, .eggpoll .rankdown { color:#fff; cursor:pointer; }
@@ -110,7 +114,7 @@ function getPollValues() {
 
 	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		//global $language, $PIO;
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<script type="text/javascript">postNos.push('.$post['no'].');</script><span class="eggpoll" id="ep'.$post['no'].'"><span class="rankup" onclick="mod_eggpollRank('.$post['no'].',1)">＋</span><span class="rankdown" onclick="mod_eggpollRank('.$post['no'].',0)">－</span><span class="ranktext">'.$this->rankNames[2].'</span> <a class="rtoggle" onclick="mod_eggpollToggle(this,'.$post['no'].')">↕</a></span>';
+		$arrLabels['{$QUOTEBTN}'] .= '&#xA0;<script type="text/javascript">postNos.push('.$post['no'].');</script><span class="eggpoll" id="ep'.$post['no'].'"><span class="rankup" onclick="mod_eggpollRank('.$post['no'].',1)">＋</span><span class="rankdown" onclick="mod_eggpollRank('.$post['no'].',0)">－</span><span class="ranktext">'.$this->rankNames[2].'</span> <a class="rtoggle" onclick="mod_eggpollToggle(this,'.$post['no'].')">↕</a></span>';
 	}
 
 	public function autoHookThreadReply(&$arrLabels, $post, $isReply){

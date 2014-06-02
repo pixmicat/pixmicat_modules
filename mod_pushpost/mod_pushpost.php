@@ -4,7 +4,6 @@ class mod_pushpost extends ModuleHelper {
 	private $PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
 	// 討論串最多顯示之推文筆數 (超過則自動隱藏，全部隱藏：0)
 	private $PUSHPOST_DEF = 10;
-	private $includeJQuery =true;
 
 	public function __construct($PMS) {
 		parent::__construct($PMS);
@@ -29,12 +28,13 @@ class mod_pushpost extends ModuleHelper {
 	}
 
 	public function autoHookHead(&$txt, $isReply) {
-		//fast check if jquery exists
-		if (strpos($txt, 'jquery')===false && includeJQuery){
-			$txt .=  '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>';
-		}
-
-		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
+		//client side include jquery if not include.
+		$txt .='<script type="text/javascript">
+// <![CDATA[
+	window.jQuery || document.write("<script src=\\"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\\"><\\/script>");
+// ]]>
+</script> 
+<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
 <script type="text/javascript">
 // <![CDATA[
 var lastpushpost=0;
@@ -53,7 +53,7 @@ function mod_pushpostShow(pid){
 function mod_pushpostKeyPress(e){if(e.which==13){e.preventDefault();mod_pushpostSend();}}
 function mod_pushpostSend(){
 	var o0 = $g("mod_pushpostID"), o1 = $g("mod_pushpostName"), o2 = $g("mod_pushpostComm"), o3 = $g("mod_pushpostSmb"), pp = $("div#r"+o0.value+" .quote");
-	if(o2.value===""){ alert("'._T('nocomment').'"); return false; }
+	if(o2.value===""){ alert("'.$this->_T('nocomment').'"); return false; }
 	o1.disabled = o2.disabled = o3.disabled = true;
 	$.ajax({
 		url: "'.str_replace('&amp;', '&', $this->getModulePageURL()).'&no="+o0.value,
@@ -91,7 +91,7 @@ function mod_pushpostSend(){
 			$pushcount = $f->value('mppCnt'); // 被推次數
 		}
 
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.
+		$arrLabels['{$QUOTEBTN}'] .= '&#xA0;<a href="'.
 			$this->getModulePageURL(array('no'=> $post['no'])).
 			'" onclick="return mod_pushpostShow('.$post['no'].')">'.
 			$pushcount.$this->_T('pushbutton').'</a>';
@@ -240,7 +240,7 @@ function mod_pushpostSend(){
 			$comm = CleanStr($_POST['comm']);
 			if (strlen($name) > 30) die($this->_T('maxlength')); // 名稱太長
 			if (strlen($comm) > 160) die($this->_T('maxlength')); // 太多字
-			if (strlen($comm) == 0) die(_T('nocomment')); // 沒打字
+			if (strlen($comm) == 0) die($this->_T('nocomment')); // 沒打字
 			$name = str_replace(
 				array(_T('trip_pre'), _T('admin'), _T('deletor')),
 				array(_T('trip_pre_fake'), '"'._T('admin').'"', '"'._T('deletor').'"'),
