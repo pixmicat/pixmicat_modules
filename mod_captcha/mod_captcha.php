@@ -64,6 +64,7 @@ class mod_captcha extends ModuleHelper {
 
 	/* 在接收到送出要求後馬上檢查明暗碼是否符合 */
 	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){ 
+		if (adminAuthenticate('check') === true ) return; //no captcha for admin mode
 		@session_start();
 		$MD5code = isset($_SESSION['captcha_dcode']) ? $_SESSION['captcha_dcode'] : false;
 		if($MD5code===false || !isset($_POST['captchacode']) || md5(strtoupper($_POST['captchacode'])) !== $MD5code){ // 大小寫不分檢查

@@ -173,7 +173,7 @@ class mod_threadlist extends ModuleHelper {
 		}
 
 		head($dat);
-		$dat .= '<script>
+		$dat .= '<script type="text/javascript">
 var selectall = "";
 function checkall(){
 	selectall = selectall ? "" : "checked";

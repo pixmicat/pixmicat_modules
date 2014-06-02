@@ -11,12 +11,12 @@
 <title>Thread <xsl:value-of select="threads/@no" /> : Pixmicat! Archiver</title>
 <link rel="stylesheet" type="text/css" href="archivestyle.css" />
 <script type="text/javascript">
-<![CDATA[
+// <![CDATA[
 if(typeof ActiveXObject!='undefined'){
 	document.write('<style type="text/css">.reply { display: inline ; zoom: 1; }</style>');
 	attachEvent("onload", function (){var divs=document.getElementsByTagName('div');var divs_cnt=divs.length;for(i=0;i<divs_cnt;i++){if(divs[i].className.substr(0,5)=='reply'){divs[i].insertAdjacentHTML('afterEnd','<br />');}}});
 }
-]]>
+// ]]>
 </script>
 </head>
 <body>

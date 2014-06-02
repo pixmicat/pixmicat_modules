@@ -28,12 +28,13 @@ class mod_pushpost extends ModuleHelper {
 	}
 
 	public function autoHookHead(&$txt, $isReply) {
-		//fast check if jquery exists
-		if (strpos($txt, 'jquery')===false){
-			$txt .=  '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>';
-		}
-
-		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
+		//client side include jquery if not include.
+		$txt .='<script type="text/javascript">
+// <![CDATA[
+	window.jQuery || document.write("<script src=\\"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\\"><\\/script>");
+// ]]>
+</script> 
+<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
 <script type="text/javascript">
 // <![CDATA[
 var lastpushpost=0;
@@ -90,7 +91,7 @@ function mod_pushpostSend(){
 			$pushcount = $f->value('mppCnt'); // 被推次數
 		}
 
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<a href="'.
+		$arrLabels['{$QUOTEBTN}'] .= '&#xA0;<a href="'.
 			$this->getModulePageURL(array('no'=> $post['no'])).
 			'" onclick="return mod_pushpostShow('.$post['no'].')">'.
 			$pushcount.$this->_T('pushbutton').'</a>';
@@ -224,7 +225,7 @@ function mod_pushpostSend(){
 		// 處理推文
 			// 傳送方法不正確
 			if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-				die(_T('regist_notpost'));
+				die($this->_T('regist_notpost'));
 			}
 
 			// 查IP
@@ -232,7 +233,7 @@ function mod_pushpostSend(){
 			$ip = getREMOTE_ADDR();
 			$host = gethostbyaddr($ip);
 			if (BanIPHostDNSBLCheck($ip, $host, $baninfo)) {
-				die(_T('regist_ipfiltered', $baninfo));
+				die($this->_T('regist_ipfiltered', $baninfo));
 			}
 
 			$name = CleanStr($_POST['name']);

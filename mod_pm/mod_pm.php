@@ -161,7 +161,7 @@ class mod_pm{
 			foreach($logs as $log) {
 				list($mno,$totrip,$pdate,$from,$topic,$mesg,$ip)=explode(',',trim($log));
 				if($totrip==$tripped) {
-					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="POST"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
+					if(!$dat) $dat=$PTE->ParseBlock('REALSEPARATE',array()).'<form action="'.$this->myPage.'" method="post"><input type="hidden" name="action" value="delete" /><input type="hidden" name="trip" value="'.$trip.'" />';
 					$arrLabels = array('{$NO}'=>$mno, '{$SUB}'=>$topic, '{$NAME}'=>$from, '{$NOW}'=>date('Y-m-d H:i:s',$pdate)." IP:".preg_replace('/\d+$/','*',$ip), '{$COM}'=>$mesg, '{$QUOTEBTN}'=>"No.$mno", '{$REPLYBTN}'=>'', '{$IMG_BAR}'=>'', '{$IMG_SRC}'=>'', '{$WARN_OLD}'=>'', '{$WARN_BEKILL}'=>'', '{$WARN_ENDREPLY}'=>'', '{$WARN_HIDEPOST}'=>'', '{$NAME_TEXT}'=>_T('post_name'), '{$RESTO}'=>1);
 					$PMS->useModuleMethods('ThreadPost', array(&$arrLabels, array(), 0)); // "ThreadPost" Hook Point
 					$dat .= $PTE->ParseBlock('THREAD',$arrLabels);
@@ -210,7 +210,7 @@ class mod_pm{
 		if($action == 'write') {
 			echo '<div class="bar_reply">發送私人信息</div>
 <div style="text-align: center;">
-<form id="pmform" action="'.$this->myPage.'" method="POST">
+<form id="pmform" action="'.$this->myPage.'" method="post">
 <input type="hidden" name="action" value="post" />
 <table cellpadding="1" cellspacing="1" id="postform_tbl" style="margin: 0px auto; text-align: left;">
 <tr><td class="Form_bg"><b>由</b></td><td><input type="text" name="from" value="" size="28" />(Trip可)</td></tr>
@@ -228,7 +228,7 @@ $g("pmform").from.value=getCookie("namec");
 		} elseif($action == 'post') {
 			echo '<div class="bar_reply">確認送出私人信息</div>
 <div style="text-align: center;">
-<form id="pmform" action="'.$this->myPage.'" method="POST">
+<form id="pmform" action="'.$this->myPage.'" method="post">
 <input type="hidden" name="action" value="postverify" />
 <table cellpadding="1" cellspacing="1" id="postform_tbl" style="margin: 0px auto; text-align: left;">
 <tr><td colspan="2">請確認將會送出的私人信息。按['._T('form_submit_btn').']繼續。</td></tr>
@@ -264,7 +264,7 @@ $g("pmform").from.value=getCookie("namec");
 				if(count($delno)) $this->_deletePM($delno,$_POST['trip']);
 			}
 			echo $this->_latestPM();
-			echo '【檢查收件箱】<form id="pmform" action="'.$this->myPage.'" method="POST">
+			echo '【檢查收件箱】<form id="pmform" action="'.$this->myPage.'" method="post">
 <input type="hidden" name="action" value="check" />
 <label>Trip:<input type="text" name="trip" value="" size="28" /></label><input type="submit" name="submit" value="'._T('form_submit_btn').'"/>(以"#"為首)
 </form>
