@@ -6,6 +6,7 @@ class mod_bbcode extends ModuleHelper {
 	private	$URLTagMode = 1; // [url]標籤行為 (0:不轉換 1:正常)
 	private	$MaxURLCount = 2; // [url]標籤上限 (超過上限時標籤為陷阱標籤[寫入至$URLTrapLog])
 	private	$URLTrapLog = './URLTrap.log'; // [url]陷阱標籤記錄檔
+	private $supportRuby= 1; // <ruby> tag (0:不支持 1:支持)
 
 	public function __construct($PMS) {
 		parent::__construct($PMS);
@@ -37,7 +38,6 @@ class mod_bbcode extends ModuleHelper {
 			 i:{desc:"Italic"},
 			 u:{desc:"Underline"},
 			 p:{desc:"Paragraph"},
-			 del:{desc:"Deleted"},
 			 color:{desc:"Color", prompt:{prompt:"Enter Color:",def:""}},
 			 pre:{desc:"Pre-formatted text"},
 			 quote:{desc:"Quotation"},
@@ -54,6 +54,13 @@ class mod_bbcode extends ModuleHelper {
 		$string = preg_replace('#\[u\](.*?)\[/u\]#si', '<u>\1</u>', $string);
 		$string = preg_replace('#\[p\](.*?)\[/p\]#si', '<p>\1</p>', $string);
 		$string = preg_replace('#\[del\](.*?)\[/del\]#si', '<del>\1</del>', $string);
+
+		if ($this->supportRuby){
+		//add ruby tag
+			$string = preg_replace('#\[ruby\](.*?)\[/ruby\]#si', '<ruby>\1</ruby>', $string);
+			$string = preg_replace('#\[rt\](.*?)\[/rt\]#si', '<rt>\1</rt>', $string);
+			$string = preg_replace('#\[rp\](.*?)\[/rp\]#si', '<rp>\1</rp>', $string);
+		}
 
 		$string = preg_replace('#\[color=(\S+?)\](.*?)\[/color\]#si', '<font color="\1">\2</font>', $string);
 
@@ -125,6 +132,12 @@ class mod_bbcode extends ModuleHelper {
 		$string = preg_replace('#<p>(.*?)</p>#si', '[p]\1[/p]', $string);
 		$string = preg_replace('#<del>(.*?)</del>#si', '[del]\1[/del]', $string);
 
+		if ($this->supportRuby){
+			$string = preg_replace('#<ruby>(.*?)</ruby>#si', '[ruby]\1[/ruby]', $string);
+			$string = preg_replace('#<rt>(.*?)</rt>#si', '[rt]\1[/rt]', $string);
+			$string = preg_replace('#<rp>(.*?)</rp>#si', '[rp]\1[/rp]', $string);
+		}
+
 		$string = preg_replace('#<font color="(\S+?)">(.*?)</font>#si', '[color=\1]\2[/color]', $string);
 
 		$string = preg_replace('#<font size="([1-7])">(.*?)</font>#si', '[s\1]\2[/s\1]', $string);
@@ -149,7 +162,7 @@ class mod_bbcode extends ModuleHelper {
 	}
 
 	public function ModulePage(){
-		$dat='';$status='現時BBCode設定:<ul><li>[url]標籤行為 (0:不轉換 1:正常) - '.$this->URLTagMode.'</li><li>[url]標籤上限 (超過上限時標籤為陷阱標籤並寫入至記錄檔中) - '.$this->MaxURLCount.'</li><li>'._T('info_basic_urllinking').' '._T('info_0no1yes').' - '.AUTO_LINK.'</li><li>[img]標籤行為 (0:不轉換 1:無貼圖時轉換 2:常時轉換) - '.$this->ImgTagTagMode.'</li></ul>';
+		$dat='';$status='現時BBCode設定:<ul><li>[url]標籤行為 (0:不轉換 1:正常) ~ '.$this->URLTagMode.'</li><li>[url]標籤上限 (超過上限時標籤為陷阱標籤並寫入至記錄檔中) ~ '.$this->MaxURLCount.'</li><li>'._T('info_basic_urllinking').' '._T('info_0no1yes').' ~ '.AUTO_LINK.'</li><li>[img]標籤行為 (0:不轉換 1:無貼圖時轉換 2:常時轉換) ~ '.$this->ImgTagTagMode.'</li><li>[ruby]支持注音 (0:不支持 1:支持) ~ '.$this->supportRuby.'</li></ul>';
 		head($dat);
 		$dat.=<<<EOH
 $status
@@ -157,14 +170,16 @@ BBCode 代碼包含一些標籤方便您快速的更改文字的基本形式. �
 <ul><li>要製作一份粗體文字可使用 <b>[b][/b]</b>, 例如: <br/><br/><b>[b]</b>哈囉<b>[/b]</b><br/><br/>會變成<b>哈囉</b><br/><br/></li>
 <li>要使用底線時, 可使用<b>[u][/u]</b>, 例如:<br/><br/><b>[u]</b>早安<b>[/u]</b><br/><br/>會變成<u>早安</u><br/><br/></li>
 <li>要斜體顯示時, 可使用 <b>[i][/i]</b>, 例如:<br/><br/>這個真是 <b>[i]</b>棒呆了!<b>[/i]</b><br/><br/>將會變成 這個真是 <i>棒呆了!</i></li>
-<li>要刪除線顯示時, 可使用 <b>[del][/del]</b>, 例如:<br/><br/>這個真是 <b>[del]</b>太可惜!<b>[/del]</b><br/><br/>將會變成 這個真是 <del>太可惜!</del></li></ul>
+<li>要刪除線顯示時, 可使用 <b>[del][/del]</b>, 例如:<br/><br/>這個真是 <b>[del]</b>太可惜!<b>[/del]</b><br/><br/>將會變成 這個真是 <del>太可惜!</del></li>
+<li>要注音顯示時, 可使用 <b>[ruby][/ruby]</b>, 例如:<br/><br/>[ruby]漢[rp]([/rp][rt]Kan[/rt][rp])[/rp]字[rp]([/rp][rt]ji[/rt][rp])[/rp][/ruby]</b><br/><br/>將會變成<ruby>漢<rp>(</rp><rt>Kan</rt><rp>)</rp>字<rp>(</rp><rt>ji</rt><rp>)</rp></ruby></li>
+</ul>
 
 要在您的文章中修改文字顏色及大小需要使用以下的標籤. 請注意, 顯示的效果視您的瀏覽器和系統而定: 
 <ul><li>更改文字色彩時, 可使用 <b>[color=][/color]</b>. 您可以指定一個可被辨識的顏色名稱(例如. red, blue, yellow, 等等.) 或是使用顏色編碼, 例如: #FFFFFF, #000000. 舉例來說, 要製作一份紅色文字您必須使用:<br/><br/><b>[color=red]</b>哈囉!<b>[/color]</b><br/><br/>或是<br/><br/><b>[color=#FF0000]</b>哈囉!<b>[/color]</b><br/><br/>都將顯示:<font color="red">哈囉!</font><br/><br/></li>
 <li>改變文字的大小也是使用類似的設定, 標籤為 <b>[s?][/s?]</b>. 起始值為 1 (細小) 到 7 為止 (巨大). 舉例說明:<br/><br/><b>[s1]</b>小不拉嘰<b>[/s1]</b><br/><br/>將會產生 <font size="1">小不拉嘰</font><br/><br/>當情形改變時:<br/><br/><b>[s7]</b>有夠大顆!<b>[/s7]</b><br/><br/>將會顯示 <font size="7">有夠大顆!</font></li></ul>
 
 可以結合不同的標籤功能: <br/>
-<ul><li>例如要吸引大家的注意時, 您可以使用:<br/><br/><b>[s5][color=red][b]</b>看我這兒!<b>[/b][/color][/s5]</b><br/><br/> 將會顯示出 <font size="5"><font color="red"><b>看我這兒!</b></font></font><br/>&nbsp;</li>
+<ul><li>例如要吸引大家的注意時, 您可以使用:<br/><br/><b>[s5][color=red][b]</b>看我這兒!<b>[/b][/color][/s5]</b><br/><br/> 將會顯示出 <font size="5"><font color="red"><b>看我這兒!</b></font></font><br/>&#xA0;</li>
 <li>我們並不建議您顯示太多這類的文字! 但是這些還是由您自行決定. 在使用 BBCode 代碼時, 請記得要正確的關閉標籤, 以下就是錯誤的使用方式:<br/><br/><b>[b][u]</b>這是錯誤的示範<b>[/b][/u]</b></li></ul>
 
 如果您想要顯示一段程式代碼或是任何需要固定寬度的文字, 您必須使用 <b>[pre][/pre]</b> 標籤來包含這些文字, 例如:<br/><br/><b>[pre]</b>echo "這是代碼";<b>[/pre]</b><br/><br/>當您瀏覽時, 所有被 <b>[pre][/pre]</b> 標籤包含的文字格式都將保持不變.
