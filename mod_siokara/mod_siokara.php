@@ -4,69 +4,111 @@ mod_siokara : Pixmicat! siokara management subset (Alpha)
 by: scribe
 */
 
-class mod_siokara{
-	var $mypage;
+class mod_siokara extends ModuleHelper {
+	private $mypage;
 
-	function mod_siokara(){
-		global $PMS;
-		AttachLanguage(array($this,'_loadLanguage')); // 載入語言檔
-		$PMS->hookModuleMethod('ModulePage', 'mod_siokara'); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL('mod_siokara');
+	private $LANGUAGE=array(
+			'zh_TW' => array(
+				'siokara_admin_fsage' => '強制sage',
+				'siokara_admin_ufsage' => '解除強制sage',
+				'siokara_admin_htmb' => '替換縮圖',
+				'siokara_admin_uhtmb' => '解除替換縮圖',
+				'siokara_admin_agif' => '替換縮圖為靜態縮圖',
+				'siokara_admin_uagif' => '解除替換靜態縮圖',
+				'siokara_extra_opt' => '附加選項',
+				'siokara_anigif' => '動態GIF',
+				'siokara_warn_sage' => '此討論串已被強制sage。',
+				'siokara_warn_hidethumb' => '縮圖已被替換。'
+			),
+			'ja_JP' => array(
+				'siokara_admin_fsage' => '強制sage',
+				'siokara_admin_ufsage' => '強制sage解除',
+				'siokara_admin_htmb' => 'サムネイル差替',
+				'siokara_admin_uhtmb' => 'サムネイル差替解除',
+				'siokara_admin_agif' => 'GIFをサムネイル化する',
+				'siokara_admin_uagif' => 'GIFサムネイル化解除',
+				'siokara_extra_opt' => '余分なオプション',
+				'siokara_anigif' => 'GIFアニメ',
+				'siokara_warn_sage' => 'このスレは管理者によりsage指定されています。理由はお察しください。',
+				'siokara_warn_hidethumb' => 'この記事の画像は管理者によりサムネイルが差し替えられています。理由はお察しください。<br/>サムネイルをクリックすると元の画像を表示します。'
+			),
+			'en_US' => array(
+				'siokara_admin_fsage' => 'Force sage',
+				'siokara_admin_ufsage' => 'unForce sage',
+				'siokara_admin_htmb' => 'Replace thumbnail with nothumb image',
+				'siokara_admin_uhtmb' => 'Use orginal thumbnail',
+				'siokara_admin_agif' => 'Use still image of GIF image',
+				'siokara_admin_uagif' => 'Use Animated GIF',
+				'siokara_extra_opt' => 'Extra Options',
+				'siokara_anigif' => 'Animated GIF',
+				'siokara_warn_sage' => 'This thread was forced sage by administrator.',
+				'siokara_warn_hidethumb' => 'The thumbnail was replaced by administrator.'
+			)
+		);
+
+
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+
+		$this->mypage = $this->getModulePageURL();
+		$this->attachLanguage( $this->LANGUAGE); // 載入語言檔
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_siokara : しおから式管理擴充套件';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return 'v071119';
+	public function getModuleVersionInfo(){
+		return 'v140531';
 	}
 
-	function autoHookAdminList(&$modFunc, $post, $isres){
-		global $PMS,$FileIO;
+	public function autoHookAdminList(&$modFunc, $post, $isres){
+		$FileIO = PMCLibrary::getFileIOInstance();
 		extract($post);
 
 		$fh=new FlagHelper($status);
-		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=sage"'.($fh->value('asage')?' title="'._T('siokara_admin_ufsage').'">s':' title="'._T('siokara_admin_fsage').'">S').'</a>]';
+		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=sage"'.($fh->value('asage')?' title="'.$this->_T('siokara_admin_ufsage').'">s':' title="'.$this->_T('siokara_admin_fsage').'">S').'</a>]';
 		if($ext && $FileIO->imageExists($tim.$ext)) {
-			$modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=thumb"'.($fh->value('htmb')?' title="'._T('siokara_admin_uhtmb').'">t':' title="'._T('siokara_admin_htmb').'">T').'</a>]';
-			if($ext == '.gif') $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=agif"'.($fh->value('agif')?' title="'._T('siokara_admin_agif').'">g':' title="'._T('siokara_admin_uagif').'">G').'</a>]';
+			$modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=thumb"'.($fh->value('htmb')?' title="'.$this->_T('siokara_admin_uhtmb').'">t':' title="'.$this->_T('siokara_admin_htmb').'">T').'</a>]';
+			if($ext == '.gif') $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$no.'&amp;action=agif"'.($fh->value('agif')?' title="'.$this->_T('siokara_admin_agif').'">g':' title="'.$this->_T('siokara_admin_uagif').'">G').'</a>]';
 		}
 	}
 
-	function autoHookPostForm(&$form){
-		global $language;
-		$form .= '<tr><td class="Form_bg"><b>'._T('siokara_extra_opt').'</b></td><td>[<input type="checkbox" name="anigif" id="anigif" value="on" />'._T('siokara_anigif').']</td></tr>';
+	public function autoHookPostForm(&$form){
+		//global $language;
+		$form .= '<tr><td class="Form_bg"><b>'.$this->_T('siokara_extra_opt').'</b></td><td>[<input type="checkbox" name="anigif" id="anigif" value="on" />'.$this->_T('siokara_anigif').']</td></tr>';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		global $PIO,$FileIO;
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();
+
 		$fh = new FlagHelper($post['status']);
 		if($fh->value('asage')) { // 強制sage
-			if($arrLabels['{$COM}']) $arrLabels['{$WARN_ENDREPLY}'].='<br/><span class="warn_txt"><small>'._T('siokara_warn_sage').'<br/></small></span>';
-			else $arrLabels['{$WARN_ENDREPLY}'] = '<span class="warn_txt"><small>'._T('siokara_warn_sage').'<br/></small></span>';
+			if($arrLabels['{$COM}']) $arrLabels['{$WARN_ENDREPLY}'].='<br/><span class="warn_txt"><small>'.$this->_T('siokara_warn_sage').'<br/></small></span>';
+			else $arrLabels['{$WARN_ENDREPLY}'] = '<span class="warn_txt"><small>'.$this->_T('siokara_warn_sage').'<br/></small></span>';
 		}
 		if($FileIO->imageExists($post['tim'].$post['ext'])) {
 			if($fh->value('agif')) { // 動態GIF
 				$imgURL = $FileIO->getImageURL($post['tim'].$post['ext']);
 				$arrLabels['{$IMG_SRC}']=preg_replace('/<img src=".*"/U','<img src="'.$imgURL.'"',$arrLabels['{$IMG_SRC}']);
-				$arrLabels['{$IMG_BAR}'].='<small>['._T('siokara_anigif').']</small>';
+				$arrLabels['{$IMG_BAR}'].='<small>['.$this->_T('siokara_anigif').']</small>';
 			}
 			if($fh->value('htmb')) { // 替換縮圖
 				$arrLabels['{$IMG_SRC}']=preg_replace('/<img src=".*" style="width: \d+px; height: \d+px;"/U','<img src="nothumb.gif"',$arrLabels['{$IMG_SRC}']);
-				$arrLabels['{$COM}'].='<br/><br/><span class="warn_txt"><small>'._T('siokara_warn_hidethumb').'<br/></small></span>';
+				$arrLabels['{$COM}'].='<br/><br/><span class="warn_txt"><small>'.$this->_T('siokara_warn_hidethumb').'<br/></small></span>';
 			}
 		}
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
-		global $PIO;
+	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
+		$PIO = PMCLibrary::getPIOInstance();
 		$fh = new FlagHelper($status);
 		$size = @getimagesize($dest);
 
@@ -83,53 +125,19 @@ class mod_siokara{
 
 	}
 
+/*
 	function _loadLanguage() {
-		global $language;
 		if(PIXMICAT_LANGUAGE != 'zh_TW' && PIXMICAT_LANGUAGE != 'ja_JP' && PIXMICAT_LANGUAGE != 'en_US') $lang = 'en_US';
 		else $lang = PIXMICAT_LANGUAGE;
-
-		// builtin language strings
-		if($lang == 'zh_TW') {
-			$language['siokara_admin_fsage'] = '強制sage';
-			$language['siokara_admin_ufsage'] = '解除強制sage';
-			$language['siokara_admin_htmb'] = '替換縮圖';
-			$language['siokara_admin_uhtmb'] = '解除替換縮圖';
-			$language['siokara_admin_agif'] = '替換縮圖為靜態縮圖';
-			$language['siokara_admin_uagif'] = '解除替換靜態縮圖';
-			$language['siokara_extra_opt'] = '附加選項';
-			$language['siokara_anigif'] = '動態GIF';
-			$language['siokara_warn_sage'] = '此討論串已被強制sage。';
-			$language['siokara_warn_hidethumb'] = '縮圖已被替換。';
-		} else if($lang == 'ja_JP'){
-			$language['siokara_admin_fsage'] = '強制sage';
-			$language['siokara_admin_ufsage'] = '強制sage解除';
-			$language['siokara_admin_htmb'] = 'サムネイル差替';
-			$language['siokara_admin_uhtmb'] = 'サムネイル差替解除';
-			$language['siokara_admin_agif'] = 'GIFをサムネイル化する';
-			$language['siokara_admin_uagif'] = 'GIFサムネイル化解除';
-			$language['siokara_extra_opt'] = '余分なオプション';
-			$language['siokara_anigif'] = 'GIFアニメ';
-			$language['siokara_warn_sage'] = 'このスレは管理者によりsage指定されています。理由はお察しください。';
-			$language['siokara_warn_hidethumb'] = 'この記事の画像は管理者によりサムネイルが差し替えられています。理由はお察しください。<br/>サムネイルをクリックすると元の画像を表示します。';
-		} else if($lang == 'en_US'){
-			$language['siokara_admin_fsage'] = 'Force sage';
-			$language['siokara_admin_ufsage'] = 'unForce sage';
-			$language['siokara_admin_htmb'] = 'Replace thumbnail with nothumb image';
-			$language['siokara_admin_uhtmb'] = 'Use orginal thumbnail';
-			$language['siokara_admin_agif'] = 'Use still image of GIF image';
-			$language['siokara_admin_uagif'] = 'Use Animated GIF';
-			$language['siokara_extra_opt'] = 'Extra Options';
-			$language['siokara_anigif'] = 'Animated GIF';
-			$language['siokara_warn_sage'] = 'This thread was forced sage by administrator.';
-			$language['siokara_warn_hidethumb'] = 'The thumbnail was replaced by administrator.';
-		}
-
+ 
 		// external language file
 		if(file_exists($langfile=str_replace('.php','.lang.php',__FILE__))) include_once($langfile);
 	}
-
-	function ModulePage(){
-		global $PIO,$FileIO;
+*/
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();
+		
 		if(!adminAuthenticate('check')) die('403 Access denied');
 		$act=isset($_GET['action'])?$_GET['action']:'';
 		
@@ -142,7 +150,8 @@ class mod_siokara{
 					$flgh->toggle('asage');
 					$PIO->setPostStatus($post[0]['no'], $flgh->toString());
 					$PIO->dbCommit();
-					die('Done. Please go back.');
+					//die('Done. Please go back.');
+					die('Done. Please go <a href="javascript:window.history.back();">back</a>.');
 				} else die('[Error] Thread does not exist.');
 				break;
 			case 'thumb'; // 替換縮圖
@@ -154,7 +163,8 @@ class mod_siokara{
 					$flgh->toggle('htmb');
 					$PIO->setPostStatus($post[0]['no'], $flgh->toString());
 					$PIO->dbCommit();
-					die('Done. Please go back.');
+					//die('Done. Please go back.');
+					die('Done. Please go <a href="javascript:window.history.back();">back</a>.');
 				} else die('[Error] Post does not have attechment.');
 				break;
 			case 'agif'; // 動態GIF
@@ -166,7 +176,7 @@ class mod_siokara{
 					$flgh->toggle('agif');
 					$PIO->setPostStatus($post[0]['no'], $flgh->toString());
 					$PIO->dbCommit();
-					die('Done. Please go back.');
+					die('Done. Please go <a href="javascript:window.history.back();">back</a>.');
 				} else die('[Error] Post does not have attechment.');
 				break;
 		}
