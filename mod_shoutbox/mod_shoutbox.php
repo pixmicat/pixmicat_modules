@@ -242,7 +242,7 @@ setInterval("getLatestMessage()",30000);
 			}
 			$pagebar.=']</div>';
 		}
-		if(!$gotmesg) $dat.="沒有信息。";
+		if(!$gotmesg) $dat.='沒有信息。';
 		$dat .= $PTE->ParseBlock('REALSEPARATE',array()).$pagebar.'<div align="right">PASS:<input type="password" name="pwd" value="" size="8" class="shoutInput"/><input type="submit" name="delete" value="'._T('del_btn').'" class="shoutBtn"/></div></form>';
 		return $dat;
 	}
@@ -289,7 +289,7 @@ setInterval("getLatestMessage()",30000);
 		$pte_vals = array('{$TITLE}'=>TITLE,'{$RESTO}'=>'');
 		$dat = $PTE->ParseBlock('HEADER',$pte_vals);
 		$this->autoHookHead($dat,0); // add my headers
-		$dat .= "</head><body id='shoutbox_main'>";
+		$dat .= '</head><body id="shoutbox_main">';
 		$dat.='Shoutbox<br/><form action="'.$this->myPage.'" method="post"><input type="hidden" name="action" value="shout"/><select name="emotion" id="shout_emo" class="shoutInput">'.$this->_getEmotionHTML().'</select>&gt;<input type="text" name="message" value="" id="shout_mesg" size="18" class="shoutInput"/><input type="submit" name="submit" value="'.$this->wordSHOUT.'" class="shoutBtn"/></form>';
 		$dat.=$this->_showMessages($page * $this->MES_PER_PAGE,($page+1) * $this->MES_PER_PAGE);
 		echo $dat.'</body></html>';
