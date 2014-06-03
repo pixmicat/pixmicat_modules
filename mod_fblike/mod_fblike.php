@@ -9,20 +9,20 @@ class mod_fblike extends ModuleHelper {
 
 	}
 
-	function mod_fblike(){
+	public function mod_fblike(){
 		$this->site = TITLE;
 		$this->url = fullURL().PHP_SELF.'?res=';
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return __CLASS__.' : Facebook Like Button';
 	}
 
-	function getModuleVersionInfo(){
+	public function getModuleVersionInfo(){
 		return 'v140529';
 	}
 
-	function autoHookHead(&$style, $isReply){
+	public function autoHookHead(&$style, $isReply){
 		$PIO = PMCLibrary::getPIOInstance();
 		if($isReply){
 			$p = $PIO->fetchPosts($isReply);
@@ -35,7 +35,7 @@ _HERE_;
 		}
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		$arrLabels['{$REPLYBTN}'] .= '&nbsp;<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode($this->url.$post['no']).'&amp;layout=button_count&amp;width=90&amp;font=arial" scrolling="no" frameborder="0" allowTransparency="true" style="border: medium none; overflow: hidden; height: 20px; width: 90px; vertical-align: text-bottom;"></iframe>';
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		$arrLabels['{$REPLYBTN}'] .= '&#xA0;<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode($this->url.$post['no']).'&amp;layout=button_count&amp;width=90&amp;font=arial" scrolling="no"  allowTransparency="true" style="border: 0px none white; overflow: hidden; height: 20px; width: 90px; vertical-align: text-bottom;"></iframe>';
 	}
 }
