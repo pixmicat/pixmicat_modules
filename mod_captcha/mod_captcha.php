@@ -59,7 +59,7 @@ class mod_captcha extends ModuleHelper {
 
 	/* 在頁面附加 CAPTCHA 圖像和功能 */
 	public function autoHookPostForm(&$form){ 
-		$form .= '<tr><td class="Form_bg"><b>'.$this->_T('modcaptcha_captcha').'</b></td><td><img src="'.$this->mypage.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&amp;\';})();">'.$this->_T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" />'.$this->_T('modcaptcha_enterword').'</td></tr>'."\n";
+		$form .= '<tr><td class="Form_bg"><b>'.$this->_T('modcaptcha_captcha').'</b></td><td><img src="'.$this->mypage.'" alt="'._T('modcaptcha_captcha_alt').'" id="chaimg" /><small>(<a href="#" onclick="(function(){var i=document.getElementById(\'chaimg\'),s=i.src;i.src=s+\'&amp;\';})();">'.$this->_T('modcaptcha_reload').'</a>)</small><br /><input type="text" name="captchacode" autocomplete="off"/>'.$this->_T('modcaptcha_enterword').'</td></tr>'."\n";
 	}
 
 	/* 在接收到送出要求後馬上檢查明暗碼是否符合 */
