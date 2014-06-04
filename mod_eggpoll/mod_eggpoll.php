@@ -30,9 +30,7 @@ class mod_eggpoll extends ModuleHelper {
 		//global $language;
 		//client side include jquery if not include.
 		$txt.='<script type="text/javascript">
-// <![CDATA[
-	window.jQuery || document.write("<script src=\\"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\\"><\\/script>");
-// ]]>
+	window.jQuery || document.write("\x3Cscript src=\"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\">\x3C/script>");
 </script> 
 <style type="text/css">
 .eggpoll {font-size: 0.8em;}
@@ -250,7 +248,7 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 					print_r($file_db->errorInfo());
 					unset($rs);
 					unset($file_db);
-					die ("db error1:");
+					die ('db error1:');
 				}
 			} 
 			$str = 'INSERT INTO eggpoll_detail (no,option,ip,date) VALUES ('.$no.','.$rank.',"'.$ip.'","'.$datestr.'");';
@@ -259,7 +257,7 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 				print_r($file_db->errorInfo()); 
 				unset($file_db);
 				unset($rs);
-				die( "db error2:"); 
+				die( 'db error2:'); 
 			} 
 
 			$qry = 'SELECT 1 FROM eggpoll_votes WHERE no ='.$no.';';
@@ -279,7 +277,7 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 				print_r($file_db->errorInfo()); 
 				unset($file_db);
 				unset($rs);
-				die("db error3:");
+				die('db error3');
 			} 
 			unset($rs);
 			echo '+OK ';
