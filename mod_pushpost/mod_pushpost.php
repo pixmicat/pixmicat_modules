@@ -28,12 +28,9 @@ class mod_pushpost extends ModuleHelper {
 	}
 
 	public function autoHookHead(&$txt, $isReply) {
-		//fast check if jquery exists
-		if (strpos($txt, 'jquery')===false){
-			$txt .=  '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>';
-		}
-
-		$txt .= '<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
+//如果不需要JQUERY可以COMMENT 第一行，第一行為自動決定加載JQUERY的JAVASCRIPT
+		$txt .= '<script type="text/javascript">window.jQuery || document.write("\x3Cscript src=\x22//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\x22>\x3C/script>");</script>
+<style type="text/css">.pushpost { background-color: #fff; font-size: 0.8em; padding: 10px; }</style>
 <script type="text/javascript">
 // <![CDATA[
 var lastpushpost=0;
