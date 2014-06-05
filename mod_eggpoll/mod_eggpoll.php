@@ -23,7 +23,7 @@ class mod_eggpoll extends ModuleHelper {
 
 	/* Get the module version infomation */
 	public function getModuleVersionInfo(){
-		return '7th.Release-dev (v140531)';
+		return '7th.Release-dev (v140605)';
 	}
 
 	public function autoHookHead(&$txt, $isReply){
@@ -363,12 +363,17 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			$this->_getPollValuesOld($no);
 		}
 	}
+
+	/* 檢查 PDO SQLite3 可用性 */
+	function checkPIOPDOSQLite3(){
+		return (class_exists('PDO') && extension_loaded('pdo_sqlite'));
+	}
 	
 	public function ModulePage(){
-		if (version_compare(PHP_VERSION, '5.1.0', '<')) {
-			$this->_ModulePageOld();// using old sqlite
+		if (checkPIOPDOSQLite3() {
+			$this->_ModulePagePDO();// using old sqlite
 		}else{
-			$this->_ModulePagePDO(); // using PDO
+			$this->_ModulePageOld(); // using PDO
 		}
 	}
 }
