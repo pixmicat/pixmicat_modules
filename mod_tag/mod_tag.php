@@ -1,36 +1,52 @@
 <?php
-class mod_tag{
-	var $mypage;
+/* 
+	注意:	這個插件大部分的原碼來自 mod_opentag 以及 pixmicat 內建的 "category" 功能。
+		絕大部分還是剪貼過來的, 而且本插件採用相同的資料庫欄位。因此，本插件不會修改
+		您的資料庫格式。但是您不能同時採用這個插件以及內建的 "category" 功能。
+		簡單說，這個插件修改程式基本作業，廢掉內建的 "category" 來提供更實用的標籤系統。
 
-	function mod_tag(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL(__CLASS__);
+		本插件採取類似論壇軟體的標籤系統，只允許 OP 帖可以有標籤。搜尋的時候自動調用
+		整串討論出來。如果您需要允許每篇回覆都有自己的標籤，請用內建的 "category" 功能。
+*/
+class mod_tag extends ModuleHelper {
+	private $mypage;
+	private $LANGUAGE = array(
+			'zh_TW' => array(
+				'modtag_tag' => '標籤', 
+				'modtag_separate_with_comma' => '請以 , 逗號分隔多個標籤',
+				'modtag_edit' => '編輯'
+			),
+			'ja_JP' => array(
+				'modtag_tag' => 'タグ', 
+				'modtag_separate_with_comma' => '半形カンマ（,）でタグを個別してください。',
+				'modtag_edit' => '編集'
+			),
+			'en_US' => array(
+				'modtag_tag' => '標籤', 
+				'modtag_separate_with_comma' => 'Please separate tags with a single comma [,]',
+				'modtag_edit' => 'Edit'
+			)
+		);
 
-		AttachLanguage(array($this, '_loadLanguage')); // 載入語言檔
-
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->mypage = $this->getModulePageURL();
+		$this->attachLanguage($this->LANGUAGE, 'en_US');// 載入語言檔
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
-		/* 注意:	這個插件大部分的原碼來自 mod_opentag 以及 pixmicat 內建的 "category" 功能。
-				絕大部分還是剪貼過來的, 而且本插件採用相同的資料庫欄位。因此，本插件不會修改
-				您的資料庫格式。但是您不能同時採用這個插件以及內建的 "category" 功能。
-				簡單說，這個插件修改程式基本作業，廢掉內建的 "category" 來提供更實用的標籤系統。
-
-				本插件採取類似論壇軟體的標籤系統，只允許 OP 帖可以有標籤。搜尋的時候自動調用
-				整串討論出來。如果您需要允許每篇回覆都有自己的標籤，請用內建的 "category" 功能。
-		*/
+	public function getModuleName(){
 		return 'mod_tag : 標籤編輯系統';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return 'Alpha Release (svn: r648++)';
+	public function getModuleVersionInfo(){
+		return 'Beta Release (git: r700)';
 	}
 
-	function autoHookHead(&$txt, $isReply){
-		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+	public function autoHookHead(&$txt, $isReply){
+//如果不需要JQUERY可以COMMENT 第一行，第一行為自動決定加載JQUERY的JAVASCRIPT
+		$txt .= '<script type="text/javascript">window.jQuery || document.write("\x3Cscript src=\x22//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\x22>\x3C/script>");</script>
 <script type="text/javascript">
 // <![CDATA[
 jQuery(function($){
@@ -57,45 +73,44 @@ jQuery(function($){
 </script>';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		global $language;
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		// 改變 category 顯示規定
-		if ($post["resto"] == 0) {
+		if ($post['resto'] == 0) {
 		// if (!$isReply) {
 			// OP，把連結改到我們的 tag search
-			$arrLabels['{$CATEGORY}'] = str_replace("mode=category&amp;c=", "mode=module&amp;load=mod_tag&amp;do=search&amp;c=", $arrLabels['{$CATEGORY}']);
-			$arrLabels['{$CATEGORY}'] = "<span>".$arrLabels['{$CATEGORY}']." [<a href='".$this->mypage."&amp;no=".$post['no']."' class='change'>" . $language['modtag_edit'] . "</a>]</span>";
-		} else {
-			// 回文，刪除 category 資料
+			$arrLabels['{$CATEGORY}'] = str_replace('mode=category&amp;c=', 'mode=module&amp;load=mod_tag&amp;do=search&amp;c=', $arrLabels['{$CATEGORY}']);
+			$arrLabels['{$CATEGORY}'] = '<span>'.$arrLabels['{$CATEGORY}'].'[<a href="'.$this->mypage.'&amp;no='.$post["no"].'" class="change">'.$this->_T('modtag_edit').'</a>]</span>';
+		} else { // 回文，刪除 category 資料
 			$arrLabels['{$CATEGORY}'] = '';	
 		}
 	}
-	
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		// 導向至 autoHookThreadPost 來一起處理
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
-	
-	function autoHookPostForm(&$form){
+
+	public function autoHookPostForm(&$form){
 		// 很白目的隱藏表單上 category 的欄位的辦法
-		if (isset($_GET['res']) || (isset($_GET['no']) && ($_GET['load'] == "mod_edit"))) {
-			global $PTE;
+		if (isset($_GET['res']) || (isset($_GET['no']) && ($_GET['load'] == 'mod_edit'))) {
+			$PTE = PMCLibrary::getPTEInstance();
 			// 從回文的表單上移除標籤欄位
 			$what = '<tr><td class="Form_bg"><b>{$FORM_CATEGORY_TEXT}</b></td><td>{$FORM_CATEGORY_FIELD}<small>{$FORM_CATEGORY_NOTICE}</small></td></tr>';
-			$PTE->tpl = str_replace($what, "", $PTE->tpl);
+			$PTE->tpl = str_replace($what, '', $PTE->tpl);
 		}
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status) {
+	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status) {
 		// 移除回文的 category
 		if ($isReply) {
-			$category = "";
+			$category = '';
 		}
 	}
 
 
-	function ModulePage(){
-		global $PIO, $PTE;
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
+		$PTE = PMCLibrary::getPTEInstance();
 		if(!isset($_GET['do'])) {
 		// 沒有 "do" 指令，舊的 tag 連接
 			if(!isset($_GET['no'])) die('[Error] not enough parameter.');
@@ -105,8 +120,8 @@ jQuery(function($){
 				$pte_vals = array('{$TITLE}'=>TITLE, '{$RESTO}'=>'');
 				$dat = $PTE->ParseBlock('HEADER', $pte_vals);
 				$dat .= '</head><body id="main">';
-				$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="POST">Tag: <input type="text" name="tag" value="'.htmlentities(substr(str_replace('&#44;', ',', $post[0]['category']),1,-1), ENT_QUOTES, 'UTF-8').'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
-				echo $dat."</body></html>";
+				$dat .= '<form action="'.$this->mypage.'&amp;no='.$_GET['no'].'" method="post">Tag: <input type="text" name="tag" value="'.htmlentities(substr(str_replace('&#44;', ',', $post[0]['category']),1,-1), ENT_QUOTES, 'UTF-8').'" size="28" /><input type="submit" name="submit" value="Tag!" /></form>';
+				echo $dat.'</body></html>';
 			} else {
 				$Tag = CleanStr($_POST['tag']);
 				if($_SERVER['REQUEST_METHOD'] != 'POST') error(_T('regist_notpost')); // 非正規POST方式
@@ -118,7 +133,7 @@ jQuery(function($){
 				$ss = method_exists($PIO, '_replaceComma') ? '&#44;' : ','; // Dirty implement
 				$category = explode(',', $Tag); // 把標籤拆成陣列
 				$category = $ss.implode($ss, array_map('trim', $category)).$ss; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
-				
+
 				$PIO->updatePost($_GET['no'], array('category'=>$category));
 				$PIO->dbCommit();
 				if(STATIC_HTML_UNTIL == -1 || $threadPage <= STATIC_HTML_UNTIL) updatelog(0, $threadPage, true); // 僅更新討論串出現那頁
@@ -133,7 +148,7 @@ jQuery(function($){
 			}
 		} else {
 		// 有 "do" 指令，查看下一步
-			if ($_GET['do'] == "search") {
+			if ($_GET['do'] == 'search') {
 			// 搜尋符合標籤的主題
 				global $PTE, $PIO, $PMS, $FileIO, $language;
 				$category = isset($_GET['c']) ? strtolower(strip_tags(trim($_GET['c']))) : ''; // 搜尋之類別標籤
@@ -190,36 +205,14 @@ jQuery(function($){
 
 				foot($dat);
 				echo $dat;
-			} else if ($_GET['do'] == "cloud") {
+			} else if ($_GET['do'] == 'cloud') {
 			// 建立 tag cloud?
 				// blah blah blah
 			} else {
 			// 不知道該如何處理的 "do" 指令
-				echo "スクリプトはTranslation Server Errorに免費の午餐を食べています！<br />";
-				echo "...你想表達什麼?";
+				echo 'スクリプトはTranslation Server Errorに免費の午餐を食べています！<br />';
+				echo '...你想表達什麼?';
 			}
 		}
 	}
-
-	function _loadLanguage(){
-		// 載入語言
-		global $language;
-		if(PIXMICAT_LANGUAGE != 'zh_TW' && PIXMICAT_LANGUAGE != 'ja_JP' && PIXMICAT_LANGUAGE != 'en_US') $lang = 'en_US';
-		else $lang = PIXMICAT_LANGUAGE;
-
-		if($lang=='zh_TW'){
-			$language['modtag_tag'] = '標籤';
-			$language['modtag_separate_with_comma'] = '請以 , 逗號分隔多個標籤';
-			$language['modtag_edit'] = '編輯';
-		}elseif($lang=='ja_JP'){
-			$language['modtag_tag'] = 'タグ';
-			$language['modtag_separate_with_comma'] = '半形カンマ（,）でタグを個別してください。';
-			$language['modtag_edit'] = '編集';
-		}elseif($lang=='en_US'){
-			$language['modtag_tag'] = 'Tags';
-			$language['modtag_separate_with_comma'] = 'Please separate tags with a single comma [,]';
-			$language['modtag_edit'] = 'Edit';
-		}
-	}
-}
-?>
+}//End of Module
