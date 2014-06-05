@@ -1,25 +1,25 @@
 ﻿<?php
-class mod_opentag{
-	var $mypage;
+class mod_opentag extends ModuleHelper {
+	private $mypage;
 
-	function mod_opentag(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL(__CLASS__);
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->mypage = $this->getModulePageURL();
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_opentag : 開放標籤編輯';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return '4th.Release.4-dev (v100113)';
+	public function getModuleVersionInfo(){
+		return '7th.Release.1-dev (v140605)';
 	}
 
-	function autoHookHead(&$txt, $isReply){
-		$txt .= '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+	public function autoHookHead(&$txt, $isReply){
+//如果不需要JQUERY可以COMMENT 第一行，第一行為自動決定加載JQUERY的JAVASCRIPT
+		$txt .= '<script type="text/javascript">window.jQuery || document.write("\x3Cscript src=\x22//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\x22>\x3C/script>");</script>
 <script type="text/javascript">
 // <![CDATA[
 jQuery(function($){
@@ -46,20 +46,21 @@ jQuery(function($){
 </script>';
 	}
 
-	function autoHookToplink(&$linkbar, $isReply){
+	public function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->mypage.'&amp;action=tagcloud">標籤雲</a>]'."\n";
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		if(USE_CATEGORY) $arrLabels['{$CATEGORY}'] = '<span>'.$arrLabels['{$CATEGORY}'].' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'" class="change">變更</a>]</span>';
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function ModulePage(){
-		global $PIO, $PTE;
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
+		$PTE = PMCLibrary::getPTEInstance(); 
 
 		if(isset($_GET['action'])){ // 標籤雲
 			require './module/wordcloud.class.php';
@@ -136,4 +137,4 @@ jQuery(function($){
 		}
 	}
 }
-?>
+
