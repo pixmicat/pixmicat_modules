@@ -1,37 +1,34 @@
 <?php
-class mod_bbbutton{
-	var $bbicon, $bbicon_url;
+class mod_bbbutton extends ModuleHelper {
+	private $bbicon=false;
+	private $bbicon_url='bbicons/';
 	
-	function mod_bbbutton(){
-		$this->bbicon = false; // 使用圖示
-		$this->bbicon_url = 'bbicons/'; // 圖示位置
-    }
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->myPage = $this->getModulePageURL();// 基底位置
+	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_bbbutton';
 	}
 
-	function getModuleVersionInfo(){
+	public function getModuleVersionInfo(){
 		return 'mod_bbbutton : BBcode按鈕';
 	}
 
-	function autoHookHead(&$txt, $isReply){
-		global $PMS;
-		$txt .= '<!--script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script-->
+	public function autoHookHead(&$txt, $isReply){
+//如果不需要JQUERY可以COMMENT 第一行，第一行為自動決定加載JQUERY的JAVASCRIPT
+		$txt .= '<script type="text/javascript">window.jQuery || document.write("\x3Cscript src=\x22//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\x22>\x3C/script>");</script>
 <script src="jquery.bbcode.js" type="text/javascript"></script>
-<script type="text/javascript">
-var bbbuttons = { tags: {}, button_image: '.(int)$this->bbicon.', image_url: "'.$this->bbicon_url.'" };
-';
-		if(method_exists($PMS,'callCHP')) {
-			$PMS->callCHP('mod_bbbutton_addButtons',array(&$txt));
+<script type="text/javascript">';
+		if(method_exists(self::$PMS,'callCHP')) {
+			self::$PMS->callCHP('mod_bbbutton_addButtons',array(&$txt));
 		}
-
 		$txt .= '
   $(document).ready(function(){
-	$("#fcom").bbcode(bbbuttons);
+	$("#fcom").bbcode( { tags: {}, button_image: '.($this->bbicon?'true':'false').', image_url: "'.$this->bbicon_url.'" });
   });
 </script>';
 	}
 
-}
-?>
+}//End of Module
