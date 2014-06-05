@@ -371,9 +371,9 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 	
 	public function ModulePage(){
 		if ($this->checkPIOPDOSQLite3()){
-			$this->_ModulePagePDO();// using old sqlite
+			$this->_ModulePagePDO(); //使用PDO
 		}else{
-			$this->_ModulePageOld(); // using PDO
+			$this->_ModulePageOld(); // 使用舊板SQLITE
 		}
 	}
 }
