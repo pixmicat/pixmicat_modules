@@ -1,21 +1,24 @@
 <?php
-class mod_plusone{
-	var $site, $url;
-	function mod_plusone(){
-		$this->site = TITLE;
+class mod_plusone extends ModuleHelper {
+	private $site = TITLE;
+	private $url;
+
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 		$this->url = fullURL().PHP_SELF.'?res=';
 	}
-
-	function getModuleName(){
-		return __CLASS__.' : Google +1 Button';
+	
+	public function getModuleName(){
+		return 'mod_plusone : Google +1 Button';
 	}
 
-	function getModuleVersionInfo(){
-		return 'v110813';
+	public function getModuleVersionInfo(){
+		return '7th Release v140605';
 	}
 
-	function autoHookHead(&$style, $isReply){
-		global $PIO, $FileIO;
+	public function autoHookHead(&$style, $isReply){
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();; 
 		if($isReply){
 			$p = $PIO->fetchPosts($isReply);
 			$sub = $p[0]['sub'];
@@ -26,7 +29,6 @@ class mod_plusone{
 				$thumb = $thumb ? $FileIO->getImageURL($thumb) : '';
 			}
 			$style .= <<< _HERE_
-
 <meta property="og:image" content="{$thumb}" />
 <meta property="og:title" content="{$sub} - {$this->site}" />
 <meta property="og:description" content="{$com}" />
@@ -34,7 +36,7 @@ _HERE_;
 		}
 	}
 
-	function autoHookFoot(&$foot){
+	public function autoHookFoot(&$foot){
 		$foot .= '
 <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
   {lang: "zh-TW"}
@@ -42,9 +44,7 @@ _HERE_;
 ';
 	}
 
-
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		$arrLabels['{$REPLYBTN}'] .= '&nbsp;<div class="g-plusone" data-size="small" data-href="'.$this->url.$post['no'].'"></div>';
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		$arrLabels['{$REPLYBTN}'] .= '&#xA0;<div class="g-plusone" data-width="30px" data-size="small" data-href="'.$this->url.$post['no'].'"></div>';
 	}
-}
-?>
+}//End of Module
