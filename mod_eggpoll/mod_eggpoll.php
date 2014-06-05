@@ -1,35 +1,37 @@
 <?php
-class mod_eggpoll{
-	var $mypage,$conn,$rankDB,$rankNames,$rankAlphas,$rankColors,$rankMin,$shrinkThread,$addBR,$oneSidedCount,$daysThreshold;
+class mod_eggpoll extends ModuleHelper {
+	private $mypage,$conn;
+	private	$rankDB = 'eggpoll'; // poll database
+	private	$rankNames = array('噓爆','噓','中立','推','大推');
+	private	$rankAlphas = array('30','60','100','100','100');
+	private	$rankColors = array('#f00','#a00','','#274','#4b7');
+	private	$rankMin = 3; // 開始評價的最少票數
+	private	$oneSidedCount = 5; // 一面倒評價的最少票數
+	private	$shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival.tpl用)
+	private	$daysThreshold = 14; // 詳細投票記錄保留日數
+	private	$addBR = 2; // #postform_main - #threads 之間插入空行? (0=不插入/1=在#postform_main後/2=在#threads前)
 
-	function mod_eggpoll(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->mypage = $PMS->getModulePageURL(__CLASS__);
-		$this->rankDB = 'eggpoll.db'; // poll database
-		$this->rankNames = array('噓爆','噓','中立','推','大推');
-		$this->rankAlphas = array('30','60','100','100','100');
-		$this->rankColors = array('#f00','#a00','','#274','#4b7');
-		$this->rankMin = 3; // 開始評價的最少票數
-		$this->oneSidedCount = 5; // 一面倒評價的最少票數
-		$this->shrinkThread = true; // 摺疊開版文時是否摺疊整個串 (festival.tpl用)
-		$this->daysThreshold = 14; // 詳細投票記錄保留日數
-		$this->addBR = 2; // #postform_main - #threads 之間插入空行? (0=不插入/1=在#postform_main後/2=在#threads前)
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->mypage = $this->getModulePageURL();
 	}
-
+ 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_eggpoll : 文章評分機制';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return '5th.Release-dev (v100521)';
+	public function getModuleVersionInfo(){
+		return '7th.Release-dev (v140531)';
 	}
 
-	function autoHookHead(&$txt, $isReply){
-		global $language;
-		$txt .= '<!--script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script-->
+	public function autoHookHead(&$txt, $isReply){
+		//global $language;
+		//client side include jquery if not include.
+		$txt.='<script type="text/javascript">
+	window.jQuery || document.write("\x3Cscript src=\"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\">\x3C/script>");
+</script> 
 <style type="text/css">
 .eggpoll {font-size: 0.8em;}
 .eggpoll .rankup, .eggpoll .rankdown { color:#fff; cursor:pointer; }
@@ -103,21 +105,20 @@ function getPollValues() {
 </script>';
 	}
 
-	function autoHookFoot(&$foot){
-		global $language;
+	public function autoHookFoot(&$foot){ 
 		$foot .= '<script type="text/javascript">if(postNos.length)getPollValues();</script>';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		global $language, $PIO;
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;<script type="text/javascript">postNos.push('.$post['no'].');</script><span class="eggpoll" id="ep'.$post['no'].'"><span class="rankup" onclick="mod_eggpollRank('.$post['no'].',1)">＋</span><span class="rankdown" onclick="mod_eggpollRank('.$post['no'].',0)">－</span><span class="ranktext">'.$this->rankNames[2].'</span> <a class="rtoggle" onclick="mod_eggpollToggle(this,'.$post['no'].')">↕</a></span>';
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		//global $language, $PIO;
+		$arrLabels['{$QUOTEBTN}'] .= '&#xA0;<script type="text/javascript">postNos.push('.$post['no'].');</script><span class="eggpoll" id="ep'.$post['no'].'"><span class="rankup" onclick="mod_eggpollRank('.$post['no'].',1)">＋</span><span class="rankdown" onclick="mod_eggpollRank('.$post['no'].',0)">－</span><span class="ranktext">'.$this->rankNames[2].'</span> <a class="rtoggle" onclick="mod_eggpollToggle(this,'.$post['no'].')">↕</a></span>';
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function _calcRank($up,$down) {
+	private function _calcRank($up,$down) {
 		$total = $up+$down;
 		if(!$total) return 2; //prevent divide by zero
 		$u = $up / $total;
@@ -140,7 +141,32 @@ function getPollValues() {
 		}
 	}
 
-	function _getPollValues($no) {
+	private function _getPollValuesPDO($no,&$file_db) {
+		$ip = getREMOTE_ADDR(); $datestr = gmdate('Ymd',time()+TIME_ZONE*60*60); $voted = array(); $first = true;
+		$qry = 'SELECT no FROM eggpoll_detail WHERE ip = "'.$ip.'" AND date = "'.$datestr.'" AND no IN('.$no.')';
+		$rs=$file_db->query($qry);  	
+    	while( ($number = $rs->fetchColumn())!==false ){
+    		$voted[$number]=1;
+    	}
+    	unset($rs);
+
+		$qry = 'SELECT no,up,down FROM eggpoll_votes WHERE no IN('.$no.')';
+		$rs = $file_db->query($qry);
+		echo '{
+			"polls" : [';
+		    while ($row = $rs->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT)) {
+				if(!$first) echo ',';
+				echo '{ "no" : '.$row['no'].',
+				"rank" : '.$this->_calcRank($row['up'],$row['down']).',
+				"voted" : '.(isset($voted[$row['no']]) ? 1 : 0).' }';
+				if($first) $first=false;
+		    } 
+		echo ']
+}';
+		unset($rs);
+	}
+
+	private function _getPollValuesOld($no) {
 		$ip = getREMOTE_ADDR(); $datestr = gmdate('Ymd',time()+TIME_ZONE*60*60); $voted = array(); $first = true;
 		$qry = 'SELECT no,ip,date FROM eggpoll_detail WHERE ip = "'.$ip.'" AND date = "'.$datestr.'" AND no IN('.$no.')';
 		$rs = sqlite_query($this->conn,$qry);
@@ -161,10 +187,114 @@ function getPollValues() {
 }';
 	}
 
-	function ModulePage(){
-		global $PIO, $PTE, $language; $sqlerr = ''; $nodb = false;
+	private function _ModulePagePDO(){
+		$sqlerr = ''; 
+		$nodb = false;
+		$PIO = PMCLibrary::getPIOInstance();
+		$PTE = PMCLibrary::getPTEInstance();
+
+		if(!file_exists($this->rankDB.'.sqlite3')) $nodb = true;
+			$file_db = new PDO('sqlite:'.$this->rankDB.'.sqlite3');
+    		// Set errormode to exceptions
+    		$file_db->setAttribute(PDO::ATTR_ERRMODE, 
+                            PDO::ERRMODE_EXCEPTION);
+		if($nodb) {
+			$str = "CREATE TABLE [eggpoll_votes] (
+[no] INTEGER  PRIMARY KEY NOT NULL,
+[up] INTEGER DEFAULT '0' NOT NULL,
+[down] INTEGER DEFAULT '0' NOT NULL
+);
+CREATE TABLE [eggpoll_detail] (
+[no] INTEGER NOT NULL,
+[option] INTEGER DEFAULT '0' NOT NULL,
+[ip] TEXT NOT NULL,
+[date] TEXT  NOT NULL
+);
+CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
+			$file_db->exec($str);
+		}
+
+		if(isset($_GET['get'])) {
+			$this->_getPollValuesPDO($_GET['get'],$file_db);
+		}
+		else if(isset($_GET['no'])&&isset($_GET['rank'])){
+			$ip = getREMOTE_ADDR(); $tim = time()+TIME_ZONE*60*60;
+			$datestr = gmdate('Ymd',$tim); $deldate = gmdate('Ymd',strtotime('-'.$this->daysThreshold.' days',$tim));
+			$no = intval($_GET['no']); $rank = intval($_GET['rank']);
+
+			// 查IP
+			$baninfo = '';
+			$host = gethostbyaddr($ip);
+			if(BanIPHostDNSBLCheck($ip, $host, $baninfo)) die($this->_T('regist_ipfiltered', $baninfo));
+
+			$post = $PIO->fetchPosts($no);
+			if(!count($post)) die('[Error] Post does not exist.'); // 被評之文章不存在
+
+			// 檢查是否已經投票
+			$qry = 'SELECT no,ip,date FROM eggpoll_detail WHERE ip = "'.$ip.'" AND date = "'.$datestr.'" AND no ="'.$no.'"';
+			$rs = $file_db->query($qry);
+			if($rs->fetchColumn()!==false) die('[Error] Already voted.');
+			unset($rs);
+			// 刐除舊詳細評價
+			$qry = 'SELECT 1 FROM eggpoll_detail WHERE date < "'.$deldate.'" LIMIT 1';
+			$rs = $file_db->query($qry);
+			if($rs->fetchColumn()!==false) {
+				$str = 'DELETE FROM eggpoll_detail WHERE date < "'.$deldate.'"';
+				$affected_row = $file_db->exec($str);
+				if ($affected_row > 0){
+					$file_db->exec('VACUUM');
+					unset($rs);
+				}else{ 
+					print_r($file_db->errorInfo());
+					unset($rs);
+					unset($file_db);
+					die ('db error1:');
+				}
+			} 
+			$str = 'INSERT INTO eggpoll_detail (no,option,ip,date) VALUES ('.$no.','.$rank.',"'.$ip.'","'.$datestr.'");';
+			$rs= $file_db->query($str);
+			if($rs->rowCount() < 1) { 
+				print_r($file_db->errorInfo()); 
+				unset($file_db);
+				unset($rs);
+				die( 'db error2:'); 
+			} 
+
+			$qry = 'SELECT 1 FROM eggpoll_votes WHERE no ='.$no.';';
+			$rs = $file_db->query($qry); 
+			if( $rs->fetchColumn() === false) {
+				$str = 'INSERT INTO eggpoll_votes (no,up,down) VALUES ('.$no.($rank?',1,0)':',0,1);');
+			} else {
+				if($rank)
+					$str = 'UPDATE eggpoll_votes SET up = up+1 WHERE no='.$no.';';
+				else
+					$str = 'UPDATE eggpoll_votes SET down = down+1 WHERE no='.$no.';';
+			}
+			unset($rs);
+
+			$rs=$file_db->query($str); 
+			if($rs->rowCount() <= 0) { 
+				print_r($file_db->errorInfo()); 
+				unset($file_db);
+				unset($rs);
+				die('db error3');
+			} 
+			unset($rs);
+			echo '+OK ';
+			$this->_getPollValuesPDO($no,$file_db);
+			unset($file_db);
+		}
+	}
+
+	private function _ModulePageOld(){
+		//global $PIO, $PTE, $language; $sqlerr = ''; $nodb = false;
+		$sqlerr = ''; 
+		$nodb = false;
+		$PIO = PMCLibrary::getPIOInstance();
+		$PTE = PMCLibrary::getPTEInstance();
+
 		if(!file_exists($this->rankDB)) $nodb = true;
-		$this->conn = sqlite_popen($this->rankDB,0666,$sqlerr);
+		$this->conn = sqlite_popen($this->rankDB.".db`",0666,$sqlerr);
 		if($nodb) {
 			$str = "CREATE TABLE [eggpoll_votes] (
 [no] INTEGER  PRIMARY KEY NOT NULL,
@@ -230,9 +360,15 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 			if($sqlerr) echo $sqlerr;
 
 			echo '+OK ';
-			$this->_getPollValues($no);
+			$this->_getPollValuesOld($no);
 		}
 	}
-
-}
-?>
+	
+	public function ModulePage(){
+		if (version_compare(PHP_VERSION, '5.1.0', '<')) {
+			$this->_ModulePageOld();// using old sqlite
+		}else{
+			$this->_ModulePagePDO(); // using PDO
+		}
+	}
+} 
