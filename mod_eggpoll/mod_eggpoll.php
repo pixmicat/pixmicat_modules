@@ -370,7 +370,7 @@ CREATE INDEX eggpoll_detail_index_ip_date ON eggpoll_detail(ip,date);";
 	}
 	
 	public function ModulePage(){
-		if (checkPIOPDOSQLite3() {
+		if (checkPIOPDOSQLite3()){
 			$this->_ModulePagePDO();// using old sqlite
 		}else{
 			$this->_ModulePageOld(); // using PDO
