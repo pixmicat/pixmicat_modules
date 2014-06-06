@@ -1,21 +1,20 @@
 <?php
-class mod_userrepair {
-	var $SELF;
+class mod_userrepair extends ModuleHelper {
+	private $SELF;
 
-	function mod_userrepair(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->SELF = $PMS->getModulePageURL(__CLASS__); // 本頁面連結
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->SELF = $this->getModulePageURL();
 	}
 
-	function autoHookThreadFront(&$txt,$isReply){
+	public function autoHookThreadFront(&$txt,$isReply){
 		if(!$isReply) $txt.='<div style="text-align: right">[<a href="'.$this->SELF.'" rel="nofollow">討論串不見了？按一下這裡吧。</a>]</div>';
 		else $txt.='<div style="text-align: right">[<a href="'.$this->SELF.'&amp;res='.$isReply.'" rel="nofollow">文章不見了？按一下這裡吧。</a>]</div>';
 	}
 
 	/* 模組獨立頁面 */
-	function ModulePage(){
-		global $PIO;
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
 		if(!isset($_GET['res'])) {
 			if(!file_exists('./.userrepair')||isset($_GET['force'])) {
 				touch('./.userrepair');
@@ -42,14 +41,12 @@ class mod_userrepair {
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_userrepair : 使用者自行修復';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return 'Pixmicat! User Repair Module v090526';
+	public function getModuleVersionInfo(){
+		return 'Pixmicat! User Repair Module 7th Dev v140606';
 	}
-
 }
-?>
