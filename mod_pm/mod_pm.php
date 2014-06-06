@@ -2,35 +2,33 @@
 /* mod_pm : Personal Messages for Trips (Pre-Alpha)
  * $Id$
  */
-class mod_pm{
-	var $MESG_LOG,$MESG_CACHE;
-	var $myPage,$trips,$lastno;
-	
-	function mod_pm(){
-		global $PMS, $PIO, $FileIO;
+class mod_pm extends ModuleHelper {
+	private $MESG_LOG = './tripmesg.log'; // PM紀錄檔位置
+	private $MESG_CACHE = './tripmesg.cc'; // PM快取檔位置
+	private $myPage;
+	private $trips;
+	private $lastno;
 
-		$PMS->hookModuleMethod('ModulePage', 'mod_pm'); // 向系統登記模組專屬獨立頁面
-		$this->myPage = $PMS->getModulePageURL('mod_pm'); // 基底位置
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 		$this->trips = array();
-
-		$this->MESG_LOG = './tripmesg.log'; // PM紀錄檔位置
-		$this->MESG_CACHE = './tripmesg.cc'; // PM快取檔位置
+		$this->myPage = $this->getModulePageURL();
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_pm';
 	}
 
-	function getModuleVersionInfo(){
-		return 'mod_pm : Personal Messages for Trip (Pre-Alpha)';
+	public function getModuleVersionInfo(){
+		return 'mod_pm : Personal Messages for Trip (Pre-Alpha) (v140606)';
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar, $isReply){
+	public function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->myPage.'">收件箱</a>] [<a href="'.$this->myPage.'&amp;action=write">發PM</a>]'."\n";
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		if(preg_match('|(<a.*">)?(.*)<span class\="nor">'._T('trip_pre').'(.{10})</span>(<span.*</span>)(</a>)?|', $arrLabels['{$NAME}'], $matches)) {
 			if($matches[3]) { // Trip found
 				if($matches[2]) { // has name
@@ -42,17 +40,17 @@ class mod_pm{
 		}
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function _tripping($str) {
+	private function _tripping($str) {
 		$salt = preg_replace('/[^\.-z]/', '.', substr($str.'H.', 1, 2));
 		$salt = strtr($salt, ':;<=>?@[\\]^_`', 'ABCDEFGabcdef');
 		return substr(crypt($str, $salt), -10);
 	}
 
-	function _latestPM() {
+	private function _latestPM() {
 		$htm = '<table style="border:3pt outset white;background:#efefef" cellpadding="0" cellspacing="0">
 <tr style="background:#000033;color:white"><td align="center">
 <b>◆10日以内的投函一覧◆</b></td></tr>
@@ -72,7 +70,7 @@ class mod_pm{
 		return $htm.'</table></div></td></tr></table>';
 	}
 
-	function _loadCache() {
+	private function _loadCache() {
 		if(!$this->trips) {
 			if($logs=@file($this->MESG_CACHE)) { // 有快取
 				$this->lastno=trim($logs[0]);
@@ -84,7 +82,7 @@ class mod_pm{
 		} else return true;
 	}
 
-	function _rebuildCache() {
+	private function _rebuildCache() {
 		$this->trips = array();
 		if($logs=@file($this->MESG_LOG)) { // mesgno,trip,date,from,topic,mesg = each $logs, order desc
 			if(!$this->lastno) if(isset($logs[0])) $this->lastno = intval(substr($logs[0],strpos($logs[0],','))); // last no
@@ -97,7 +95,6 @@ class mod_pm{
 					$this->trips[$trip]=array('c'=>1,'d'=>$pdate);
 				}
 			}
-
 			// Sort in order
 			foreach ($this->trips as $key => $row) {
 			    $c[$key] = $row['c'];
@@ -114,11 +111,11 @@ class mod_pm{
 		}
 	}
 
-	function _writeCache() {
+	private function _writeCache() {
 		$this->_write($this->MESG_CACHE,$this->lastno."\n".serialize($this->trips));
 	}
 
-	function _write($file,$data) {
+	private function _write($file,$data) {
 		$rp = fopen($file, "w");
 		flock($rp, LOCK_EX); // 鎖定檔案
 		@fputs($rp,$data);
@@ -127,7 +124,7 @@ class mod_pm{
 		chmod($file,0666);
 	}
 
-	function _postPM($from,$to,$topic,$mesg) {
+	private function _postPM($from,$to,$topic,$mesg) {
 		if(!preg_match('/^[0-9a-zA-Z\.\/]{10}$/',$to)) error("Trip有誤");
 		$from=CleanStr($from); $to=CleanStr($to); $topic=CleanStr($topic); $mesg=CleanStr($mesg);
 		if(!$from) if(ALLOW_NONAME) $from = DEFAULT_NONAME;
@@ -151,8 +148,9 @@ class mod_pm{
 		$this->_rebuildCache();
 	}
 
-	function _getPM($trip) {
-		global $PTE,$PMS;
+	private function _getPM($trip) {
+		$PMS = self::$PMS;
+		$PTE = PMCLibrary::getPTEInstance();
 		$dat='';
 		$trip=substr($trip,1);
 		$tripped=$this->_tripping($trip);
@@ -174,7 +172,7 @@ class mod_pm{
 		return $dat;
 	}
 
-	function _deletePM($no,$trip) {
+	private function _deletePM($no,$trip) {
 		$tripped=$this->_tripping($trip);
 		$found=false;
 		if($logs=@file($this->MESG_LOG)) { // mesgno,trip,date,from,topic,mesg = each $logs, order desc
@@ -197,8 +195,11 @@ class mod_pm{
 		}
 	}
 
-	function ModulePage(){
-		global $PMS, $PIO, $FileIO;
+	public function ModulePage(){
+		$PMS = self::$PMS;
+		$PIO  = PMCLibrary::getPIOInstance();
+		$FileIO  = PMCLibrary::getFileIOInstance();
+		
 		$trip=isset($_REQUEST['t'])?$_REQUEST['t']:'';
 		$action=isset($_REQUEST['action'])?$_REQUEST['action']:'';
 		$dat='';
@@ -278,5 +279,4 @@ $g("pmform").trip.value=getCookie("namec").replace(/^[^#]*#/,"#");
 		foot($dat);
 		echo $dat;
 	}
-}
-?>
+}//End-Of-Module
