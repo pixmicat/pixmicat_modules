@@ -4,46 +4,43 @@
  * $Date$
  */
 
-class mod_typepad_antispam{
-	var $THISPAGE, $api_key, $blog, $service_host, $api_host, $plugin_ver, $protocal_ver, $api_port, $recordfile;
+class mod_typepad_antispam extends ModuleHelper {
+	private $THISPAGE;
+// TypePad AntiSpam API key 輸入位置 (申請 http://antispam.typepad.com/info/get-api-key.html)
+	private $api_key = '1234567890ab';
+//# Index page location (http:// included)
+	private	$blog ;
+// # Base hostname for API requests (API key is always prepended to this)
+	private	$service_host = 'api.antispam.typepad.com';
+	private	$api_host ;
+// # Plugin version
+	private	$plugin_ver = '1.0';
+// # API Protocol version
+	private	$protocol_ver = '1.1';
+// # Port for API requests to service host
+	private	$api_port = 80;
+// # Spam count file
+	private	$recordfile = 'mod_typepad_antispam.tmp';
 
-	function mod_typepad_antispam(){
-		global $PMS;
-		$this->THISPAGE = $PMS->getModulePageURL(__CLASS__);
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // Register ModulePage
-
-		// TypePad AntiSpam API key 輸入位置 (申請 http://antispam.typepad.com/info/get-api-key.html)
-		$this->api_key = '1234567890ab';
-
-		// 下列若無必要請勿修改
-		# Index page location (http:// included)
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 		$this->blog = fullURL().PHP_SELF2;
-		# Base hostname for API requests (API key is always prepended to this)
-		$this->service_host = 'api.antispam.typepad.com';
 		$this->api_host = $this->api_key.'.'.$this->service_host;
-		# Plugin version
-		$this->plugin_ver = '1.0';
-		# API Protocol version
-		$this->protocol_ver = '1.1';
-		# Port for API requests to service host
-		$this->api_port = 80;
-		# Spam count file
-		$this->recordfile = 'mod_typepad_antispam.tmp';
+		$this->THISPAGE = $this->getModulePageURL();
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_typepad_antispam : TypePad AntiSpam Protection BETA';
 	}
 
-	function getModuleVersionInfo(){
-		return '4th.Release.3 (v080703)';
+	public function getModuleVersionInfo(){
+		return '7th.Release.dev (v140606)';
 	}
 
-	function ModulePage(){
-		global $PMS;
+	public function ModulePage(){
 		$dat = '';
 
-		$PMS->hookModuleMethod('Head', array(&$this, 'hookHeadCSS'));
+		self::$PMS->hookModuleMethod('Head', array(&$this, 'hookHeadCSS'));
 		head($dat);
 		$dat .= '
 <div id="linkbar">
@@ -80,7 +77,7 @@ class mod_typepad_antispam{
 	}
 
 	/* 掛載樣式表 */
-	function hookHeadCSS(&$style, $isReply){
+	public function hookHeadCSS(&$style, $isReply){
 		$style .= '<style type="text/css">
 #typepadantispamwrap #tpaa,#tpaa:link,#tpaa:hover,#tpaa:visited,#tpaa:active{text-decoration:none}
 #tpaa:hover{border:none;text-decoration:none}
@@ -99,7 +96,7 @@ class mod_typepad_antispam{
 	 * 對遠端服務伺服器送出要求
 	 * @return array $response[0]: 檔頭, [1]: 內容
 	 */
-	function _typepadantispam_http_post($request, $host, $path, $port = 80){
+	private function _typepadantispam_http_post($request, $host, $path, $port = 80){
 		$http_request  = "POST $path HTTP/1.0\r\n";
 		$http_request .= "Host: $host\r\n";
 		$http_request .= "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n";
@@ -123,7 +120,7 @@ class mod_typepad_antispam{
 	 * 檢查 API key 正確性
 	 * @return boolean API key 正確性
 	 */
-	function _typepadantispam_verify_key(){
+	private function _typepadantispam_verify_key(){
 		$blog = $this->blog;
 		$key = $this->api_key;
 		$response = $this->_typepadantispam_http_post("key=$key&blog=$blog", $this->service_host, "/$this->protocol_ver/verify-key", $this->api_port);
@@ -134,14 +131,14 @@ class mod_typepad_antispam{
 	 * 回傳目前阻擋 Spam 數量
 	 * @return int Spam 數量
 	 */
-	function _typepadantispam_spam_count(){
+	private function _typepadantispam_spam_count(){
 		return file_exists($this->recordfile) ? intval(file_get_contents($this->recordfile)) : 0;
 	}
 
 	/**
 	 * 更新 Spam 阻擋數量
 	 */
-	function _typepadantispam_spam_count_update($newInt){
+	private function _typepadantispam_spam_count_update($newInt){
 		$fp = fopen($this->recordfile, 'w');
 		flock($fp, LOCK_EX);
 		fwrite($fp, $newInt);
@@ -150,14 +147,14 @@ class mod_typepad_antispam{
 		@chmod($this->recordfile, 0666);
 	}
 
-	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false){
+	public function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false){
 		if($pageId=='status') $link .= ' [<a href="'.$this->THISPAGE.'">Spam 統計</a>]';
 	}
 
 	/**
 	 * 將文章傳送至遠端服務伺服器檢查是否為 Spam
 	 */
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
+	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
 		$comment = array();
 		$comment['blog'] = $this->blog;
 		$comment['user_ip'] = preg_replace( '/[^0-9., ]/', '', $_SERVER['REMOTE_ADDR']);
@@ -186,4 +183,4 @@ class mod_typepad_antispam{
 		}
 	}
 }
-?>
+

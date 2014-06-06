@@ -6,11 +6,11 @@ TypePad AntiSpam is available under an open source license (GPL v2).
 中文安裝指引:
 
 1. 將 mod_typepad_antispam.php 跟隨附圖檔放到 module/ 目錄
-2. 修改 mod_typepad_antispam.php 的 $this->api_key，請先到 http://antispam.typepad.com/ 加入會員及申請 API key
+2. 修改 mod_typepad_antispam.php 的 $api_key，請先到 http://antispam.typepad.com/ 加入會員及申請 API key
 3. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_typepad_antispam';
 
 English Instruction:
 
 1. Put "mod_typepad_antispam.php" and other gif file into the module/ directory.
-2. Use your favorite editor to open "mod_typepad_antispam.php" and fill your API key ($this->api_key). If you don't have one, go http://antispam.typepad.com/ to request for free.
+2. Use your favorite editor to open "mod_typepad_antispam.php" and fill your API key ($api_key). If you don't have one, go http://antispam.typepad.com/ to request for free.
 3. Finally open "config.php" and add one line ($ModuleList[] = 'mod_typepad_antispam';) into the "Modules to be loaded" block.
