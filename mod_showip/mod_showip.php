@@ -1,15 +1,19 @@
 <?php
-class mod_showip{
+class mod_showip extends ModuleHelper {
+	
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_showip : 顯示部份IP/hostname';
 	}
 
-	function getModuleVersionInfo(){
-		return 'v100808';
+	public function getModuleVersionInfo(){
+		return '7th dev v140606';
 	}
 
-	function _isgTLD($last,$add='') {
+	private function _isgTLD($last,$add='') {
 		$gtld = array('biz','com','info','name','net','org','pro','aero','asia','cat','coop','edu','gov','int','jobs','mil','mobi','museum','tel','travel','xxx');
 		if(is_array($add)) {
 			foreach($add as $a) {
@@ -24,8 +28,10 @@ class mod_showip{
 		return false;
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		global $language, $PIO;
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		//global $language;
+		$PIO = PMCLibrary::getPIOInstance();
+
 		$iphost = strtolower($post['host']);
 		if(ip2long($iphost)!==false) {
 			$arrLabels['{$NOW}'] .= ' (IP: '.preg_replace('/\d+\.\d+$/','*.*',$iphost).')';
@@ -500,13 +506,12 @@ class mod_showip{
 			} else {
 				$parthost = $iphost; // unresolvable
 			}
-
 			$arrLabels['{$NOW}'] .= ' (Host: '.$parthost.')';
 		}
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
-}
-?>
+} 
+
