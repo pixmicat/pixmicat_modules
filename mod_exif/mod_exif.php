@@ -3,39 +3,38 @@
  * $Id$
  * exif.php from http://www.rjk-hosting.co.uk/programs/prog.php?id=4
  */
-class mod_exif{
-	var $myPage;
+class mod_exif extends ModuleHelper {
+	private $myPage;
 	
-	function mod_exif(){
-		global $PMS, $PIO, $FileIO;
-
-		$PMS->hookModuleMethod('ModulePage', 'mod_exif'); // 向系統登記模組專屬獨立頁面
-		$this->myPage = $PMS->getModulePageURL('mod_exif'); // 基底位置
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->myPage = $this->getModulePageURL(); // 基底位置
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_exif : EXIF資訊';
 	}
 
-	function getModuleVersionInfo(){
-		return 'v071119';
+	public function getModuleVersionInfo(){
+		return '7th-dev v140607';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
-		if(FILEIO_BACKEND=='normal') { // work for normal File I/O only
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
+		if(FILEIO_BACKEND=='normal' || FILEIO_BACKEND=='local') { // work for normal File I/O only
 			if($arrLabels['{$IMG_BAR}']!='') {
-				preg_match('/rel\="_blank">(.*)<\/a>/', $arrLabels['{$IMG_BAR}'], $matches);
+				preg_match('/<a [^>]+>(.*)<\/a>/', $arrLabels['{$IMG_BAR}'], $matches);
 				$arrLabels['{$IMG_BAR}'] .= '<small> <a href="'.$this->myPage.'&amp;file='.$matches[1].'">[EXIF]</a></small>';
 			}
 		}
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
-	function ModulePage(){
-		global $PMS, $FileIO;
+	public function ModulePage(){
+		$FileIO =PMCLibrary::getFileIOInstance();
+		
 		$file=isset($_GET['file'])?$_GET['file']:'';
 		if($file && $FileIO->imageExists($file)){
 			$pfile=IMG_DIR.'/'.$file;
@@ -473,5 +472,4 @@ class exif{
 			}
 		}
 	}
-}
-?>
+}//End-Of-Module
