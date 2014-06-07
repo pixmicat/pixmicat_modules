@@ -1,28 +1,29 @@
 <?php
-class mod_ipfilter{
-	var $SELF;
+class mod_ipfilter extends ModuleHelper {
+	private $myPage;
 
-	function mod_ipfilter(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__);
-		$this->SELF = $PMS->getModulePageURL(__CLASS__);
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->myPage = $this->getModulePageURL();
 	}
 
-	function getModuleName(){
-		return __CLASS__.' : 搜尋 IP';
+	public function getModuleName(){
+		return 'mod_ipfilter : 搜尋 IP';
 	}
 
-	function getModuleVersionInfo(){
-		return 'b110403';
+	public function getModuleVersionInfo(){
+		return '7th b140607';
 	}
 
-	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false){
+	public function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false){
 		if($pageId == 'admin' && $addinfo == true)
-			$link .= '[<a href="'.$this->SELF.'">搜尋 IP</a>]';
+			$link .= '[<a href="'.$this->myPage.'">搜尋 IP</a>]';
 	}
 
-	function ModulePage(){
-		global $PMS, $PIO, $FileIO;
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();
+		
 		if(!adminAuthenticate('check')) die('[Error] Access Denied.');
 
 		$content = '';
@@ -74,7 +75,7 @@ HERE;
 		head($dat);
 		$dat .= '<div class="bar_admin">搜尋 IP</div>
 <div id="content">
-<form action="'.$this->SELF.'" method="post">
+<form action="'.$this->myPage.'" method="post">
 <div id="ipconfig">
 Filter: <input type="text" name="filter" size="30" />
 <input type="submit" value="搜尋" onclick="return search(this.form);" /><br />
@@ -91,7 +92,7 @@ Filter: <input type="text" name="filter" size="30" />
 // <![CDATA[
 function search(form){
 	var f = form.filter.value;
-	$.post("'.str_replace('&amp;', '&', $this->SELF).'", {filter: f, ajax: true}, function(d){
+	$.post("'.str_replace('&amp;', '&', $this->myPage).'", {filter: f, ajax: true}, function(d){
 		$("table", form)
 			// Remove all items except header
 			.find("tr:gt(0)").remove()
@@ -106,5 +107,4 @@ function search(form){
 		foot($dat);
 		echo $dat;
 	}
-}
-?>
+}//End-Of-Module
