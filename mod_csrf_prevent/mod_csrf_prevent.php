@@ -1,14 +1,19 @@
 <?php
-class mod_csrf_prevent{
-	function getModuleName(){
-		return __CLASS__.' : 防止偽造跨站請求 (CSRF)';
+class mod_csrf_prevent extends ModuleHelper {
+	
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 	}
 
-	function getModuleVersionInfo(){
-		return 'b110403';
+	public function getModuleName(){
+		return 'mod_csrf_prevent : 防止偽造跨站請求 (CSRF)';
 	}
 
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $isReply){
+	public function getModuleVersionInfo(){
+		return '7th b140607';
+	}
+
+	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo, $isReply){
 		$CSRFdetectd = false;
 		/* 檢查 HTTP_REFERER (防止跨站 form)
 		 *  1. 無 HTTP_REFERER
@@ -19,5 +24,5 @@ class mod_csrf_prevent{
 
 		if($CSRFdetectd) error('CSRF detected!');
 	}
-}
-?>
+}//End-Of-Module
+
