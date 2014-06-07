@@ -4,23 +4,22 @@ mod_atom : 提供Atom Feed訂閱服務
 By: scribe + Alica (atom)
 */
 
-class mod_atom{
-	var $FEED_COUNT, $FEED_STATUSFILE, $FEED_CACHEFILE, $FEED_DISPLAYTYPE, $BASEDIR, $SELF;
+class mod_atom extends ModuleHelper {
+	private $FEED_COUNT  = 10; // Feed 產生最大篇數
+	private $FEED_UPDATETYPE = 1; // Feed 更新時機 (1: 瀏覽 MODULEPAGE 時更新, 2: 有新文章貼出時更新)
+	private $FEED_CACHEFILE = 'feed.atom'; // 資料輸出暫存檔 (靜態快取Feed格式)
+	private $FEED_DISPLAYTYPE = 'T'; // 資料取出形式 (T: 討論串取向, P: 文章取向)
+	private $FEED_STATUSFILE = 'mod_atom.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
+	private $BASEDIR;
+	private $SELF;
 
-	function mod_atom(){
-		global $PMS;
-
-		$this->FEED_COUNT = 10; // Feed 產生最大篇數
-		$this->FEED_UPDATETYPE = 1; // Feed 更新時機 (1: 瀏覽 MODULEPAGE 時更新, 2: 有新文章貼出時更新)
-		$this->FEED_DISPLAYTYPE = 'T'; // 資料取出形式 (T: 討論串取向, P: 文章取向)
-		$this->FEED_CACHEFILE = 'feed.atom'; // 資料輸出暫存檔 (靜態快取Feed格式)
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 
 		$this->BASEDIR = fullURL(); // 基底 URL
 		switch($this->FEED_UPDATETYPE){
 			case 1: // MODULEPAGE
-				$PMS->hookModuleMethod('ModulePage', __CLASS__); // 註冊獨立頁面
-				$this->SELF = $this->BASEDIR.$PMS->getModulePageURL(__CLASS__); // Feed 連結
-				$this->FEED_STATUSFILE = __CLASS__.'.tmp'; // 資料狀態暫存檔 (檢查資料需不需要更新)
+				$this->SELF = $this->BASEDIR.$this->getModulePageURL(); // Feed 連結
 				break;
 			case 2: // Update on RegistAfterCommit
 				$this->SELF = $this->BASEDIR.$this->FEED_CACHEFILE; // Feed 連結
@@ -28,36 +27,37 @@ class mod_atom{
 		}
 	}
 
-	function getModuleName(){
-		return __CLASS__.' : 提供Atom Feed訂閱服務';
+	public function getModuleName(){
+		return 'mod_atom : 提供Atom Feed訂閱服務';
 	}
 
-	function getModuleVersionInfo(){
-		return '6th.Release (v110331)';
+	public function getModuleVersionInfo(){
+		return '7th.Release (v140607)';
 	}
 
 	/* 在頁面加入指向 Feed 的 <link> 標籤*/
-	function autoHookHead(&$txt, $isReply){
+	public function autoHookHead(&$txt, $isReply){
 		$txt .= '<link rel="alternate" type="application/atom+xml" title="Atom 1.0 Feed" href="'.$this->SELF.'" />'."\n";
 	}
 
 	/* 文章儲存後更新 Feed 檔案 ($this->FEED_UPDATETYPE == 2 觸發) */
-	function autoHookRegistAfterCommit(){
-		global $PIO;
+	public  function autoHookRegistAfterCommit(){
+		$PIO = PMCLibrary::getPIOInstance();
+
 		if($this->FEED_UPDATETYPE == 2){
 			$PIO->dbPrepare();
 			$this->GenerateCache(); // 更新 Feed
 		}
 	}
 
-	function autoHookFoot(&$foot){
+	public function autoHookFoot(&$foot){
 		$foot .= '<div style="position: absolute; top: 10px; left: 10px;"><a href="'.$this->SELF.'">Atom Feed</a></div>
 ';
 	}
 
 	/* 模組獨立頁面 */
-	function ModulePage(){
-		global $PIO;
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
 
 		$PIO->dbPrepare();
 		if($this->IsDATAUpdated()) $this->GenerateCache(); // 若資料已更新則也更新Feed快取
@@ -65,8 +65,9 @@ class mod_atom{
 	}
 
 	/* 檢查資料有沒有更新 */
-	function IsDATAUpdated(){
-		global $PIO;
+	public function IsDATAUpdated(){
+		$PIO = PMCLibrary::getPIOInstance();
+
 		if(isset($_GET['force'])) return true; // 強迫更新Feed
 
 		$tmp_fsize = $PIO->getLastPostNo('afterCommit');
@@ -84,8 +85,9 @@ class mod_atom{
 	}
 
 	/* 生成 / 更新靜態快取Feed檔案 */
-	function GenerateCache(){
-		global $PIO, $FileIO;
+	private function GenerateCache(){
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();
 
 		$lastpost = $PIO->fetchPosts($PIO->getLastPostNo('afterCommit'));
 		$feedupdated = date("c", substr($lastpost[0]['tim'], 0, -3));
@@ -169,9 +171,8 @@ class mod_atom{
 	}
 
 	/* 重導向到靜態快取 */
-	function RedirectToCache(){
+	private function RedirectToCache(){
 		header('HTTP/1.1 302 Moved Temporarily'); // 暫時性導向
 		header('Location: '.$this->BASEDIR.$this->FEED_CACHEFILE);
 	}
-}
-?>
+}//End-Of-Module
