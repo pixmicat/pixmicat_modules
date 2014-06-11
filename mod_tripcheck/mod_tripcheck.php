@@ -1,24 +1,24 @@
 <?php
-class mod_tripcheck{
-	var $TRIPFILE,$TRIPPOST_THREAD,$TRIPPOST_THREAD_REGED,$TRIPPOST_REPLY,$TRIPPOST_REPLY_REGED;
+class mod_tripcheck extends ModuleHelper {
+	private	$TRIPFILE = 'board.trip'; // トリップ記錄檔檔名
+	private	$TRIPPOST_THREAD = 1; // 發新討論串需要トリップ (是：1 否：0)
+	private	$TRIPPOST_THREAD_REGED = 0; // 發新討論串需要已登錄的トリップ (是：1 否：0)
+	private	$TRIPPOST_REPLY = 0; // 回文需要トリップ (是：1 否：0)
+	private	$TRIPPOST_REPLY_REGED = 0; //  回文需要已登錄的トリップ (是：1 否：0)
 	
-	function mod_tripcheck(){
-		$this->TRIPFILE = 'board.trip'; // トリップ記錄檔檔名
-		$this->TRIPPOST_THREAD = 1; // 發新討論串需要トリップ (是：1 否：0)
-		$this->TRIPPOST_THREAD_REGED = 1; // 發新討論串需要已登錄的トリップ (是：1 否：0)
-		$this->TRIPPOST_REPLY = 0; // 回文需要トリップ (是：1 否：0)
-		$this->TRIPPOST_REPLY_REGED = 0; //  回文需要已登錄的トリップ (是：1 否：0)
+	public function __construct($PMS) {
+		parent::__construct($PMS);
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_tripcheck : Trip限制模組';
 	}
 
-	function getModuleVersionInfo(){
-		return 'v071119';
+	public function getModuleVersionInfo(){
+		return '7th Release.dev v140606';
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
+	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
 		$trip='';
 		if(($trippos=strpos($name,_T('trip_pre')))!==false) {
 			$trip=substr($name,$trippos+strlen(_T('trip_pre')),10);
@@ -41,15 +41,15 @@ class mod_tripcheck{
 		}
 	}
 
-	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false) {
+	public function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false) {
 		if($pageId == 'admin') $link.=' [<a href="tripadmin.php">Trip管理</a>]';
 	}
 
-	function autoHookAuthenticate($pass, $act, &$result){
+	public function autoHookAuthenticate($pass, $act, &$result){
 		if(!$result) $result = ($this->_tripPermission($this->_tripping(substr($pass,1))) == 'OK');
 	}
 
-	function _tripCheck($trip) {
+	private function _tripCheck($trip) {
 		$res='NF';
 		if(!$this->_tripFormat($trip)) return $res;
 		$TripList = @file($this->TRIPFILE);
@@ -65,7 +65,7 @@ class mod_tripcheck{
 		return $res;
 	}
 
-	function _tripPermission($trip) {
+	private function _tripPermission($trip) {
 		$res='NF';
 		if(!$this->_tripFormat($trip)) return $res;
 		$TripList = @file($this->TRIPFILE);
@@ -80,15 +80,13 @@ class mod_tripcheck{
 		return $res;
 	}
 
-	function _tripFormat($trip) {
+	private function _tripFormat($trip) {
 		return strlen($trip) == 10;
 	}
 
-	function _tripping($str) {
+	private function _tripping($str) {
 		$salt = preg_replace('/[^\.-z]/', '.', substr($str.'H.', 1, 2));
 		$salt = strtr($salt, ':;<=>?@[\\]^_`', 'ABCDEFGabcdef');
 		return substr(crypt($str, $salt), -10);
 	}
-
 }
-?>
