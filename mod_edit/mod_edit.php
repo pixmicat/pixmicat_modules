@@ -154,7 +154,7 @@ class mod_edit extends ModuleHelper {
 			$com = CleanStr($com, $is_admin); // 引入$is_admin參數是因為當管理員キャップ啟動時，允許管理員依config設定是否使用HTML
 			$com = str_replace("\r\n","\n", $com);
 			$com = str_replace("\r","\n", $com);
-			$com = ereg_replace("\n((　| )*\n){3,}", "\n", $com);
+			$com = preg_replace("/\n((　| )*\n){3,}/i", "\n", $com);
 			if(!BR_CHECK || substr_count($com,"\n") < BR_CHECK) $com = nl2br($com); // 換行字元用<br />代替
 			$com = str_replace("\n",'', $com); // 若還有\n換行字元則取消換行
 			if($category && USE_CATEGORY){ // 修整標籤樣式
