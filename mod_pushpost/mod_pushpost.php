@@ -131,7 +131,7 @@ function mod_pushpostSend(){
 		$modFunc .= '[<a href="'.$this->getModulePageURL(
 				array(
 					'action' => 'del',
-					'no' => $post[no]
+					'no' => $post['no']
 				)
 			).'">刪推</a>]';
 	}
