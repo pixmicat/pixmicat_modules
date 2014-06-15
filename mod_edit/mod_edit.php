@@ -32,7 +32,7 @@ class mod_edit extends ModuleHelper {
 		if($this->shown_in_page) $arrLabels['{$QUOTEBTN}'] .= ' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
 	}
 
-	private function _EditPostInfo(&$txt){
+	public function _EditPostInfo(&$txt){
 		$txt = '<li><span style="font-size:110%;font-weight:bold;">不用更換的欄位請留空。</span></li>'.$txt;
 	}
 
