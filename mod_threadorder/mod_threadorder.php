@@ -165,10 +165,11 @@ function placeInHidden(delim, selStr, hidStr){
 <tr>
 <td align="middle">';
 echo '  <select id="topmost" size="30">';
-$logs=@file($this->TOPMOST_LOG); // order asc
-$logs=array_reverse($logs);
-foreach($logs as $tm) {
-	echo '    <option value="'.$tm.'" >'.$tm.'</option>';
+if ($logs=@file($this->TOPMOST_LOG)){ // order asc
+	$logs=array_reverse($logs);
+	foreach($logs as $tm) {
+		echo '    <option value="'.$tm.'" >'.$tm.'</option>';
+	}
 }
 echo '  </select>
 </td>
@@ -182,10 +183,11 @@ onClick="remove(\'topmost\')">
 </td>
 <td align="middle">';
 echo '  <select id="buttommost" size="30">';
-$logs=@file($this->BOTTOMMOST_LOG); // order asc
-foreach($logs as $bm) {
-	echo '    <option value="'.$bm.'" >'.$bm.'</option>';
-  } 
+if ( $logs=@file($this->BOTTOMMOST_LOG)){ // order asc
+	foreach($logs as $bm) {
+		echo '    <option value="'.$bm.'" >'.$bm.'</option>';
+	  } 
+}
 echo '  </select>
 </td>
 <td>
