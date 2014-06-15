@@ -151,7 +151,7 @@ function placeInHidden(delim, selStr, hidStr){
   var hideObj = document.getElementById(hidStr);
   hideObj.value = "";
   for (i = 0; i <= selObj.options.length-1; i++) { 
-	hideObj.value += selObj.options[i].value + delim;
+	hideObj.value += selObj.options[i].value.trim() + delim;
   }
 
 }
