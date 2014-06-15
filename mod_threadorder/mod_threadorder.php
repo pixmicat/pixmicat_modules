@@ -1,31 +1,32 @@
 <?php
-class mod_threadorder{
-	var $TOPMOST_LOG,$BOTTOMMOST_LOG;
-	function mod_threadorder(){
-		global $PMS;
-		$this->TOPMOST_LOG = './topmost.log'; // 置頂紀錄檔位置
-		$this->BOTTOMMOST_LOG = './buttommost.log'; // 置底紀錄檔位置
-		$PMS->hookModuleMethod('ModulePage', 'mod_threadorder'); // 向系統登記模組專屬獨立頁面
+class mod_threadorder extends ModuleHelper {
+	private $TOPMOST_LOG    = './topmost.log'; // 置頂紀錄檔位置
+	private $BOTTOMMOST_LOG = './buttommost.log'; // 置底紀錄檔位置
+	private $mypage;
+
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		
 		$this->mypage = $PMS->getModulePageURL('mod_threadorder');
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_threadorder : 討論串置頂置底';
 	}
 
-	function getModuleVersionInfo(){
-		return 'v100619';
+	public function getModuleVersionInfo(){
+		return 'v140606';
 	}
 
-	function autoHookAdminList(&$modFunc, $post, $isres){
+	public function autoHookAdminList(&$modFunc, $post, $isres){
 		if(!$isres) $modFunc .= '[<a href="'.$this->mypage.'&amp;no='.$post['no'].'&amp;action=top" title="Top most">TM</a>][<a href="'.$this->mypage.'&amp;no='.$post['no'].'&amp;action=bottom" title="Bottom most">BM</a>]';
 	}
 
-	function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false) {
+	public function autoHookLinksAboveBar(&$link, $pageId, $addinfo=false) {
 		if($pageId == 'admin') $link.=' [<a href="'.$this->mypage.'">置頂/置底管理</a>]';
 	}
 
-	function _write($file,$data) {
+	private function _write($file,$data) {
 		$rp = fopen($file, "w");
 		flock($rp, LOCK_EX); // 鎖定檔案
 		@fputs($rp,$data);
@@ -34,7 +35,7 @@ class mod_threadorder{
 		chmod($file,0666);
 	}
 
-	function autoHookThreadOrder($resno,$page_num,$single_page,&$threads){
+	public function autoHookThreadOrder($resno,$page_num,$single_page,&$threads){
 		if($logs=@file($this->TOPMOST_LOG)) { // order asc
 //			$logs = array_reverse($logs);
 			foreach($logs as $tm) {
@@ -55,8 +56,10 @@ class mod_threadorder{
 			}
 		}
 	}
-	function ModulePage(){
-		global $PIO;
+
+	public function ModulePage(){
+		$PIO = PMCLibrary::getPIOInstance();
+		
 		if(!adminAuthenticate('check')) die('403 Access denied');
 
 		$act=isset($_REQUEST['action'])?$_REQUEST['action']:'';
@@ -69,7 +72,8 @@ class mod_threadorder{
 				$this->_write($this->TOPMOST_LOG,$newTop);
 				$newBottom = trim(implode("\n",explode('|',$_POST['newBottommost'])));
 				$this->_write($this->BOTTOMMOST_LOG,$newBottom);
-				die('Done. Please go back.');
+				//die('Done. Please go back.');
+				die('Done. Please go <script type="text/javascript"> document.write("<"+"a href=\""+document.referrer+"\">back</a>."); </script><noscript>back.</noscript> ');
 			}
 		}
 		switch($act) {
@@ -78,7 +82,8 @@ class mod_threadorder{
 					$post = $PIO->fetchPosts($_GET['no']);
 					if(!count($post)) die('[Error] Post does not exist.');
 					$this->_write($this->TOPMOST_LOG,$_GET['no']."\n".@file_get_contents($this->TOPMOST_LOG));
-					die('Done. Please go back.');
+					//die('Done. Please go back.');
+					die('Done. Please go <script type="text/javascript"> document.write("<"+"a href=\""+document.referrer+"\">back</a>."); </script><noscript>back.</noscript> ');
 				} else die('[Error] Thread does not exist.');
 				break;
 			case 'bottom'; // 置底
@@ -86,7 +91,8 @@ class mod_threadorder{
 					$post = $PIO->fetchPosts($_GET['no']);
 					if(!count($post)) die('[Error] Post does not exist.');
 					$this->_write($this->BOTTOMMOST_LOG,@file_get_contents($this->BOTTOMMOST_LOG).$_GET['no']."\n");
-					die('Done. Please go back.');
+					//die('Done. Please go back.');
+					die('Done. Please go <script type="text/javascript"> document.write("<"+"a href=\""+document.referrer+"\">back</a>."); </script><noscript>back.</noscript> ');					
 				} else die('[Error] Thread does not exist.');
 				break;
 			default:
