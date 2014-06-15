@@ -17,7 +17,7 @@ class mod_edit extends ModuleHelper {
 
 	/* Get the module version infomation */
 	public function getModuleVersionInfo(){
-		return '7th.Release (v140529)';
+		return '7th.Release (v140615)';
 	}
 
 	public function autoHookAdminList(&$modFunc, $post, $isres){
@@ -32,7 +32,7 @@ class mod_edit extends ModuleHelper {
 		if($this->shown_in_page) $arrLabels['{$QUOTEBTN}'] .= ' [<a href="'.$this->mypage.'&amp;no='.$post['no'].'">編輯</a>]';
 	}
 
-	private function _EditPostInfo(&$txt){
+	public function editPostInfo(&$txt){
 		$txt = '<li><span style="font-size:110%;font-weight:bold;">不用更換的欄位請留空。</span></li>'.$txt;
 	}
 
@@ -59,7 +59,7 @@ class mod_edit extends ModuleHelper {
 			$name=preg_replace('|<span.*?>(.*?)</span>|','\1',$name);
 			$dat='';
 			head($dat);
-			$PMS->hookModuleMethod('PostInfo', array($this,'_EditPostInfo'));
+			$PMS->hookModuleMethod('PostInfo', array($this,'editPostInfo'));
 			form($dat, $resto, false, $this->mypage.'&amp;no='.$_GET['no'], $name, $email, $sub, str_replace('<br />', "\n", $com), substr(str_replace('&#44;', ',', $category),1,-1), 'edit');
 			foot($dat);
 			echo $dat;
