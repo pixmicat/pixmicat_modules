@@ -1,14 +1,14 @@
 <?php
-class mod_sectrip{
-	var $secure_salt, $secureTrip;
-	var $myPage,$urlcount;
-
-	function mod_sectrip(){
-		global $PMS;
-
-		$PMS->hookModuleMethod('ModulePage', 'mod_sectrip'); // 向系統登記模組專屬獨立頁面
-		$this->myPage = $PMS->getModulePageURL('mod_sectrip'); // 基底位置
-
+class mod_sectrip extends ModuleHelper {
+	private $secure_salt='./secsalt.php';// 如沒有 <pmc目錄>/secsalt.php 則自動生成
+	private $secureTrip;
+	private $myPage;
+	private $urlcount;
+	
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+	
+		$this->myPage = $this->getModulePageURL(); // 基底位置
 		$secsaltfile='./secsalt.php';
 		if(!file_exists($secsaltfile)) { // 如沒有 <pmc目錄>/secsalt.php 則自動生成
 			$fp=fopen($secsaltfile,'wb');
@@ -16,17 +16,17 @@ class mod_sectrip{
 			fclose($fp);
 		}
 	    include_once($secsaltfile); // 讀入sceure trip salt
-    }
+	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_sectrip : Secure Tripcode';
 	}
 
-	function getModuleVersionInfo(){
-		return 'v071223';
+	public function getModuleVersionInfo(){
+		return 'v140606';
 	}
 
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
+	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
 		$name=preg_replace('/«(.*)»/','($1)',$name); //防止偽冒
 		if(preg_match('/\!sectrip\s*#(.*)/i',$name,$m)) { // name!sectrip#securetrip
 			$this->secureTrip=$m[1];
@@ -34,18 +34,17 @@ class mod_sectrip{
 		}
 	}
 
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
+	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
 		if($this->secureTrip) { // 如有sectrip
 			$name .= "<span class='nor'>«".substr(base64_encode(pack("H*",md5($this->secure_salt.$this->secureTrip))),2,16)."»</span>";
 		}
 	}
 
-	function autoHookPostInfo(&$postinfo){
-		global $language;
+	public function autoHookPostInfo(&$postinfo){
 		$postinfo .= "<li>可使用 <a href='".$this->myPage."' rel='_blank'>Secure Tripcode</a></li>\n";
 	}
 
-	function ModulePage(){
+	public function ModulePage(){
 		$dat='';
 		head($dat);
 		$dat.=<<<EOH
@@ -62,5 +61,4 @@ EOH;
 		echo $dat;
 	}
 
-}
-?>
+}//End-of-Module
