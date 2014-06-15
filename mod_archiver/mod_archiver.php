@@ -3,44 +3,39 @@
 mod_archiver : Pixmicat! Archiver 靜態庫存頁面(精華區)生成
 */
 
-class mod_archiver{
-	var $page;
-	var $ARCHIVE_ROOT, $MULTI_COPY, $ADMIN_ONLY;
-	var $PUSHPOST_SEPARATOR, $PROCESS_PUSHPOST;
+class mod_archiver extends ModuleHelper {
+	private $page;
+	private	$ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
+	private	$MULTI_COPY = true; // 容許同一串有多份存檔
+	private	$ADMIN_ONLY = true; // 只容許管理員生成靜態庫存頁面
+	//對應mod pushpost
+	private	$PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
+	private	$PROCESS_PUSHPOST = 1;	// 處理推文 (是：1 否：0)
 
-	function mod_archiver(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__); // 向系統登記模組專屬獨立頁面
-		$this->page = $PMS->getModulePageURL(__CLASS__);
 
-		$this->ARCHIVE_ROOT = './archives/'; // 生成靜態庫存頁面之存放位置
-		$this->MULTI_COPY = true; // 容許同一串有多份存檔
-		$this->ADMIN_ONLY = true; // 只容許管理員生成靜態庫存頁面
-
-		$this->PUSHPOST_SEPARATOR = '[MOD_PUSHPOST_USE]';
-		$this->PROCESS_PUSHPOST = 1;	// 處理推文 (是：1 否：0)
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->page = $this->getModulePageURL();
 	}
 
 	/* Get the name of module */
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_archiver : Pixmicat! Archiver 靜態庫存頁面(精華區)生成';
 	}
 
 	/* Get the module version infomation */
-	function getModuleVersionInfo(){
-		return '5th.Release (v100905)';
+	public function getModuleVersionInfo(){
+		return '7th.Release (v140607)';
 	}
 
 	/* 自動掛載：頂部連結列 */
-	function autoHookToplink(&$linkbar, $isReply){
-		global $PMS;
+	public function autoHookToplink(&$linkbar, $isReply){
 		$linkbar .= '[<a href="'.$this->ARCHIVE_ROOT.'">精華區</a>]'."\n";
 	}
 
-	function ModulePage(){
+	public function ModulePage(){
 		if($this->ADMIN_ONLY && !adminAuthenticate('check')) {	// 只容許管理員生成靜態庫存頁面
-			echo 'Access Denied.';
-			return;
+			die ('Access Denied.');
 		}
 		
 		$res = isset($_GET['res']) ? $_GET['res'] : 0; // 欲生成靜態庫存頁面之討論串編號
@@ -49,23 +44,24 @@ class mod_archiver{
 			echo('No argument or the archive already existed.'); // 參數不對或XML檔案已存在
 		}else{
 			$this->GenerateArchive($res); // 生成靜態庫存頁面
-			echo 'FINISH.';
+			die('<script type="text/javascript"> document.write("<"+"a href=\""+document.referrer+"\">FINISH</a>."); </script><noscript>FINISH.</noscript>');
 		}
 	}
 
-	function autoHookAdminList(&$modFunc, $post, $isres){
-		global $PMS;
+	public function autoHookAdminList(&$modFunc, $post, $isres){
 		if(!$isres) $modFunc .= '[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		if($this->ADMIN_ONLY) return; // 只允許管理員生成
-		$arrLabels['{$QUOTEBTN}'] .= '&nbsp;[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
+		$arrLabels['{$QUOTEBTN}'] .= '[<a href="'.$this->page.'&amp;res='.$post['no'].'">存</a>]';
 	}
 
 	/* 取出討論串結構並製成XML結構 */
-	function GenerateArchive($res){
-		global $PIO, $FileIO;
+	private function GenerateArchive($res){
+		$PIO = PMCLibrary::getPIOInstance();
+		$FileIO = PMCLibrary::getFileIOInstance();
+
 		$aryNO = $aryNAME = $aryDATE = $arySUBJECT = $aryCOMMENT = $aryPUSHPOST = $aryCATEGORY = $aryIMAGE = array(); // 討論串結構陣列
 
 		/* 第一部份：先製成討論串結構陣列 */
@@ -100,7 +96,7 @@ class mod_archiver{
 		$archiveDate = date('YmdHis');
 
 		/* 第二部份：生成XML結構 */
-		$tmp_c = '<?xml version="1.0" encoding="UTF-8"?>
+		$tmp_c = '<?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="archivestyle.xsl"?>
 <threads no="'.$aryNO[0].'">
 	<meta creator="'.$this->getModuleVersionInfo().'"'.($this->MULTI_COPY?' archivedate="'.$archiveDate.'"':'').' />
@@ -155,5 +151,6 @@ class mod_archiver{
 			}
 		}
 	}
-}
-?>
+}//End-Of-Module
+
+
