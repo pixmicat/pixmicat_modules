@@ -52,7 +52,7 @@ class mod_edit extends ModuleHelper {
 			if($PMS->onlyLoad('mod_bbcode')){ //check bbcode exists
 				//$PMS->loadModules('mod_bbcode'); //嘗試載入mod_bbcode
 				if($bbcode=$PMS->getModuleInstance('mod_bbcode')){
-					$bbcode->_html2bb($com);
+					$bbcode->html2bb($com);
 				}
 			}
 

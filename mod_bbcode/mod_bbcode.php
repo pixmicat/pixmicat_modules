@@ -29,7 +29,7 @@ class mod_bbcode extends ModuleHelper {
 	}
 
 	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $resto, $imgWH){
-		$com = $this->_bb2html($com,$dest);
+		$com = $this->bb2html($com,$dest);
 	}
 
 	private function _addButtons($txt) {
@@ -47,7 +47,7 @@ class mod_bbcode extends ModuleHelper {
 			},bbbuttons.tags);';
 	}
 
-	public function _bb2html($string, $dest){
+	public function bb2html($string, $dest){
 		$this->urlcount=0; // Reset counter
 		$string = preg_replace('#\[b\](.*?)\[/b\]#si', '<b>\1</b>', $string);
 		$string = preg_replace('#\[i\](.*?)\[/i\]#si', '<i>\1</i>', $string);
@@ -126,7 +126,7 @@ class mod_bbcode extends ModuleHelper {
 		else return '[email='.$m[1].']'.$m[2].'[/email]';
 	}
 
-	public function _html2bb(&$string){
+	public function html2bb(&$string){
 		$string = preg_replace('#<b>(.*?)</b>#si', '[b]\1[/b]', $string);
 		$string = preg_replace('#<i>(.*?)</i>#si', '[i]\1[/i]', $string);
 		$string = preg_replace('#<u>(.*?)</u>#si', '[u]\1[/u]', $string);
