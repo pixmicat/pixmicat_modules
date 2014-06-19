@@ -10,11 +10,11 @@ class mod_code_prettify extends ModuleHelper {
 	public function __construct($PMS) {
 		parent::__construct($PMS);
 		if(method_exists($PMS,'addCHP')) {
-			$PMS->addCHP('mod_bbbutton_addButtons',array($this,'_addButtons'));
+			$PMS->addCHP('mod_bbbutton_addButtons',array($this,'addButtons'));
 		}
 	}
 
-	private function _addButtons($txt) {
+	public function addButtons($txt) {
 		$txt .= 'bbbuttons.tags = $.extend({
 			 code:{desc:"Insert Code block"},
 			},bbbuttons.tags);';
@@ -25,7 +25,7 @@ class mod_code_prettify extends ModuleHelper {
 	}
 
 	public function getModuleVersionInfo(){
-		return '7th.Release (v140607)';
+		return '7th.Release (v140619)';
 	}
 
 	public function autoHookHead(&$dat){
