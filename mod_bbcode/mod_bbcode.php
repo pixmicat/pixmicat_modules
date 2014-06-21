@@ -12,7 +12,7 @@ class mod_bbcode extends ModuleHelper {
 		parent::__construct($PMS);
 		$this->myPage = $this->getModulePageURL();// 基底位置
 		if(method_exists(self::$PMS,'addCHP')) {
-			self::$PMS->addCHP('mod_bbbutton_addButtons',array($this,'_addButtons'));
+			self::$PMS->addCHP('mod_bbbutton_addButtons',array($this,'addButtons'));
 		}
 	}
 
@@ -21,7 +21,7 @@ class mod_bbcode extends ModuleHelper {
 	}
 
 	public function getModuleVersionInfo(){
-		return '7th.Release-dev (v140530)';
+		return '7th.Release-dev (v140619)';
 	}
 
 	public function autoHookPostInfo(&$postinfo){
@@ -32,7 +32,7 @@ class mod_bbcode extends ModuleHelper {
 		$com = $this->bb2html($com,$dest);
 	}
 
-	private function _addButtons($txt) {
+	public function addButtons($txt) {
 		$txt .= 'bbbuttons.tags = $.extend({
 			 b:{desc:"Bold"},
 			 i:{desc:"Italic"},
