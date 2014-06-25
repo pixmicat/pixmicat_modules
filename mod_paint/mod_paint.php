@@ -19,36 +19,36 @@ if(!function_exists('file_put_contents') && !defined('FILE_APPEND')){
 	}
 }
 
-class mod_paint{
-	var $THISPAGE, $TMPFolder, $PMAX_W, $PMAX_H, $SECURITY, $PAINT_RESTRICT, $PaintComponent, $TIME_UNIT;
-	function mod_paint(){
-		global $PMS;
-		$PMS->hookModuleMethod('ModulePage', __CLASS__);
-		$this->THISPAGE = $PMS->getModulePageURL(__CLASS__);
-		// 可設定項目
-		$this->TMPFolder = './tmp/'; // 圖檔暫存目錄
-		$this->PMAX_W = 500; $this->PMAX_H = 500; // 繪圖最大長寬尺寸
-		$this->SECURITY = array('CLICK'=> 1, 'TIMER'=> 1, 'URL' => PHP_SELF2); // 安全設定
-		$this->PAINT_RESTRICT = array('POST'=>true, 'REPLY'=>true); // 繪圖模式是否可使用 (POST:發文, REPLY:回應)
-		$this->PaintComponent = array( // 各組件所在位置
-			'Base'=>'./paint/', // 其他資源檔基底目錄
-			'PaintBBS'=>'./paint/PaintBBS.jar',
-			'ShiPainter'=>'./paint/spainter_all.jar',
-			'PCHViewer'=>'./paint/PCHViewer.jar'
-		);
-		$this->TIME_UNIT = array('TIME'=>'作畫時間：', 'D'=> '日', 'H'=>'時', 'M'=>'分', 'S'=>'秒'); // 時間單位
+class mod_paint extends ModuleHelper {
+	private $THISPAGE ;
+	private	$TMPFolder = './tmp/'; // 圖檔暫存目錄
+	private	$PMAX_W = 500; 
+	private $PMAX_H = 500; // 繪圖最大長寬尺寸
+	private	$SECURITY = array('CLICK'=> 1, 'TIMER'=> 1, 'URL' => PHP_SELF2); // 安全設定
+	private $PAINT_RESTRICT = array('POST'=>true, 'REPLY'=>true); // 繪圖模式是否可使用 (POST:發文, REPLY:回應)
+	private	$PaintComponent = array( // 各組件所在位置
+				'Base'=>'./paint/', // 其他資源檔基底目錄
+				'PaintBBS'=>'./paint/PaintBBS.jar',
+				'ShiPainter'=>'./paint/spainter_all.jar',
+				'PCHViewer'=>'./paint/PCHViewer.jar'
+			);
+	private	$TIME_UNIT = array('TIME'=>'作畫時間：', 'D'=> '日', 'H'=>'時', 'M'=>'分', 'S'=>'秒'); // 時間單位
+
+	public function __construct($PMS) {
+		parent::__construct($PMS);
+		$this->THISPAGE = $this->getModulePageURL();
 	}
 
-	function getModuleName(){
+	public function getModuleName(){
 		return 'mod_paint : PaintBBS &amp; しぃペインター(Pro) 支援模組';
 	}
 
-	function getModuleVersionInfo(){
-		return '4th.Release.3 (v090310)';
+	public function getModuleVersionInfo(){
+		return '7th.Release.dev (v140607)';
 	}
 
 	/* Hook to ThreadFront */
-	function autoHookThreadFront(&$txt, $isReply){
+	public function autoHookThreadFront(&$txt, $isReply){
 		$txt .= '<form action="'.$this->THISPAGE.'&amp;action=paint" method="post">
 <div style="text-align: center;">
 程式<select name="Papplet"><option value="0">PaintBBS</option><option value="1">しぃペインター</option><option value="2">しぃペインターPro</option></select>
@@ -60,7 +60,7 @@ class mod_paint{
 </form>'."\n";
 	}
 
-	function autoHookThreadPost(&$arrLabels, $post, $isReply){
+	public function autoHookThreadPost(&$arrLabels, $post, $isReply){
 		$pchBase = './'.IMG_DIR.$post['tim'];
 		$pchType = '';
 		if(file_exists($pchBase.'.pch')){ $pchFile = $post['tim'].'.pch'; }
@@ -94,12 +94,12 @@ class mod_paint{
 		$arrLabels['{$IMG_BAR}'] .= '<small>'.$paintTime.'<a href="'.$pchLink.'">[動畫]</a></small>';
 	}
 
-	function autoHookThreadReply(&$arrLabels, $post, $isReply){
+	public function autoHookThreadReply(&$arrLabels, $post, $isReply){
 		$this->autoHookThreadPost($arrLabels, $post, $isReply);
 	}
 
 	/* 將繪圖與文章暗中連結起來 */
-	function autoHookPostForm(&$form){
+	public function autoHookPostForm(&$form){
 		if(strpos($_SERVER['REQUEST_URI'], str_replace('&amp;', '&', $this->THISPAGE).'&action=post')!==false){ // 符合插入頁面條件
 			$userCode = str_replace(array('/','?'), '_', substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12)); // 使用者識別碼 (IP + UserAgent)
 			$imgItem = '<select name="paintImg">';
@@ -112,7 +112,7 @@ class mod_paint{
 	}
 
 	/* 處理繪圖跟文章的連結 */
-	function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
+	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
 		if(!isset($_POST['paintImg'])) return; // 沒選圖檔
 		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
 			$upfileInfo['file'] = $this->TMPFolder.$_POST['paintImg'];
@@ -122,7 +122,7 @@ class mod_paint{
 	}
 
 	/* 處理 PCH 檔 (如果有的話) 和暫存清除 */
-	function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
+	public function autoHookRegistBeforeCommit(&$name, &$email, &$sub, &$com, &$category, &$age, $dest, $isReply, $imgWH, &$status){
 		if(!isset($_POST['paintImg'])) return; // 沒選圖檔
 		if(isset($_POST['PaintSend'])){ // 繪圖模式送來的儲存
 			unlink($this->TMPFolder.$_POST['paintImg']); // 刪除暫存圖檔
@@ -139,7 +139,7 @@ class mod_paint{
 	}
 
 	/* 中控頁面: 根據 Action 執行指定動作 */
-	function ModulePage(){
+	public function ModulePage(){
 		/*
 		TODO:
 		- Continue Painting (or Discard this function?)
@@ -161,7 +161,7 @@ class mod_paint{
 	}
 
 	/* 印出繪圖頁面 */
-	function Action_Paint(){
+	public function Action_Paint(){
 		$nowTime = time();
 		$resto = isset($_POST['resto']) ? intval($_POST['resto']) : 0; // 回應編號
 		if($resto != 0){ // 回應
@@ -282,7 +282,7 @@ setInterval(function(){
 	}
 
 	/* 處理 Applet 送來的 Raw Data 並分析儲存 */
-	function Action_Save(){
+	private function Action_Save(){
 		$nowTime = time(); // 現在時間
 		$RAWInput = fopen('php://input', 'rb');
 		$RAWData = '';
@@ -312,7 +312,7 @@ setInterval(function(){
 	}
 
 	/* 發文頁面 */
-	function Action_Post(){
+	private function Action_Post(){
 		$resto = isset($_GET['resto']) ? intval($_GET['resto']) : 0; // 回應編號
 		$userCode = str_replace(array('/','?'), '_', substr(crypt(md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].IDSEED),'id'), -12)); // 使用者識別碼 (IP + UserAgent)
 		$imgList = '';
@@ -336,7 +336,7 @@ setInterval(function(){
 	}
 
 	/* 顯示動畫 */
-	function Action_ViewPCH(){
+	private function Action_ViewPCH(){
 		$imgfile = isset($_GET['file']) ? './'.IMG_DIR.$_GET['file'] : false; // 圖檔名
 		if(!file_exists($imgfile)) error('File Not Found.');
 		$size = getimagesize($imgfile);
@@ -398,8 +398,8 @@ setInterval(function(){
 	}
 
 	/* 刪除舊暫存 */
-	function Action_deleteOldTemp(){
-		global $FileIO;
+	private function Action_deleteOldTemp(){
+		$FileIO = PMCLibrary::getFileIOInstance();
 
 		if(!is_dir($this->TMPFolder)){ mkdir($this->TMPFolder); @chmod($this->TMPFolder, 0777); }
 		// 檢查暫存是否過舊無人認領，超過一段時間就砍
@@ -415,5 +415,5 @@ setInterval(function(){
 			if(!$FileIO->imageExists($fff.'.png') && !$FileIO->imageExists($fff.'.jpg')){ unlink($ff); } // 作畫動畫原始圖檔已刪
 		}
 	}
-}
-?>
+}//End-Of-Module
+
