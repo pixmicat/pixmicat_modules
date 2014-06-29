@@ -19,7 +19,7 @@ class mod_readonly extends ModuleHelper {
 	}
 
 	public function autoHookRegistBegin(&$name, &$email, &$sub, &$com, $upfileInfo, $accessInfo){
-		//$pwd = isset($_POST['pwd']) ? $_POST['pwd'] : '';
+		$pwd = isset($_POST['pwd']) ? $_POST['pwd'] : '';
 		$resto = isset($_POST['resto']) ? $_POST['resto'] : 0;
 
 		if($this->ALLOWREPLY && $resto) return; // 開放回應
