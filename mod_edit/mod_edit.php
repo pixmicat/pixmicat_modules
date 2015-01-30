@@ -17,7 +17,7 @@ class mod_edit extends ModuleHelper {
 
 	/* Get the module version infomation */
 	public function getModuleVersionInfo(){
-		return '7th.Release (v140615)';
+		return '7th.Release (v150130)';
 	}
 
 	public function autoHookAdminList(&$modFunc, $post, $isres){
@@ -158,8 +158,9 @@ class mod_edit extends ModuleHelper {
 			if(!BR_CHECK || substr_count($com,"\n") < BR_CHECK) $com = nl2br($com); // 換行字元用<br />代替
 			$com = str_replace("\n",'', $com); // 若還有\n換行字元則取消換行
 			if($category && USE_CATEGORY){ // 修整標籤樣式
+				$ss = method_exists($PIO, '_replaceComma') ? '&#44;' : ','; // Dirty implement
 				$category = explode(',', $category); // 把標籤拆成陣列
-				$category = '&#44;'.implode('&#44;', array_map('trim', $category)).'&#44;'; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
+				$category = $ss.implode($ss, array_map('trim', $category)).$ss; // 去空白再合併為單一字串 (左右含,便可以直接以,XX,形式搜尋)
 			}else{ $category = ''; }
 
 			$age = false; $dest = '';
