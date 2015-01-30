@@ -1,0 +1,21 @@
+(Copied and edited from mod_recaptcha/howto.txt)
+License:
+
+The reCAPTCHA PHP Library is provided by reCAPTCHA project. Copyright (c) 2007 reCAPTCHA (http://recaptcha.net)
+mod_recaptcha is not a part of Pixmicat! package. So it's not licensed under the Clarified Artistic License. It's in the public domain.
+
+中文安裝指引:
+
+0. 請先申請免費的 reCAPTCHA 帳號 (https://www.google.com/recaptcha/admin)，取得兩串 Key
+1. 從 https://github.com/google/ReCAPTCHA/tree/master/php 下載 recaptchalib.php 
+2. 將 mod_recaptcha_v2.php 和 recaptchalib.php 放到 module/ 目錄
+3. 修改 mod_recaptcha_v2.php，填入在第0步驟於 reCAPTCHA 取得的 Public Key 和 Private Key
+4. 修改 config.php，在模組載入區塊下加一行 $ModuleList[] = 'mod_recaptcha_v2';
+
+English Instruction:
+
+0. Please sign up for a FREE account of reCAPTCHA. (https://www.google.com/recaptcha/admin) And you can get two 40-letter-long keys.
+1. Download the "recaptchalib.php" from https://github.com/google/ReCAPTCHA/tree/master/php
+2. Put the following files into the module/ directory: "mod_recaptcha_v2.php" and "recaptchalib.php."
+3. Use your favorite editor to open the "mod_recaptcha_v2.php" and fill out the public key and the private key you got at step 0.
+4. Finally, open the "config.php" and add one line ($ModuleList[] = 'mod_recaptcha_v2';) into the "Modules to be loaded" block.
